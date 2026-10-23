@@ -1,0 +1,3 @@
+type,status,manufacturer,model,serial_number,payment_hardware,purchase_date,purchase_cost
+Snack,In storage,Crane,Merchant 6,CR-123456,Nayax card reader,23/10/2026,"4,500.00"
+Drink,Needs repair,Vendo,721,VE-987654,Cash only,01/03/2025,3200

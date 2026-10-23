@@ -48,12 +48,20 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Machines</h1>
         {canEdit && (
-          <Link
-            href="/machines/new"
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-          >
-            Add machine
-          </Link>
+          <div className="flex gap-2">
+            <Link
+              href="/machines/import"
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+            >
+              Import CSV
+            </Link>
+            <Link
+              href="/machines/new"
+              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            >
+              Add machine
+            </Link>
+          </div>
         )}
       </div>
 
