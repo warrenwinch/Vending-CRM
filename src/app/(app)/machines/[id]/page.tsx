@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
 import { getPlacementHistory } from "@/lib/placements";
+import { NotesSection } from "../../notes/notes-section";
 import { MACHINE_EDIT_ROLES, MACHINE_TYPES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
 import { formatAud, formatDate } from "@/lib/au";
@@ -128,6 +129,8 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
           </>
         )}
       </section>
+
+      <NotesSection target={{ kind: "machine", id: machine.id }} canDelete={OFFICE_ROLES.includes(profile.role)} />
     </>
   );
 }

@@ -12,6 +12,7 @@ import { listContacts } from "@/lib/contacts";
 import { ContactList } from "./contacts/contact-list";
 import { listPayments } from "@/lib/commission";
 import { PaymentList } from "../../commission/payment-list";
+import { NotesSection } from "../../notes/notes-section";
 
 export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
   return (
@@ -103,6 +104,8 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
         </Link>
       </div>
       <PaymentList payments={payments} showClient={false} empty="No commission paid to this client yet." />
+
+      <NotesSection target={{ kind: "client", id: client.id }} canDelete />
     </>
   );
 }

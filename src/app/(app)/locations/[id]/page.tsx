@@ -7,6 +7,7 @@ import { isUuid } from "@/lib/ids";
 import { formatAud, formatDate } from "@/lib/au";
 import { listMachinesAtLocation } from "@/lib/placements";
 import { listContacts } from "@/lib/contacts";
+import { NotesSection } from "../../notes/notes-section";
 import { ContactList } from "../../clients/[id]/contacts/contact-list";
 import { MACHINE_TYPES } from "@/lib/machine-types";
 import { LOCATION_TYPES, labelOf, type Location } from "@/lib/location-types";
@@ -129,6 +130,8 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
           </ul>
         )}
       </section>
+
+      <NotesSection target={{ kind: "location", id: location.id }} canDelete={isOffice} />
     </>
   );
 }
