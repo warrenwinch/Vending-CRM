@@ -1,7 +1,9 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
-import { isFaultCategory, isFaultSeverity } from "@/lib/fault-types";
+import { after } from "next/server";
+import { CUSTOMER_FAULT_CHOICES, formatDateTime, isFaultCategory, isFaultSeverity } from "@/lib/fault-types";
+import { sendEmail } from "@/lib/alerts";
 import type { FormState } from "@/components/form-ui";
 
 const TOKEN = /^[0-9a-f]{32}$/;
@@ -44,6 +46,26 @@ export async function reportFromQr(token: string, _prev: FormState, formData: Fo
     if (error.message.includes("machine_not_found")) return fail("This QR code isn't recognised.");
     return fail("Sorry, something went wrong sending your report. Please try again.");
   }
+
+  // Email the team once the customer has their "thanks" (they never wait for it).
+  after(async () => {
+    const { data } = await supabase.rpc("public_machine", { p_token: token });
+    const m = ((data ?? []) as { machine_number: string; site_name: string | null; site_position?: string | null }[])[0];
+    const place = m ? [m.site_name, m.site_position].filter(Boolean).join(", ") : "";
+    const label = CUSTOMER_FAULT_CHOICES.find((c) => c.value === values.category)?.label ?? values.category;
+    await sendEmail({
+      subject: `Customer fault: ${m?.machine_number ?? "machine"}${place ? ` at ${place}` : ""}`,
+      lines: [
+        ["Machine", m?.machine_number ?? "Unknown"],
+        ["Where", place || "Not at a location"],
+        ["Problem", label],
+        ["Working at all?", values.severity === "not_working" ? "No, not at all" : "Yes, partly"],
+        ["Details", values.description],
+        ["Customer contact", values.contact || "None given"],
+        ["Reported", formatDateTime(new Date().toISOString())],
+      ],
+    });
+  });
 
   return { message: "Thanks! Your report has been sent to our team." };
 }
