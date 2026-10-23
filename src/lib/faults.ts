@@ -24,6 +24,40 @@ const toFault = ({ machines, locations, reporter, fixer, ...row }: Row): Fault =
   fixer_name: row.fixed_by ? (fixer?.full_name ?? "Former team member") : null,
 });
 
+// Sydney calendar date of a moment, as placements store dates ("2026-10-23").
+const sydneyDate = (iso: string) => new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney" }).format(new Date(iso));
+
+// Adds where inside the site each machine was when its fault was found,
+// e.g. "ABS House" becomes "ABS House, Level 4N".
+async function withPositions(faults: Fault[]) {
+  const machineIds = [...new Set(faults.filter((f) => f.location_id).map((f) => f.machine_id))];
+  if (!machineIds.length) return faults;
+  const supabase = await createClient();
+  const { data } = await supabase
+    .from("machine_placements")
+    .select("machine_id, location_id, position, started_on, ended_on")
+    .in("machine_id", machineIds)
+    .not("position", "is", null);
+  const placements = (data ?? []) as {
+    machine_id: string;
+    location_id: string;
+    position: string;
+    started_on: string;
+    ended_on: string | null;
+  }[];
+  return faults.map((f) => {
+    const day = sydneyDate(f.reported_at);
+    const there = placements.find(
+      (p) =>
+        p.machine_id === f.machine_id &&
+        p.location_id === f.location_id &&
+        p.started_on <= day &&
+        (p.ended_on === null || p.ended_on >= day),
+    );
+    return there && f.site_name ? { ...f, site_name: `${f.site_name}, ${there.position}` } : f;
+  });
+}
+
 export async function listFaults({ machineId, open }: { machineId?: string; open?: boolean } = {}) {
   const supabase = await createClient();
   let query = supabase.from("machine_faults").select(COLUMNS).order("reported_at", { ascending: false });
@@ -32,12 +66,12 @@ export async function listFaults({ machineId, open }: { machineId?: string; open
   if (open === false) query = query.not("fixed_at", "is", null);
   const { data, error } = await query.limit(500);
   if (error) throw new Error(`Could not load faults: ${error.message}`);
-  return (data as unknown as Row[]).map(toFault);
+  return withPositions((data as unknown as Row[]).map(toFault));
 }
 
 export async function getFault(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.from("machine_faults").select(COLUMNS).eq("id", id).maybeSingle();
   if (error) throw new Error(`Could not load this fault: ${error.message}`);
-  return data ? toFault(data as unknown as Row) : null;
+  return data ? (await withPositions([toFault(data as unknown as Row)]))[0] : null;
 }
