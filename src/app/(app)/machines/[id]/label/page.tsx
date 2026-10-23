@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireProfile } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
+import { getOpenPlacement, placeName } from "@/lib/placements";
 import { isUuid } from "@/lib/ids";
 import { reportUrl } from "@/lib/qr";
 import { MachineLabel } from "../../machine-label";
@@ -20,7 +21,7 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
   await requireProfile();
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const machine = await getMachine(id);
+  const [machine, placement] = await Promise.all([getMachine(id), getOpenPlacement(id)]);
   if (!machine) notFound();
 
   return (
@@ -31,7 +32,7 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
         </Link>
         <h1 className="page-title">QR sticker</h1>
         <p className="text-zinc-600">
-          Stick this on the front of the machine. Customers scan it to report a problem; it goes straight into Faults.
+          Stick this on the front of the machine. Customers scan it to report a problem (it goes straight into Faults) or call the number. It shows where the machine is now, so print a new one if you move it.
         </p>
         <div className="flex flex-wrap gap-3">
           <PrintButton label="Print sticker" />
@@ -40,7 +41,11 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
           </a>
         </div>
       </div>
-      <MachineLabel machineNumber={machine.machine_number} publicToken={machine.public_token} />
+      <MachineLabel
+        machineNumber={machine.machine_number}
+        place={placement ? placeName(placement) : null}
+        publicToken={machine.public_token}
+      />
     </>
   );
 }

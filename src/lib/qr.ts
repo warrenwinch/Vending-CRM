@@ -12,3 +12,14 @@ export const reportUrl = (publicToken: string) => `${SITE_URL}/m/${publicToken}`
 export function qrSvg(text: string) {
   return QRCode.toString(text, { type: "svg", errorCorrectionLevel: "M", margin: 1, color: { dark: "#2f2e2c", light: "#ffffff" } });
 }
+
+// The number printed on stickers and offered on the customer page.
+// Set SUPPORT_PHONE to change it (digits; spaces are added for display).
+export const SUPPORT_PHONE = (process.env.SUPPORT_PHONE ?? "0432028840").replace(/\D/g, "");
+
+// "0432028840" -> "0432 028 840"; landlines "0291234567" -> "02 9123 4567".
+export function formatPhone(digits: string) {
+  if (/^04\d{8}$/.test(digits)) return digits.replace(/^(\d{4})(\d{3})(\d{3})$/, "$1 $2 $3");
+  if (/^0\d{9}$/.test(digits)) return digits.replace(/^(\d{2})(\d{4})(\d{4})$/, "$1 $2 $3");
+  return digits;
+}

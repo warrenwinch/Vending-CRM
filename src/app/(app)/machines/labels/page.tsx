@@ -27,7 +27,7 @@ async function Labels() {
         <h1 className="page-title">QR stickers for every machine</h1>
         <p className="text-zinc-600">
           {machines.length} sticker{machines.length === 1 ? "" : "s"}, about 6.4 cm wide, three across an A4 page.
-          Print on sticker paper, or on plain paper and laminate.
+          Print on sticker paper, or on plain paper and laminate. Each shows where the machine is now, so reprint a machine&apos;s sticker if you move it.
         </p>
         <div>
           <PrintButton label={`Print ${machines.length} sticker${machines.length === 1 ? "" : "s"}`} />
@@ -35,7 +35,7 @@ async function Labels() {
       </div>
       <div className="flex flex-wrap gap-[4mm]">
         {machines.map((m) => (
-          <MachineLabel key={m.id} machineNumber={m.machine_number} publicToken={m.public_token} />
+          <MachineLabel key={m.id} machineNumber={m.machine_number} place={m.site_name} publicToken={m.public_token} />
         ))}
       </div>
     </>

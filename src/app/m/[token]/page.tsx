@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import type { Metadata } from "next";
 import { createClient } from "@/lib/supabase/server";
 import { CustomerReportForm } from "./report-form";
+import { SUPPORT_PHONE, formatPhone } from "@/lib/qr";
 
 export const metadata: Metadata = {
   title: "Report a problem",
@@ -58,6 +59,12 @@ async function QrReport({ params }: Pick<PageProps<"/m/[token]">, "params">) {
           {machine.site_name && <> at {machine.site_name}</>}
         </p>
         <CustomerReportForm token={token} />
+        <div className="flex flex-col gap-2 border-t-2 border-zinc-200 pt-6 text-center">
+          <p className="font-bold">Prefer to talk to someone?</p>
+          <a href={`tel:${SUPPORT_PHONE}`} className="btn-secondary">
+            Call {formatPhone(SUPPORT_PHONE)}
+          </a>
+        </div>
       </div>
     </>
   );
