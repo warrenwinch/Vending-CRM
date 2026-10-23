@@ -120,6 +120,7 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
                   </p>
                   <p className="truncate text-sm text-zinc-500">
                     {[
+                      m.site_name ? `At ${m.site_name}` : null,
                       MACHINE_TYPES.find((t) => t.value === m.type)?.label,
                       m.serial_number && `S/N ${m.serial_number}`,
                     ]

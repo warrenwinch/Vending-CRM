@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
+import { getOpenPlacement } from "@/lib/placements";
 import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
 import { MachineForm } from "../../machine-form";
@@ -22,8 +23,14 @@ async function EditMachine({ params }: Pick<PageProps<"/machines/[id]/edit">, "p
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const machine = await getMachine(id);
+  const [machine, placement] = await Promise.all([getMachine(id), getOpenPlacement(id)]);
   if (!machine) notFound();
 
-  return <MachineForm machine={machine} showCost={OFFICE_ROLES.includes(profile.role)} />;
+  return (
+    <MachineForm
+      machine={machine}
+      showCost={OFFICE_ROLES.includes(profile.role)}
+      placedAt={placement?.site_name}
+    />
+  );
 }

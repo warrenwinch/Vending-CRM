@@ -51,6 +51,18 @@ export async function getLocation(id: string) {
   return data ? toLocation(data as unknown as Row) : null;
 }
 
+// Sites a machine can be placed at (not lost), for the "where to?" drop-down.
+// Client names only come back for Administrators and Managers.
+export async function listPlaceableLocations() {
+  const locations = await listLocations({});
+  return locations
+    .filter((l) => l.status !== "lost")
+    .map((l) => ({
+      value: l.id,
+      label: [l.site_name, l.client_name].filter(Boolean).join(" — "),
+    }));
+}
+
 // Names for the "which client?" drop-down on the location form.
 export async function listClientOptions() {
   const supabase = await createClient();

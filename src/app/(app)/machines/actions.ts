@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { MACHINE_EDIT_ROLES, isMachineStatus, isMachineType } from "@/lib/machine-types";
 import { parseAud } from "@/lib/au";
+import { getOpenPlacement } from "@/lib/placements";
 import type { FormState } from "@/components/form-ui";
 
 // Saves a new machine (machineId null) or changes an existing one.
@@ -45,6 +46,14 @@ export async function saveMachine(
     status: values.status,
     purchase_date: values.purchase_date || null,
   };
+
+  // Installed comes from placing a machine. While it's at a location its
+  // status is changed with Move / Take out, not here.
+  const placed = machineId ? await getOpenPlacement(machineId) : null;
+  if (placed) delete row.status;
+  else if (values.status === "installed") {
+    return fail("Place the machine at a location to make it Installed.");
+  }
 
   // Only Administrators and Managers see or change what a machine cost.
   if (canSeeCost) {

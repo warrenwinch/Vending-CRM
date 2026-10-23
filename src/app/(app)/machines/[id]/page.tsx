@@ -3,6 +3,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
+import { getPlacementHistory } from "@/lib/placements";
 import { MACHINE_EDIT_ROLES, MACHINE_TYPES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
 import { formatAud, formatDate } from "@/lib/au";
@@ -22,8 +23,9 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const machine = await getMachine(id);
+  const [machine, history] = await Promise.all([getMachine(id), getPlacementHistory(id)]);
   if (!machine) notFound();
+  const current = history.find((p) => p.ended_on === null);
 
   const rows: [string, string | null][] = [
     ["Type", MACHINE_TYPES.find((t) => t.value === machine.type)?.label ?? null],
@@ -69,7 +71,60 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
         ))}
       </dl>
 
-      <p className="text-sm text-zinc-500">Placing this machine at a location comes in the next step.</p>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Location</h2>
+        <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+          <p>
+            {current ? (
+              <>
+                At{" "}
+                <Link href={`/locations/${current.location_id}`} className="font-medium underline">
+                  {current.site_name}
+                </Link>{" "}
+                since {formatDate(current.started_on)}
+              </>
+            ) : (
+              <span className="text-zinc-500">Not at a location</span>
+            )}
+          </p>
+          {canEdit && machine.status !== "retired" && (
+            <div className="flex gap-2">
+              <Link
+                href={`/machines/${machine.id}/place`}
+                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+              >
+                {current ? "Move" : "Place at a location"}
+              </Link>
+              {current && (
+                <Link
+                  href={`/machines/${machine.id}/take-out`}
+                  className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+                >
+                  Take out
+                </Link>
+              )}
+            </div>
+          )}
+        </div>
+
+        {history.length > 0 && (
+          <>
+            <h3 className="text-sm font-semibold text-zinc-500">History</h3>
+            <ol className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+              {history.map((p) => (
+                <li key={p.id} className="flex flex-wrap justify-between gap-2 p-3">
+                  <Link href={`/locations/${p.location_id}`} className="font-medium underline">
+                    {p.site_name}
+                  </Link>
+                  <span className="text-zinc-500">
+                    {formatDate(p.started_on)} – {p.ended_on ? formatDate(p.ended_on) : "now"}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </>
+        )}
+      </section>
     </>
   );
 }

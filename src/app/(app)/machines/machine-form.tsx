@@ -6,7 +6,15 @@ import { saveMachine } from "./actions";
 import { Field, FormMessage, SelectField, SubmitButton, type FormState } from "@/components/form-ui";
 import { MACHINE_STATUSES, MACHINE_TYPES, type Machine } from "@/lib/machine-types";
 
-export function MachineForm({ machine, showCost }: { machine?: Machine; showCost: boolean }) {
+export function MachineForm({
+  machine,
+  showCost,
+  placedAt,
+}: {
+  machine?: Machine;
+  showCost: boolean;
+  placedAt?: string;
+}) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
     saveMachine.bind(null, machine?.id ?? null),
     {},
@@ -18,9 +26,7 @@ export function MachineForm({ machine, showCost }: { machine?: Machine; showCost
     v?.[name] ?? (saved === null || saved === undefined ? "" : String(saved));
 
   // "Installed" comes from placing a machine at a location, not from this form.
-  const statuses = MACHINE_STATUSES.filter(
-    (s) => s.value !== "installed" || machine?.status === "installed",
-  );
+  const statuses = MACHINE_STATUSES.filter((s) => s.value !== "installed");
 
   return (
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
@@ -37,12 +43,22 @@ export function MachineForm({ machine, showCost }: { machine?: Machine; showCost
           options={MACHINE_TYPES}
           defaultValue={value("type", machine?.type ?? "snack")}
         />
-        <SelectField
-          label="Status"
-          name="status"
-          options={statuses}
-          defaultValue={value("status", machine?.status ?? "in_storage")}
-        />
+        {placedAt ? (
+          <div className="flex flex-col gap-1">
+            <span className="text-sm font-medium">Status</span>
+            <p className="py-2.5 text-sm text-zinc-600 dark:text-zinc-400">
+              Installed at {placedAt}. Use Move or Take out on the machine&apos;s page to change this.
+            </p>
+            <input type="hidden" name="status" value="installed" />
+          </div>
+        ) : (
+          <SelectField
+            label="Status"
+            name="status"
+            options={statuses}
+            defaultValue={value("status", machine?.status ?? "in_storage")}
+          />
+        )}
       </div>
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Manufacturer" name="manufacturer" placeholder="Crane" defaultValue={value("manufacturer", machine?.manufacturer)} />

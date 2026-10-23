@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { getLocation } from "@/lib/locations";
 import { isUuid } from "@/lib/ids";
-import { formatAud } from "@/lib/au";
+import { formatAud, formatDate } from "@/lib/au";
+import { listMachinesAtLocation } from "@/lib/placements";
+import { MACHINE_TYPES } from "@/lib/machine-types";
 import { LOCATION_TYPES, labelOf, type Location } from "@/lib/location-types";
 import { StatusBadge } from "@/components/status-badge";
 
@@ -29,7 +31,7 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const location = await getLocation(id);
+  const [location, machines] = await Promise.all([getLocation(id), listMachinesAtLocation(id)]);
   if (!location) notFound();
 
   // Fillers and Warehouse see what they need on site; commission stays with the office.
@@ -76,7 +78,32 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
         ))}
       </dl>
 
-      <p className="text-sm text-zinc-500">Machines at this site will appear here once machines are added.</p>
+      <section className="flex flex-col gap-3">
+        <h2 className="text-lg font-semibold">Machines here</h2>
+        {machines.length === 0 ? (
+          <p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
+            No machines at this site. Place one from its page under Machines.
+          </p>
+        ) : (
+          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+            {machines.map((m) => (
+              <li key={m.id}>
+                <Link
+                  href={`/machines/${m.id}`}
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                >
+                  <span className="font-mono font-semibold">{m.machine_number}</span>
+                  <span className="min-w-0 flex-1 truncate">
+                    {[m.manufacturer, m.model].filter(Boolean).join(" ") ||
+                      MACHINE_TYPES.find((t) => t.value === m.type)?.label}
+                  </span>
+                  <span className="text-zinc-500">since {formatDate(m.started_on)}</span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
     </>
   );
 }

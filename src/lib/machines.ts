@@ -14,10 +14,17 @@ const toMachine = (row: Row): Machine => ({
   purchase_cost: row.purchase_cost === null ? null : Number(row.purchase_cost),
 });
 
+type ListRow = Row & { machine_placements: { locations: { site_name: string } | null }[] };
+
 export async function listMachines({ status, search }: { status?: MachineStatus; search?: string }) {
   const supabase = await createClient();
   // Newest first: numbers go VM-999, VM-1000, so sorting the text would mix them up.
-  let query = supabase.from("machines").select(COLUMNS).order("created_at", { ascending: false });
+  // Only the open placement (no end date) is fetched: where each machine is now.
+  let query = supabase
+    .from("machines")
+    .select(`${COLUMNS}, machine_placements(locations(site_name))`)
+    .is("machine_placements.ended_on", null)
+    .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
   if (search) {
     const term = search.replace(/[%_\\,()]/g, (c) => `\\${c}`);
@@ -27,7 +34,10 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
   }
   const { data, error } = await query;
   if (error) throw new Error(`Could not load machines: ${error.message}`);
-  return (data as Row[]).map(toMachine);
+  return (data as unknown as ListRow[]).map(({ machine_placements, ...row }) => ({
+    ...toMachine(row),
+    site_name: machine_placements[0]?.locations?.site_name ?? null,
+  }));
 }
 
 export async function getMachine(id: string) {

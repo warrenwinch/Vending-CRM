@@ -24,6 +24,11 @@ export function formatAud(amount: number) {
   return aud.format(amount);
 }
 
+// Today's date in Sydney as "2026-10-23" (servers run on UTC, which is a day behind each morning).
+export function todayInSydney() {
+  return new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney" }).format(new Date());
+}
+
 // "2026-10-23" (how the database stores dates) -> "23/10/2026"
 export function formatDate(isoDate: string | null) {
   if (!isoDate) return "";
