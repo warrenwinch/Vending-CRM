@@ -9,7 +9,7 @@ export function NavLinks({ items }: { items: NavItem[] }) {
   const pathname = usePathname();
 
   return (
-    <nav className="flex gap-1 text-sm">
+    <nav className="flex flex-wrap gap-1 text-sm">
       {items.map(({ href, label }) => {
         const active = href === "/" ? pathname === "/" : pathname.startsWith(href);
         return (

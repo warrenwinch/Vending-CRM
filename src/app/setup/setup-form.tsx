@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState } from "react";
-import { createOrganization } from "./actions";
+import { acceptInvitation, createOrganization } from "./actions";
 import { Field, FormMessage, SubmitButton, type FormState } from "@/components/form-ui";
 
 export function SetupForm({ defaultName }: { defaultName: string }) {
@@ -22,6 +22,35 @@ export function SetupForm({ defaultName }: { defaultName: string }) {
       <Field label="Your name" name="full_name" autoComplete="name" defaultValue={defaultName} required />
       <FormMessage state={state} />
       <SubmitButton pending={pending}>Continue</SubmitButton>
+    </form>
+  );
+}
+
+export function JoinForm({
+  invitationId,
+  businessName,
+  roleLabel,
+  defaultName,
+}: {
+  invitationId: string;
+  businessName: string;
+  roleLabel: string;
+  defaultName: string;
+}) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(
+    acceptInvitation.bind(null, invitationId),
+    {},
+  );
+
+  return (
+    <form action={formAction} className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <p>
+        <span className="font-semibold">{businessName}</span> has invited you to join as{" "}
+        <span className="font-semibold">{roleLabel}</span>.
+      </p>
+      <Field label="Your name" name="full_name" autoComplete="name" defaultValue={defaultName} required />
+      <FormMessage state={state} />
+      <SubmitButton pending={pending}>Join {businessName}</SubmitButton>
     </form>
   );
 }
