@@ -53,7 +53,7 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   return sent.ok
     ? { message: `Invitation emailed to ${values.email}.` }
     : {
-        message: `Invitation created for ${values.email}, but the email couldn't be sent. Copy the message under “Waiting to join” and send it yourself.`,
+        message: `Invitation created for ${values.email}, but the email couldn't be sent (${sent.reason ?? "unknown reason"}). Copy the message under “Waiting to join” and send it yourself.`,
       };
 }
 
@@ -75,7 +75,7 @@ async function emailInvitation(inv: InviteDetails, businessName: string, inviter
     ],
     button: { label: "Create your account", href: `${SITE_URL}/signup?email=${encodeURIComponent(inv.email)}` },
   });
-  return { ok: !result.skipped && result.ok };
+  return { ok: !result.skipped && result.ok, reason: result.reason };
 }
 
 // Sends the invitation email again (e.g. it went to spam, or was deleted).
@@ -97,7 +97,7 @@ export async function resendInvitation(invitationId: string): Promise<FormState>
   const sent = await emailInvitation(inv, profile.organizationName, profile.fullName);
   return sent.ok
     ? { message: `Sent again to ${inv.email}.` }
-    : { error: "The email couldn't be sent. Copy the message below and send it yourself." };
+    : { error: `The email couldn't be sent (${sent.reason ?? "unknown reason"}). Copy the message below and send it yourself.` };
 }
 
 export async function cancelInvitation(invitationId: string) {

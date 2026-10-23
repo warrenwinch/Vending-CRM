@@ -12,7 +12,8 @@ const DEFAULT_FROM = "Watwin CRM <onboarding@resend.dev>"; // Resend's test send
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export type EmailResult = { skipped: true } | { skipped: false; ok: boolean };
+// reason: why it wasn't sent, in Resend's words (for Administrators, never customers).
+export type EmailResult = { skipped: true; reason: string } | { skipped: false; ok: boolean; reason?: string };
 
 // One Watwin-styled email: a charcoal heading, optional intro, a table of
 // details and a big orange button.
@@ -31,7 +32,8 @@ export async function sendEmail({
 }): Promise<EmailResult> {
   const key = process.env.RESEND_API_KEY;
   const recipients = (to ?? (process.env.ALERT_EMAIL ?? "").split(",")).map((s) => s.trim()).filter(Boolean);
-  if (!key || recipients.length === 0) return { skipped: true };
+  if (!key) return { skipped: true, reason: "the RESEND_API_KEY setting is missing in Vercel" };
+  if (recipients.length === 0) return { skipped: true, reason: "there is no address to send to" };
 
   const rows = lines
     .map(
@@ -58,8 +60,15 @@ export async function sendEmail({
   });
   if (!res.ok) {
     // Visible in Vercel's logs; callers decide what (if anything) to tell people.
-    console.error("Email failed", res.status, await res.text());
-    return { skipped: false, ok: false };
+    const body = await res.text();
+    console.error("Email failed", res.status, body);
+    let reason = `Resend said ${res.status}`;
+    try {
+      reason = `Resend said: ${JSON.parse(body).message ?? body}`;
+    } catch {
+      // not JSON; keep the status
+    }
+    return { skipped: false, ok: false, reason };
   }
   return { skipped: false, ok: true };
 }
