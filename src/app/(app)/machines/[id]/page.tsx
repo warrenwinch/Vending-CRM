@@ -5,6 +5,8 @@ import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
 import { getPlacementHistory } from "@/lib/placements";
 import { NotesSection } from "../../notes/notes-section";
+import { listFaults } from "@/lib/faults";
+import { FaultList } from "../../faults/fault-list";
 import { MACHINE_EDIT_ROLES, MACHINE_TYPES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
 import { formatAud, formatDate } from "@/lib/au";
@@ -24,7 +26,13 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const [machine, history] = await Promise.all([getMachine(id), getPlacementHistory(id)]);
+  const [machine, history, allFaults] = await Promise.all([
+    getMachine(id),
+    getPlacementHistory(id),
+    listFaults({ machineId: id }),
+  ]);
+  // Open faults first, then the 5 most recent fixed ones.
+  const faults = [...allFaults.filter((f) => !f.fixed_at), ...allFaults.filter((f) => f.fixed_at).slice(0, 5)];
   if (!machine) notFound();
   const current = history.find((p) => p.ended_on === null);
 
@@ -128,6 +136,19 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
             </ol>
           </>
         )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="text-lg font-semibold">Faults</h2>
+          <Link
+            href={`/machines/${machine.id}/report-fault`}
+            className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white dark:bg-red-600"
+          >
+            Report a fault
+          </Link>
+        </div>
+        <FaultList faults={faults} showMachine={false} empty="No faults recorded for this machine." />
       </section>
 
       <NotesSection target={{ kind: "machine", id: machine.id }} canDelete={OFFICE_ROLES.includes(profile.role)} />

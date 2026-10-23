@@ -27,7 +27,11 @@ async function Menu() {
   // Only show links to screens this role can use.
   const items: NavItem[] = [{ href: "/", label: "Home" }];
   if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/clients", label: "Clients" });
-  items.push({ href: "/locations", label: "Locations" }, { href: "/machines", label: "Machines" });
+  items.push(
+    { href: "/locations", label: "Locations" },
+    { href: "/machines", label: "Machines" },
+    { href: "/faults", label: "Faults" },
+  );
   if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/commission", label: "Commission" });
   if (profile.role === "administrator") items.push({ href: "/team", label: "Team" });
 

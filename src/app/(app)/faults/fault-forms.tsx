@@ -1,0 +1,140 @@
+"use client";
+
+import Link from "next/link";
+import { useActionState, useState, useSyncExternalStore } from "react";
+import { deleteFault, markFixed, reportFault } from "./actions";
+import {
+  CheckboxField,
+  FormMessage,
+  SelectField,
+  SubmitButton,
+  TextAreaField,
+  type FormState,
+} from "@/components/form-ui";
+import { FAULT_CATEGORIES, FAULT_SEVERITIES } from "@/lib/fault-types";
+
+// "2026-10-23T14:15" for the phone's date-and-time picker, in its own time zone.
+function localNow() {
+  const d = new Date();
+  d.setSeconds(0, 0);
+  return new Date(d.getTime() - d.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+}
+
+// A date-and-time picker. The exact moment is sent alongside, so the
+// server never has to guess the phone's time zone.
+const noSubscribe = () => () => {};
+
+function WhenField({ label, name }: { label: string; name: string }) {
+  // Only drawn once the page is running on the phone, so it starts at the
+  // phone's clock rather than the server's.
+  const onDevice = useSyncExternalStore(noSubscribe, () => true, () => false);
+  if (!onDevice) {
+    return (
+      <div className="flex flex-col gap-1">
+        <span className="text-sm font-medium">{label}</span>
+        <div className="h-11 rounded-md border border-zinc-200 dark:border-zinc-800" />
+      </div>
+    );
+  }
+  return <WhenInput label={label} name={name} />;
+}
+
+function WhenInput({ label, name }: { label: string; name: string }) {
+  const [now] = useState(localNow);
+  const [local, setLocal] = useState(now);
+  const exact = local ? new Date(local).toISOString() : "";
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-sm font-medium">{label}</span>
+      <input
+        type="datetime-local"
+        value={local}
+        onChange={(e) => setLocal(e.target.value)}
+        max={now}
+        required
+        className="rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+      />
+      <input type="hidden" name={name} value={exact} />
+    </label>
+  );
+}
+
+export function ReportFaultForm({ machineId }: { machineId: string }) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(reportFault.bind(null, machineId), {});
+  const v = state.values;
+  const [alreadyFixed, setAlreadyFixed] = useState(v?.already_fixed === "on");
+
+  return (
+    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+      <SelectField
+        label="What's wrong"
+        name="category"
+        options={[{ value: "", label: "Choose…" }, ...FAULT_CATEGORIES]}
+        defaultValue={v?.category ?? ""}
+        required
+      />
+      <SelectField label="How bad" name="severity" options={FAULT_SEVERITIES} defaultValue={v?.severity ?? "partly_working"} />
+      <TextAreaField
+        label="Describe the fault"
+        name="description"
+        placeholder="Coil B4 jammed, chips stuck"
+        maxLength={2000}
+        defaultValue={v?.description ?? ""}
+        required
+      />
+      <WhenField label="When you found it" name="found_at" />
+
+      <CheckboxField
+        label="I've already fixed it"
+        name="already_fixed"
+        checked={alreadyFixed}
+        onChange={(e) => setAlreadyFixed(e.target.checked)}
+      />
+      {alreadyFixed && (
+        <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+          <WhenField label="When you fixed it" name="fixed_at" />
+          <TextAreaField label="What you did (optional)" name="fix_notes" placeholder="Cleared the jam, re-seated the coil" defaultValue={v?.fix_notes ?? ""} />
+        </div>
+      )}
+
+      <FormMessage state={state} />
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
+        <SubmitButton pending={pending}>{alreadyFixed ? "Save fixed fault" : "Report fault"}</SubmitButton>
+        <Link href={`/machines/${machineId}`} className="text-center text-sm font-medium underline">
+          Cancel
+        </Link>
+      </div>
+    </form>
+  );
+}
+
+export function MarkFixedForm({ faultId }: { faultId: string }) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(markFixed.bind(null, faultId), {});
+  return (
+    <form action={formAction} className="flex max-w-lg flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <h2 className="text-lg font-semibold">Mark as fixed</h2>
+      <WhenField label="When you fixed it" name="fixed_at" />
+      <TextAreaField label="What you did (optional)" name="fix_notes" defaultValue={state.values?.fix_notes ?? ""} />
+      <FormMessage state={state} />
+      <div>
+        <SubmitButton pending={pending}>Mark fixed</SubmitButton>
+      </div>
+    </form>
+  );
+}
+
+export function DeleteFaultButton({ faultId, machineId }: { faultId: string; machineId: string }) {
+  return (
+    <form
+      action={deleteFault.bind(null, faultId, machineId)}
+      onSubmit={(e) => {
+        if (!confirm("Delete this fault record? This can't be undone.")) e.preventDefault();
+      }}
+      className="border-t border-zinc-200 pt-4 dark:border-zinc-800"
+    >
+      <button type="submit" className="text-sm font-medium text-red-700 underline dark:text-red-300">
+        Delete this fault record
+      </button>
+    </form>
+  );
+}
