@@ -93,9 +93,12 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
                   className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900"
                 >
                   <span className="font-mono font-semibold">{m.machine_number}</span>
-                  <span className="min-w-0 flex-1 truncate">
-                    {[m.manufacturer, m.model].filter(Boolean).join(" ") ||
-                      MACHINE_TYPES.find((t) => t.value === m.type)?.label}
+                  <span className="min-w-0 flex-1">
+                    <span className="block truncate">
+                      {[m.manufacturer, m.model].filter(Boolean).join(" ") ||
+                        MACHINE_TYPES.find((t) => t.value === m.type)?.label}
+                    </span>
+                    {m.position && <span className="block truncate text-zinc-500">{m.position}</span>}
                   </span>
                   <span className="text-zinc-500">since {formatDate(m.started_on)}</span>
                 </Link>

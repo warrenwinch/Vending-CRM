@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
 import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
 import { getMachine } from "@/lib/machines";
-import { getOpenPlacement } from "@/lib/placements";
+import { getOpenPlacement, placeName } from "@/lib/placements";
 import { isUuid } from "@/lib/ids";
 import { formatDate, todayInSydney } from "@/lib/au";
 import type { FormState } from "@/components/form-ui";
@@ -26,19 +26,25 @@ export async function placeMachine(machineId: string, _prev: FormState, formData
 
   const values = {
     location_id: String(formData.get("location_id") ?? ""),
+    position: String(formData.get("position") ?? "").trim().replace(/\s+/g, " "),
     date: String(formData.get("date") ?? ""),
   };
   const fail = (error: string): FormState => ({ error, values });
 
   if (!isUuid(machineId)) return fail("This machine wasn't found.");
   if (!isUuid(values.location_id)) return fail("Please choose a location.");
+  if (values.position.length > 200) return fail("Please keep the position under 200 characters.");
 
   const machine = await getMachine(machineId);
   if (!machine) return fail("This machine wasn't found.");
   if (machine.status === "retired") return fail("This machine is retired. Change its status before placing it.");
 
+  // Moving within the same site (Level 4N to Level 2S) is a move too; the same spot isn't.
   const current = await getOpenPlacement(machineId);
-  if (current?.location_id === values.location_id) return fail(`It's already at ${current.site_name}.`);
+  const samePosition = (current?.position ?? "").toLowerCase() === values.position.toLowerCase();
+  if (current?.location_id === values.location_id && samePosition) {
+    return fail(`It's already at ${placeName(current)}.`);
+  }
 
   const dateProblem = checkDate(values.date, current?.started_on);
   if (dateProblem) return fail(dateProblem);
@@ -60,7 +66,12 @@ export async function placeMachine(machineId: string, _prev: FormState, formData
   // 2. Open the new placement. If that fails, put the old one back as it was.
   const { error: placeError } = await supabase
     .from("machine_placements")
-    .insert({ machine_id: machineId, location_id: values.location_id, started_on: values.date });
+    .insert({
+      machine_id: machineId,
+      location_id: values.location_id,
+      position: values.position || null,
+      started_on: values.date,
+    });
   if (placeError) {
     if (current) {
       await supabase.from("machine_placements").update({ ended_on: null }).eq("id", current.id);

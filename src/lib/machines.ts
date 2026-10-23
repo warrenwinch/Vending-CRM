@@ -14,7 +14,9 @@ const toMachine = (row: Row): Machine => ({
   purchase_cost: row.purchase_cost === null ? null : Number(row.purchase_cost),
 });
 
-type ListRow = Row & { machine_placements: { locations: { site_name: string } | null }[] };
+type ListRow = Row & {
+  machine_placements: { position: string | null; locations: { site_name: string } | null }[];
+};
 
 export async function listMachines({ status, search }: { status?: MachineStatus; search?: string }) {
   const supabase = await createClient();
@@ -22,7 +24,7 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
   // Only the open placement (no end date) is fetched: where each machine is now.
   let query = supabase
     .from("machines")
-    .select(`${COLUMNS}, machine_placements(locations(site_name))`)
+    .select(`${COLUMNS}, machine_placements(position, locations(site_name))`)
     .is("machine_placements.ended_on", null)
     .order("created_at", { ascending: false });
   if (status) query = query.eq("status", status);
@@ -34,10 +36,15 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
   }
   const { data, error } = await query;
   if (error) throw new Error(`Could not load machines: ${error.message}`);
-  return (data as unknown as ListRow[]).map(({ machine_placements, ...row }) => ({
-    ...toMachine(row),
-    site_name: machine_placements[0]?.locations?.site_name ?? null,
-  }));
+  return (data as unknown as ListRow[]).map(({ machine_placements, ...row }) => {
+    const here = machine_placements[0];
+    const site = here?.locations?.site_name;
+    return {
+      ...toMachine(row),
+      // "ABS House, Level 4N"
+      site_name: site ? [site, here.position].filter(Boolean).join(", ") : null,
+    };
+  });
 }
 
 export async function getMachine(id: string) {

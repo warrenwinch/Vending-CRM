@@ -12,11 +12,13 @@ export function PlaceForm({
   locations,
   today,
   moving,
+  defaultLocationId,
 }: {
   machineId: string;
   locations: Option[];
   today: string;
   moving: boolean;
+  defaultLocationId?: string;
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
     placeMachine.bind(null, machineId),
@@ -30,8 +32,16 @@ export function PlaceForm({
         label={moving ? "Move to" : "Place at"}
         name="location_id"
         options={[{ value: "", label: "Choose a location…" }, ...locations]}
-        defaultValue={v?.location_id ?? ""}
+        defaultValue={v?.location_id ?? defaultLocationId ?? ""}
         required
+      />
+      <Field
+        label="Position on site (optional)"
+        name="position"
+        placeholder="Level 4N, next to the lifts"
+        hint="Where in the building it sits. To move it within the same site, choose that site again with the new position."
+        maxLength={200}
+        defaultValue={v?.position ?? ""}
       />
       <Field
         label={moving ? "Date moved" : "Date installed"}

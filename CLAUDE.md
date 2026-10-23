@@ -13,7 +13,8 @@ test each step before moving on.
 - Mobile-friendly from the start (Fillers will use phones)
 
 ## Rules
-1. The database schema is in `01_schema.sql` and has already been run in Supabase.
+1. The database schema is in `01_schema.sql`, plus later changes in numbered files
+   (`02_placement_position.sql`, ...), all run in Supabase in order.
    Do not change table structure unless I ask. If you think it needs changing, explain why first.
 2. Security is enforced by Row Level Security in the database. Never use the Supabase
    "service role" key in browser code. Never bypass RLS.

@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { notFound, redirect } from "next/navigation";
 import { requireRole } from "@/lib/auth";
 import { getMachine } from "@/lib/machines";
-import { getOpenPlacement } from "@/lib/placements";
+import { getOpenPlacement, placeName } from "@/lib/placements";
 import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
 import { formatDate, todayInSydney } from "@/lib/au";
@@ -34,7 +34,7 @@ async function TakeOut({ params }: Pick<PageProps<"/machines/[id]/take-out">, "p
         </Link>
         <h1 className="text-2xl font-semibold tracking-tight">Take {machine.machine_number} out</h1>
         <p className="mt-1 text-zinc-600 dark:text-zinc-400">
-          At {current.site_name} since {formatDate(current.started_on)}.
+          At {placeName(current)} since {formatDate(current.started_on)}.
         </p>
       </div>
       <TakeOutForm machineId={id} today={todayInSydney()} since={current.started_on} />

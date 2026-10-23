@@ -80,8 +80,8 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
                 At{" "}
                 <Link href={`/locations/${current.location_id}`} className="font-medium underline">
                   {current.site_name}
-                </Link>{" "}
-                since {formatDate(current.started_on)}
+                </Link>
+                {current.position && <>, {current.position}</>} since {formatDate(current.started_on)}
               </>
             ) : (
               <span className="text-zinc-500">Not at a location</span>
@@ -113,9 +113,12 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
             <ol className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
               {history.map((p) => (
                 <li key={p.id} className="flex flex-wrap justify-between gap-2 p-3">
-                  <Link href={`/locations/${p.location_id}`} className="font-medium underline">
-                    {p.site_name}
-                  </Link>
+                  <span>
+                    <Link href={`/locations/${p.location_id}`} className="font-medium underline">
+                      {p.site_name}
+                    </Link>
+                    {p.position && <span className="text-zinc-600 dark:text-zinc-400">, {p.position}</span>}
+                  </span>
                   <span className="text-zinc-500">
                     {formatDate(p.started_on)} – {p.ended_on ? formatDate(p.ended_on) : "now"}
                   </span>

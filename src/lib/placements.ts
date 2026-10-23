@@ -7,6 +7,7 @@ export type Placement = {
   id: string;
   machine_id: string;
   location_id: string;
+  position: string | null; // where inside the site, e.g. "Level 4N"
   started_on: string; // YYYY-MM-DD
   ended_on: string | null;
   site_name: string;
@@ -14,12 +15,17 @@ export type Placement = {
 
 type Row = Omit<Placement, "site_name"> & { locations: { site_name: string } | null };
 
-const COLUMNS = "id, machine_id, location_id, started_on, ended_on, locations(site_name)";
+const COLUMNS = "id, machine_id, location_id, position, started_on, ended_on, locations(site_name)";
 
 const toPlacement = ({ locations, ...row }: Row): Placement => ({
   ...row,
   site_name: locations?.site_name ?? "Unknown site",
 });
+
+// "ABS House, Level 4N" or just "ABS House".
+export function placeName(p: { site_name: string; position: string | null }) {
+  return p.position ? `${p.site_name}, ${p.position}` : p.site_name;
+}
 
 // Newest first, so the current placement (if any) is at the top.
 export async function getPlacementHistory(machineId: string) {
@@ -51,7 +57,7 @@ export async function listMachinesAtLocation(locationId: string) {
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("machine_placements")
-    .select("started_on, machines(id, machine_number, type, manufacturer, model, status)")
+    .select("started_on, position, machines(id, machine_number, type, manufacturer, model, status)")
     .eq("location_id", locationId)
     .is("ended_on", null)
     .order("started_on");
@@ -64,7 +70,7 @@ export async function listMachinesAtLocation(locationId: string) {
     model: string | null;
     status: string;
   };
-  return (data as unknown as { started_on: string; machines: MachineRow | null }[])
+  return (data as unknown as { started_on: string; position: string | null; machines: MachineRow | null }[])
     .filter((p) => p.machines)
-    .map((p) => ({ ...p.machines!, started_on: p.started_on }));
+    .map((p) => ({ ...p.machines!, started_on: p.started_on, position: p.position }));
 }
