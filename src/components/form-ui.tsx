@@ -1,7 +1,11 @@
 // Small building blocks shared by every form, sized for phones.
-import type { InputHTMLAttributes, ReactNode } from "react";
+import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
 
-export type FormState = { error?: string; message?: string };
+// values: what the person typed, handed back so a failed save doesn't wipe the form.
+export type FormState = { error?: string; message?: string; values?: Record<string, string> };
+
+const inputClass =
+  "rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-300";
 
 export function Field({
   label,
@@ -11,11 +15,42 @@ export function Field({
   return (
     <label className="flex flex-col gap-1">
       <span className="text-sm font-medium">{label}</span>
-      <input
-        {...input}
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100 dark:focus:border-zinc-300"
-      />
+      <input {...input} className={inputClass} />
       {hint && <span className="text-xs text-zinc-500">{hint}</span>}
+    </label>
+  );
+}
+
+export function SelectField({
+  label,
+  options,
+  ...select
+}: {
+  label: string;
+  options: { value: string; label: string }[];
+} & SelectHTMLAttributes<HTMLSelectElement>) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-sm font-medium">{label}</span>
+      <select {...select} className={inputClass}>
+        {options.map((o) => (
+          <option key={o.value} value={o.value}>
+            {o.label}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+export function CheckboxField({
+  label,
+  ...input
+}: { label: string } & InputHTMLAttributes<HTMLInputElement>) {
+  return (
+    <label className="flex items-center gap-3 py-1">
+      <input type="checkbox" {...input} className="size-5 accent-zinc-900 dark:accent-zinc-100" />
+      <span className="text-sm font-medium">{label}</span>
     </label>
   );
 }
