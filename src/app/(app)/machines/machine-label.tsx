@@ -28,7 +28,7 @@ export async function MachineLabel({
           <span className="font-mono text-[10pt]">{machineNumber}</span>
           <span>Watwin Vending</span>
         </p>
-        {place && <p className="truncate text-left font-medium">{place}</p>}
+        {place && <p className="text-left text-[10.5pt] leading-tight font-extrabold">{place}</p>}
       </div>
     </div>
   );
