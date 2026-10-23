@@ -19,10 +19,14 @@ const barlowCondensed = Barlow_Condensed({
 export const metadata: Metadata = {
   title: "Vending CRM",
   description: "Clients, sites and machines for vending operators",
+  // iPhone: open full screen from the home screen, with the time and battery
+  // shown over the charcoal top bar.
+  appleWebApp: { capable: true, title: "Watwin CRM", statusBarStyle: "black-translucent" },
 };
 
 export const viewport: Viewport = {
   themeColor: "#2f2e2c",
+  viewportFit: "cover", // use the whole screen, including around the notch
 };
 
 export default function RootLayout({ children }: LayoutProps<"/">) {

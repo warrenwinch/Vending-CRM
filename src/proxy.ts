@@ -6,8 +6,9 @@ export async function proxy(request: NextRequest) {
 }
 
 export const config = {
-  // Every page except Next.js's own files and images.
+  // Every page except Next.js's own files, images and the app manifest
+  // (phones fetch the manifest and icons before anyone has logged in).
   matcher: [
-    "/((?!_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
+    "/((?!_next/static|_next/image|favicon.ico|manifest.webmanifest|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico)$).*)",
   ],
 };

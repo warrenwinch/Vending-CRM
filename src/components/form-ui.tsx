@@ -107,7 +107,7 @@ export function FormMessage({ state }: { state: FormState }) {
 export function AuthCard({ title, children }: { title: string; children: ReactNode }) {
   return (
     <main className="flex flex-1 flex-col">
-      <div className="border-b-8 border-brand bg-ink px-4 py-8 text-center">
+      <div className="border-b-8 border-brand bg-ink px-4 pt-[calc(2rem+env(safe-area-inset-top))] pb-8 text-center">
         <p className="font-display text-4xl font-extrabold tracking-wide text-white uppercase">
           Vending <span className="text-brand">CRM</span>
         </p>
