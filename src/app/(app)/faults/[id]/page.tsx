@@ -54,7 +54,7 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
         <h1 className="flex flex-wrap items-center gap-3 page-title">
           {categoryLabel(fault.category)}
           {fault.fixed_at ? (
-            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-900">
+            <span className="rounded-full bg-leaf-soft px-2.5 py-0.5 text-xs font-medium text-leaf-deep">
               Fixed
             </span>
           ) : (

@@ -21,7 +21,10 @@ export function FaultList({ faults, showMachine, empty }: { faults: Fault[]; sho
             <Link href={`/faults/${f.id}`} className="flex flex-col gap-1 p-4 hover:bg-brand-soft">
               <div className="flex flex-wrap items-center gap-2">
                 {showMachine && <span className="font-mono text-sm font-semibold">{f.machine_number}</span>}
-                <span className="font-medium">{categoryLabel(f.category)}</span>
+                {/* Where and what: the two things a Filler needs at a glance. */}
+                {f.site_name && <span className="font-bold text-brand-deep">{f.site_name}</span>}
+                {f.site_name && <span className="text-zinc-400">·</span>}
+                <span className="font-bold">{categoryLabel(f.category)}</span>
                 {fixedIn === null ? (
                   <span
                     className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${
@@ -34,14 +37,14 @@ export function FaultList({ faults, showMachine, empty }: { faults: Fault[]; sho
                     {formatDuration(now - new Date(f.reported_at).getTime())}
                   </span>
                 ) : (
-                  <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-900">
+                  <span className="rounded-full bg-leaf-soft px-2.5 py-0.5 text-xs font-medium text-leaf-deep">
                     Fixed in {formatDuration(fixedIn)}
                   </span>
                 )}
               </div>
               <p className="truncate text-sm text-zinc-600">{f.description}</p>
               <p className="text-xs text-zinc-500">
-                {[showMachine ? f.site_name : null, `Found ${formatDateTime(f.reported_at)} by ${f.reporter_name}`]
+                {[`Found ${formatDateTime(f.reported_at)} by ${f.reporter_name}`]
                   .filter(Boolean)
                   .join(" · ")}
               </p>
