@@ -26,14 +26,14 @@ async function NewPayment({ searchParams }: Pick<PageProps<"/commission/new">, "
     const clients = await listClientOptions();
     return (
       <>
-        <h1 className="text-2xl font-semibold tracking-tight">Record a commission payment</h1>
+        <h1 className="page-title">Record a commission payment</h1>
         <form action="/commission/new" className="flex max-w-lg flex-col gap-4">
           <label className="flex flex-col gap-1">
             <span className="text-sm font-medium">Which client are you paying?</span>
             <select
               name="client"
               required
-              className="rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base dark:border-zinc-700 dark:bg-zinc-900"
+              className="input"
             >
               <option value="">Choose a client…</option>
               {clients.map((c) => (
@@ -43,7 +43,7 @@ async function NewPayment({ searchParams }: Pick<PageProps<"/commission/new">, "
               ))}
             </select>
           </label>
-          <button type="submit" className="self-start rounded-md bg-zinc-900 px-4 py-3 text-base font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+          <button type="submit" className="btn-primary self-start">
             Next
           </button>
         </form>
@@ -62,14 +62,14 @@ async function NewPayment({ searchParams }: Pick<PageProps<"/commission/new">, "
         <Link href={`/clients/${found.id}`} className="text-sm font-medium text-zinc-500 underline">
           {found.company_name}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Record a commission payment</h1>
-        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
+        <h1 className="page-title">Record a commission payment</h1>
+        <p className="mt-1 text-sm text-zinc-600">
           Sites with commission are ticked for last month. For a % site, enter its sales and the commission is worked out;
           for a fixed site it&apos;s the monthly amount times the months. You can type over any amount.
         </p>
       </div>
       {sites.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+        <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
           This client has no sites yet. Add a location with commission first.
         </p>
       ) : (

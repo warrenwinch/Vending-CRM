@@ -21,7 +21,7 @@ export function InviteForm() {
       <ul className="grid gap-1 text-xs text-zinc-500">
         {ROLES.map((r) => (
           <li key={r.value}>
-            <span className="font-medium text-zinc-700 dark:text-zinc-300">{r.label}:</span> {r.description}
+            <span className="font-medium text-zinc-700">{r.label}:</span> {r.description}
           </li>
         ))}
       </ul>
@@ -58,7 +58,7 @@ export function MemberForm({
         name="role"
         defaultValue={role}
         aria-label="Role"
-        className="rounded-md border border-zinc-300 bg-white px-2 py-1.5 text-sm dark:border-zinc-700 dark:bg-zinc-900"
+        className="input min-h-10 px-3 py-1.5 text-sm"
       >
         {roleOptions.map((o) => (
           <option key={o.value} value={o.value}>
@@ -67,18 +67,18 @@ export function MemberForm({
         ))}
       </select>
       <label className="flex items-center gap-2 text-sm">
-        <input type="checkbox" name="active" defaultChecked={active} className="size-4 accent-zinc-900 dark:accent-zinc-100" />
+        <input type="checkbox" name="active" defaultChecked={active} className="size-4 accent-brand-strong" />
         Can log in
       </label>
       <button
         type="submit"
         disabled={pending || !dirty}
-        className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium disabled:opacity-40 dark:border-zinc-700"
+        className="btn-small"
       >
         {pending ? "Saving…" : "Save"}
       </button>
-      {state.error && <span role="alert" className="text-sm text-red-700 dark:text-red-300">{state.error}</span>}
-      {state.message && !dirty && <span className="text-sm text-green-700 dark:text-green-300">{state.message}</span>}
+      {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
+      {state.message && !dirty && <span className="text-sm text-leaf-deep">{state.message}</span>}
     </form>
   );
 }
@@ -88,7 +88,7 @@ export function CopyInvite({ text }: { text: string }) {
   const [copied, setCopied] = useState(false);
   return (
     <div className="flex flex-col gap-2">
-      <pre className="whitespace-pre-wrap rounded-md bg-zinc-50 p-3 text-xs text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300">{text}</pre>
+      <pre className="whitespace-pre-wrap rounded-xl bg-zinc-50 p-3 text-xs text-zinc-700">{text}</pre>
       <button
         type="button"
         onClick={async () => {
@@ -100,7 +100,7 @@ export function CopyInvite({ text }: { text: string }) {
             setCopied(false);
           }
         }}
-        className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium dark:border-zinc-700"
+        className="btn-small self-start"
       >
         {copied ? "Copied" : "Copy message"}
       </button>

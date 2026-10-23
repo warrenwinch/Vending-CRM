@@ -1,10 +1,10 @@
 import { MACHINE_STATUSES, type MachineStatus } from "@/lib/machine-types";
 
 const styles: Record<MachineStatus, string> = {
-  in_storage: "bg-sky-100 text-sky-900 dark:bg-sky-950 dark:text-sky-200",
-  installed: "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200",
-  needs_repair: "bg-red-100 text-red-900 dark:bg-red-950 dark:text-red-200",
-  retired: "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
+  in_storage: "bg-sky-100 text-sky-900",
+  installed: "bg-leaf-soft text-leaf-deep",
+  needs_repair: "bg-red-100 text-red-900",
+  retired: "bg-zinc-200 text-zinc-700",
 };
 
 export function MachineStatusBadge({ status }: { status: MachineStatus }) {

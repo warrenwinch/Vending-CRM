@@ -51,14 +51,14 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
         <Link href={`/machines/${fault.machine_id}`} className="font-mono text-sm font-medium text-zinc-500 underline">
           {fault.machine_number}
         </Link>
-        <h1 className="flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight">
+        <h1 className="flex flex-wrap items-center gap-3 page-title">
           {categoryLabel(fault.category)}
           {fault.fixed_at ? (
-            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-900 dark:bg-green-950 dark:text-green-200">
+            <span className="rounded-full bg-green-100 px-2.5 py-0.5 text-xs font-medium text-green-900">
               Fixed
             </span>
           ) : (
-            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-900 dark:bg-red-950 dark:text-red-200">
+            <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-medium text-red-900">
               Open
             </span>
           )}
@@ -66,7 +66,7 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
         <p className="mt-2 whitespace-pre-line">{fault.description}</p>
       </div>
 
-      <dl className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+      <dl className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 p-4 sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-500">{label}</dt>

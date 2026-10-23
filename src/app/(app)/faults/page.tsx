@@ -8,8 +8,8 @@ import { FaultList } from "./fault-list";
 export default function FaultsPage({ searchParams }: PageProps<"/faults">) {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Faults</h1>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <h1 className="page-title">Faults</h1>
+      <p className="text-sm text-zinc-600">
         To report a fault, open the machine from Machines and tap “Report a fault”.
       </p>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading faults…</p>}>
@@ -54,14 +54,14 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
           ["Average time to fix", average === null ? "–" : formatDuration(average)],
           ["Longest (30 days)", longest === null ? "–" : formatDuration(longest)],
         ].map(([label, value]) => (
-          <div key={label} className="rounded-lg border border-zinc-200 p-3 dark:border-zinc-800">
+          <div key={label} className="rounded-2xl border-2 border-zinc-200 bg-white p-3">
             <dt className="text-xs text-zinc-500">{label}</dt>
-            <dd className="text-lg font-semibold">{value}</dd>
+            <dd className="section-title">{value}</dd>
           </div>
         ))}
       </dl>
       {top.length > 0 && (
-        <p className="text-sm text-zinc-600 dark:text-zinc-400">
+        <p className="text-sm text-zinc-600">
           Most common in the last 90 days: {top.map(([c, n]) => `${categoryLabel(c)} (${n})`).join(", ")}.
         </p>
       )}
@@ -75,10 +75,10 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
           <Link
             key={value}
             href={value === "open" ? "/faults" : `/faults?show=${value}`}
-            className={`rounded-full px-3 py-1.5 font-medium ${
+            className={`rounded-full px-4 py-2 font-bold ${
               view === value
-                ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                ? "chip-active"
+                : "chip"
             }`}
           >
             {label}

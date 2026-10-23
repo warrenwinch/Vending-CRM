@@ -43,7 +43,7 @@ export function JoinForm({
   );
 
   return (
-    <form action={formAction} className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+    <form action={formAction} className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
       <p>
         <span className="font-semibold">{businessName}</span> has invited you to join as{" "}
         <span className="font-semibold">{roleLabel}</span>.

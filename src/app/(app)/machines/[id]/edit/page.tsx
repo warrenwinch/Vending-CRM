@@ -10,7 +10,7 @@ import { MachineForm } from "../../machine-form";
 export default function EditMachinePage({ params }: PageProps<"/machines/[id]/edit">) {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Edit machine</h1>
+      <h1 className="page-title">Edit machine</h1>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <EditMachine params={params} />
       </Suspense>

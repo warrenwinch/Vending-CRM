@@ -16,7 +16,7 @@ export default function MachinesPage({ searchParams }: PageProps<"/machines">) {
     <Suspense
       fallback={
         <>
-          <h1 className="text-2xl font-semibold tracking-tight">Machines</h1>
+          <h1 className="page-title">Machines</h1>
           <p className="text-sm text-zinc-500">Loading machines…</p>
         </>
       }
@@ -46,18 +46,18 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Machines</h1>
+        <h1 className="page-title">Machines</h1>
         {canEdit && (
           <div className="flex gap-2">
             <Link
               href="/machines/import"
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+              className="btn-secondary"
             >
               Import CSV
             </Link>
             <Link
               href="/machines/new"
-              className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+              className="btn-primary"
             >
               Add machine
             </Link>
@@ -71,10 +71,10 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
             <Link
               key={s.label}
               href={filterHref(s.value)}
-              className={`rounded-full px-3 py-1.5 font-medium ${
+              className={`rounded-full px-4 py-2 font-bold ${
                 status === s.value
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  ? "chip-active"
+                  : "chip"
               }`}
             >
               {s.label}
@@ -88,16 +88,16 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
             name="q"
             defaultValue={search}
             placeholder="Number, serial, make or model"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900 sm:w-60 sm:text-sm"
+            className="input w-full sm:w-64"
           />
-          <button type="submit" className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium dark:border-zinc-700">
+          <button type="submit" className="btn-secondary">
             Search
           </button>
         </form>
       </div>
 
       {machines.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+        <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
           {search || status
             ? "No machines match."
             : canEdit
@@ -105,12 +105,12 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
               : "No machines yet."}
         </p>
       ) : (
-        <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
           {machines.map((m) => (
             <li key={m.id}>
               <Link
                 href={`/machines/${m.id}`}
-                className="flex items-center gap-4 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                className="flex items-center gap-4 p-4 hover:bg-brand-soft"
               >
                 <span className="w-20 shrink-0 font-mono text-sm font-semibold">{m.machine_number}</span>
                 <div className="min-w-0 flex-1">

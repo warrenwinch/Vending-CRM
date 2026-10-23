@@ -56,7 +56,7 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
           <Link href="/machines" className="text-sm font-medium text-zinc-500 underline">
             Machines
           </Link>
-          <h1 className="flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight">
+          <h1 className="flex flex-wrap items-center gap-3 page-title">
             <span className="font-mono">{machine.machine_number}</span>
             <MachineStatusBadge status={machine.status} />
           </h1>
@@ -64,14 +64,14 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
         {canEdit && (
           <Link
             href={`/machines/${machine.id}/edit`}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+            className="btn-secondary"
           >
             Edit
           </Link>
         )}
       </div>
 
-      <dl className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+      <dl className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 p-4 sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-500">{label}</dt>
@@ -81,8 +81,8 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
       </dl>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Location</h2>
-        <div className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800 sm:flex-row sm:items-center sm:justify-between">
+        <h2 className="section-title">Location</h2>
+        <div className="flex flex-col gap-3 rounded-2xl border-2 border-zinc-200 bg-white p-4 sm:flex-row sm:items-center sm:justify-between">
           <p>
             {current ? (
               <>
@@ -100,14 +100,14 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
             <div className="flex gap-2">
               <Link
                 href={`/machines/${machine.id}/place`}
-                className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+                className="btn-primary"
               >
                 {current ? "Move" : "Place at a location"}
               </Link>
               {current && (
                 <Link
                   href={`/machines/${machine.id}/take-out`}
-                  className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+                  className="btn-secondary"
                 >
                   Take out
                 </Link>
@@ -119,14 +119,14 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
         {history.length > 0 && (
           <>
             <h3 className="text-sm font-semibold text-zinc-500">History</h3>
-            <ol className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+            <ol className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
               {history.map((p) => (
                 <li key={p.id} className="flex flex-wrap justify-between gap-2 p-3">
                   <span>
                     <Link href={`/locations/${p.location_id}`} className="font-medium underline">
                       {p.site_name}
                     </Link>
-                    {p.position && <span className="text-zinc-600 dark:text-zinc-400">, {p.position}</span>}
+                    {p.position && <span className="text-zinc-600">, {p.position}</span>}
                   </span>
                   <span className="text-zinc-500">
                     {formatDate(p.started_on)} – {p.ended_on ? formatDate(p.ended_on) : "now"}
@@ -140,10 +140,10 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
-          <h2 className="text-lg font-semibold">Faults</h2>
+          <h2 className="section-title">Faults</h2>
           <Link
             href={`/machines/${machine.id}/report-fault`}
-            className="rounded-md bg-red-700 px-4 py-2 text-sm font-medium text-white dark:bg-red-600"
+            className="btn-danger"
           >
             Report a fault
           </Link>

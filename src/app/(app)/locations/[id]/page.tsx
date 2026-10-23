@@ -62,7 +62,7 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
               {location.client_name}
             </Link>
           )}
-          <h1 className="flex flex-wrap items-center gap-3 text-2xl font-semibold tracking-tight">
+          <h1 className="flex flex-wrap items-center gap-3 page-title">
             {location.site_name}
             <StatusBadge status={location.status} />
           </h1>
@@ -70,14 +70,14 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
         {isOffice && (
           <Link
             href={`/locations/${location.id}/edit`}
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+            className="btn-secondary"
           >
             Edit
           </Link>
         )}
       </div>
 
-      <dl className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+      <dl className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
         {rows.map(([label, value]) => (
           <div key={label} className="grid gap-1 p-4 sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-500">{label}</dt>
@@ -89,10 +89,10 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
       {isOffice && (
         <section className="flex flex-col gap-3">
           <div className="flex items-center justify-between gap-4">
-            <h2 className="text-lg font-semibold">Contacts</h2>
+            <h2 className="section-title">Contacts</h2>
             <Link
               href={`/clients/${location.client_id}/contacts/new?location=${location.id}`}
-              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+              className="btn-secondary"
             >
               Add contact
             </Link>
@@ -102,18 +102,18 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
       )}
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Machines here</h2>
+        <h2 className="section-title">Machines here</h2>
         {machines.length === 0 ? (
-          <p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
+          <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-6 text-center text-sm text-zinc-500">
             No machines at this site. Place one from its page under Machines.
           </p>
         ) : (
-          <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 text-sm dark:divide-zinc-800 dark:border-zinc-800">
+          <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
             {machines.map((m) => (
               <li key={m.id}>
                 <Link
                   href={`/machines/${m.id}`}
-                  className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 hover:bg-zinc-50 dark:hover:bg-zinc-900"
+                  className="flex flex-wrap items-center gap-x-4 gap-y-1 p-3 hover:bg-brand-soft"
                 >
                   <span className="font-mono font-semibold">{m.machine_number}</span>
                   <span className="min-w-0 flex-1">

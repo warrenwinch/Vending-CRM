@@ -28,8 +28,8 @@ async function ReportFault({ params }: Pick<PageProps<"/machines/[id]/report-fau
         <Link href={`/machines/${id}`} className="font-mono text-sm font-medium text-zinc-500 underline">
           {machine.machine_number}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Report a fault</h1>
-        {placement && <p className="mt-1 text-zinc-600 dark:text-zinc-400">At {placeName(placement)}</p>}
+        <h1 className="page-title">Report a fault</h1>
+        {placement && <p className="mt-1 text-zinc-600">At {placeName(placement)}</p>}
       </div>
       <ReportFaultForm machineId={id} />
     </>

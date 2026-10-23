@@ -79,7 +79,7 @@ export function LocationForm({
         />
       </div>
 
-      <fieldset className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <fieldset className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
         <legend className="px-1 text-sm font-semibold">On site</legend>
         <TextAreaField
           label="Where the machines go"
@@ -107,7 +107,7 @@ export function LocationForm({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <fieldset className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
         <legend className="px-1 text-sm font-semibold">Commission paid to the client</legend>
         <SelectField
           label="Commission type"

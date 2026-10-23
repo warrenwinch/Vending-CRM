@@ -13,21 +13,21 @@ export function ContactList({
 }) {
   if (contacts.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-zinc-300 p-6 text-center text-sm text-zinc-500 dark:border-zinc-700">
+      <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-6 text-center text-sm text-zinc-500">
         {empty}
       </p>
     );
   }
 
   return (
-    <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+    <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
       {contacts.map((c) => (
         <li key={c.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-start sm:justify-between">
           <div className="min-w-0">
             <p className="flex flex-wrap items-center gap-2 font-medium">
               {c.full_name}
               {c.is_main_contact && (
-                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-900 dark:bg-sky-950 dark:text-sky-200">
+                <span className="rounded-full bg-sky-100 px-2 py-0.5 text-xs font-medium text-sky-900">
                   Main contact
                 </span>
               )}
@@ -47,11 +47,11 @@ export function ContactList({
                 </a>
               )}
             </div>
-            {c.notes && <p className="mt-1 whitespace-pre-line text-sm text-zinc-600 dark:text-zinc-400">{c.notes}</p>}
+            {c.notes && <p className="mt-1 whitespace-pre-line text-sm text-zinc-600">{c.notes}</p>}
           </div>
           <Link
             href={`/clients/${c.client_id}/contacts/${c.id}/edit`}
-            className="self-start rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium dark:border-zinc-700"
+            className="btn-small self-start"
           >
             Edit
           </Link>

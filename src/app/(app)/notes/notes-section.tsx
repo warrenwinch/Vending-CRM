@@ -20,15 +20,15 @@ export async function NotesSection({ target, canDelete }: { target: NoteTarget; 
 
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="text-lg font-semibold">Notes</h2>
+      <h2 className="section-title">Notes</h2>
       <NoteForm target={target} />
       {notes.length > 0 && (
-        <ol className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ol className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
           {notes.map((n) => (
             <li key={n.id} className="flex flex-col gap-1 p-4">
               <div className="flex items-center justify-between gap-4 text-xs text-zinc-500">
                 <span>
-                  <span className="font-medium text-zinc-700 dark:text-zinc-300">{n.author_name}</span> · {when(n.created_at)}
+                  <span className="font-medium text-zinc-700">{n.author_name}</span> · {when(n.created_at)}
                 </span>
                 {canDelete && <DeleteNoteButton noteId={n.id} target={target} />}
               </div>

@@ -10,17 +10,17 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
+        <h1 className="page-title">Clients</h1>
         <div className="flex gap-2">
           <Link
             href="/clients/import"
-            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+            className="btn-secondary"
           >
             Import CSV
           </Link>
           <Link
             href="/clients/new"
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className="btn-primary"
           >
             Add client
           </Link>
@@ -57,10 +57,10 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
             <Link
               key={s.label}
               href={filterHref(s.value)}
-              className={`rounded-full px-3 py-1.5 font-medium ${
+              className={`rounded-full px-4 py-2 font-bold ${
                 status === s.value
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  ? "chip-active"
+                  : "chip"
               }`}
             >
               {s.label}
@@ -74,25 +74,25 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
             name="q"
             defaultValue={search}
             placeholder="Search name or contact"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900 sm:w-56 sm:text-sm"
+            className="input w-full sm:w-60"
           />
-          <button type="submit" className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium dark:border-zinc-700">
+          <button type="submit" className="btn-secondary">
             Search
           </button>
         </form>
       </div>
 
       {clients.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+        <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
           {search || status ? "No clients match." : "No clients yet. Click “Add client” to add your first one."}
         </p>
       ) : (
-        <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
           {clients.map((c) => (
             <li key={c.id}>
               <Link
                 href={`/clients/${c.id}`}
-                className="flex flex-col gap-1 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:flex-row sm:items-center sm:gap-4"
+                className="flex flex-col gap-1 p-4 hover:bg-brand-soft sm:flex-row sm:items-center sm:gap-4"
               >
                 <div className="min-w-0 flex-1">
                   <p className="truncate font-medium">{c.company_name}</p>

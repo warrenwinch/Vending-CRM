@@ -32,7 +32,7 @@ function WhenField({ label, name }: { label: string; name: string }) {
     return (
       <div className="flex flex-col gap-1">
         <span className="text-sm font-medium">{label}</span>
-        <div className="h-11 rounded-md border border-zinc-200 dark:border-zinc-800" />
+        <div className="h-11 rounded-md border border-zinc-200" />
       </div>
     );
   }
@@ -52,7 +52,7 @@ function WhenInput({ label, name }: { label: string; name: string }) {
         onChange={(e) => setLocal(e.target.value)}
         max={now}
         required
-        className="rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+        className="input"
       />
       <input type="hidden" name={name} value={exact} />
     </label>
@@ -91,7 +91,7 @@ export function ReportFaultForm({ machineId }: { machineId: string }) {
         onChange={(e) => setAlreadyFixed(e.target.checked)}
       />
       {alreadyFixed && (
-        <div className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+        <div className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
           <WhenField label="When you fixed it" name="fixed_at" />
           <TextAreaField label="What you did (optional)" name="fix_notes" placeholder="Cleared the jam, re-seated the coil" defaultValue={v?.fix_notes ?? ""} />
         </div>
@@ -111,8 +111,8 @@ export function ReportFaultForm({ machineId }: { machineId: string }) {
 export function MarkFixedForm({ faultId }: { faultId: string }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(markFixed.bind(null, faultId), {});
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
-      <h2 className="text-lg font-semibold">Mark as fixed</h2>
+    <form action={formAction} className="flex max-w-lg flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
+      <h2 className="section-title">Mark as fixed</h2>
       <WhenField label="When you fixed it" name="fixed_at" />
       <TextAreaField label="What you did (optional)" name="fix_notes" defaultValue={state.values?.fix_notes ?? ""} />
       <FormMessage state={state} />
@@ -130,9 +130,9 @@ export function DeleteFaultButton({ faultId, machineId }: { faultId: string; mac
       onSubmit={(e) => {
         if (!confirm("Delete this fault record? This can't be undone.")) e.preventDefault();
       }}
-      className="border-t border-zinc-200 pt-4 dark:border-zinc-800"
+      className="border-t border-zinc-200 pt-4"
     >
-      <button type="submit" className="text-sm font-medium text-red-700 underline dark:text-red-300">
+      <button type="submit" className="text-sm font-medium text-red-700 underline">
         Delete this fault record
       </button>
     </form>

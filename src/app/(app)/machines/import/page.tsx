@@ -11,7 +11,7 @@ export default function ImportMachinesPage() {
         <Link href="/machines" className="text-sm font-medium text-zinc-500 underline">
           Machines
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Import machines from a CSV file</h1>
+        <h1 className="page-title">Import machines from a CSV file</h1>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <Importer />

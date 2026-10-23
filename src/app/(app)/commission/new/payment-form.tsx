@@ -102,7 +102,7 @@ export function PaymentForm({
       <input type="hidden" name="lines" value={payload} />
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Sites this payment covers</h2>
+        <h2 className="section-title">Sites this payment covers</h2>
         {lines.map((line, i) => {
           const site = siteById.get(line.location_id)!;
           const isPercent = site.commission_type === "percentage";
@@ -110,7 +110,7 @@ export function PaymentForm({
             <fieldset
               key={line.location_id}
               className={`flex flex-col gap-3 rounded-lg border p-4 ${
-                line.include ? "border-zinc-300 dark:border-zinc-700" : "border-zinc-200 opacity-60 dark:border-zinc-800"
+                line.include ? "border-zinc-300" : "border-zinc-200 opacity-60"
               }`}
             >
               <label className="flex items-center gap-3">
@@ -118,7 +118,7 @@ export function PaymentForm({
                   type="checkbox"
                   checked={line.include}
                   onChange={(e) => update(i, { include: e.target.checked })}
-                  className="size-5 accent-zinc-900 dark:accent-zinc-100"
+                  className="size-5 accent-brand-strong"
                 />
                 <span className="font-medium">{site.site_name}</span>
                 <span className="text-sm text-zinc-500">{rateText(site.commission_type, site.commission_rate, formatAud)}</span>
@@ -160,14 +160,14 @@ export function PaymentForm({
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="text-lg font-semibold">Payment</h2>
+        <h2 className="section-title">Payment</h2>
         <div className="grid gap-4 sm:grid-cols-3">
           <Field label="Date paid" name="paid_on" type="date" max={today} defaultValue={v?.paid_on ?? today} required />
           <SelectField label="Method" name="method" options={PAYMENT_METHODS} defaultValue={v?.method ?? "bank_transfer"} />
           <Field label="Reference (optional)" name="reference" placeholder="Bank ref or cheque no." defaultValue={v?.reference ?? ""} />
         </div>
 
-        <dl className="grid gap-2 rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-900">
+        <dl className="grid gap-2 rounded-2xl bg-white ring-2 ring-zinc-200 p-4 text-sm">
           <div className="flex justify-between gap-4">
             <dt>Commission ({included.length} site{included.length === 1 ? "" : "s"})</dt>
             <dd>{formatAud(subtotal)}</dd>
@@ -186,11 +186,11 @@ export function PaymentForm({
                 aria-label="GST amount"
                 value={gst ?? autoGst.toFixed(2)}
                 onChange={(e) => setGst(e.target.value)}
-                className="w-28 rounded-md border border-zinc-300 bg-white px-2 py-1 text-right dark:border-zinc-700 dark:bg-zinc-950"
+                className="w-28 rounded-md border border-zinc-300 bg-white px-2 py-1 text-right"
               />
             </dd>
           </div>
-          <div className="flex justify-between gap-4 border-t border-zinc-200 pt-2 text-base font-semibold dark:border-zinc-800">
+          <div className="flex justify-between gap-4 border-t border-zinc-200 pt-2 text-base font-semibold">
             <dt>Total paid</dt>
             <dd>{formatAud(total)}</dd>
           </div>

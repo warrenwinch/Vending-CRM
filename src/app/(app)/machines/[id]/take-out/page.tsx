@@ -32,8 +32,8 @@ async function TakeOut({ params }: Pick<PageProps<"/machines/[id]/take-out">, "p
         <Link href={`/machines/${id}`} className="text-sm font-medium text-zinc-500 underline">
           {machine.machine_number}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Take {machine.machine_number} out</h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <h1 className="page-title">Take {machine.machine_number} out</h1>
+        <p className="mt-1 text-zinc-600">
           At {placeName(current)} since {formatDate(current.started_on)}.
         </p>
       </div>

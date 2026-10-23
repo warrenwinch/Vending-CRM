@@ -19,7 +19,7 @@ export function NoteForm({ target }: { target: NoteTarget }) {
           required
           placeholder="Add a note…"
           defaultValue={state.values?.body ?? ""}
-          className="rounded-md border border-zinc-300 bg-white px-3 py-2.5 text-base text-zinc-900 outline-none focus:border-zinc-900 focus:ring-2 focus:ring-zinc-900/20 dark:border-zinc-700 dark:bg-zinc-900 dark:text-zinc-100"
+          className="input"
         />
       </label>
       {state.error && <FormMessage state={state} />}
@@ -38,7 +38,7 @@ export function DeleteNoteButton({ noteId, target }: { noteId: string; target: N
         if (!confirm("Delete this note? This can't be undone.")) e.preventDefault();
       }}
     >
-      <button type="submit" className="text-xs font-medium text-red-700 underline dark:text-red-300">
+      <button type="submit" className="text-xs font-medium text-red-700 underline">
         Delete
       </button>
     </form>

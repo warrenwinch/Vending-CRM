@@ -10,7 +10,7 @@ import { CopyInvite, InviteForm, MemberForm } from "./team-forms";
 export default function TeamPage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Team</h1>
+      <h1 className="page-title">Team</h1>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <Team />
       </Suspense>
@@ -52,15 +52,15 @@ async function Team() {
   return (
     <>
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">People</h2>
-        <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+        <h2 className="section-title">People</h2>
+        <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
           {members.map((m) => (
             <li key={m.id} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="min-w-0">
                 <p className="font-medium">
                   {m.full_name}
                   {!m.active && (
-                    <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300">
+                    <span className="ml-2 rounded-full bg-zinc-200 px-2 py-0.5 text-xs font-medium text-zinc-700">
                       Switched off
                     </span>
                   )}
@@ -77,15 +77,15 @@ async function Team() {
       </section>
 
       <section className="flex flex-col gap-3">
-        <h2 className="text-lg font-semibold">Invite someone</h2>
-        <div className="rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+        <h2 className="section-title">Invite someone</h2>
+        <div className="rounded-2xl border-2 border-zinc-200 bg-white p-4">
           <InviteForm />
         </div>
       </section>
 
       {invitations.length > 0 && (
         <section className="flex flex-col gap-3">
-          <h2 className="text-lg font-semibold">Waiting to join</h2>
+          <h2 className="section-title">Waiting to join</h2>
           <p className="text-sm text-zinc-500">
             Send each person their message by email or text. They join once they sign up with that email address.
           </p>
@@ -93,7 +93,7 @@ async function Team() {
             {invitations.map((inv) => {
               const expired = inv.expires_at < now;
               return (
-                <li key={inv.id} className="flex flex-col gap-3 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+                <li key={inv.id} className="flex flex-col gap-3 rounded-2xl border-2 border-zinc-200 bg-white p-4">
                   <div className="flex flex-wrap items-start justify-between gap-2">
                     <div className="min-w-0">
                       <p className="font-medium">
@@ -101,11 +101,11 @@ async function Team() {
                       </p>
                       <p className="text-sm text-zinc-500">
                         {inv.email} · invited {formatDate(inv.created_at.slice(0, 10))}
-                        {expired && <span className="font-medium text-red-700 dark:text-red-300"> · expired</span>}
+                        {expired && <span className="font-medium text-red-700"> · expired</span>}
                       </p>
                     </div>
                     <form action={cancelInvitation.bind(null, inv.id)}>
-                      <button type="submit" className="text-sm font-medium text-red-700 underline dark:text-red-300">
+                      <button type="submit" className="text-sm font-medium text-red-700 underline">
                         Cancel invitation
                       </button>
                     </form>

@@ -30,7 +30,7 @@ async function Setup() {
   if (status === "inactive") {
     return (
       <>
-        <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+        <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-900">
           Your access has been switched off. If you think this is a mistake, ask an Administrator in your business to
           switch it back on.
         </p>
@@ -60,11 +60,11 @@ async function Setup() {
       ))}
 
       <details open={invitations.length === 0} className="flex flex-col gap-4">
-        <summary className="cursor-pointer text-sm font-medium text-zinc-600 dark:text-zinc-400">
+        <summary className="cursor-pointer text-sm font-medium text-zinc-600">
           {invitations.length ? "Or set up your own business instead" : "Set up your business"}
         </summary>
         <div className="mt-4 flex flex-col gap-4">
-          <p className="text-sm text-zinc-600 dark:text-zinc-400">
+          <p className="text-sm text-zinc-600">
             You&apos;ll be its Administrator and can invite your team later. If you were expecting an invitation, ask
             the person who invited you to check they used {user.email}.
           </p>

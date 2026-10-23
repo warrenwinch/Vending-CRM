@@ -8,7 +8,7 @@ import { LocationForm } from "../../location-form";
 export default function EditLocationPage({ params }: PageProps<"/locations/[id]/edit">) {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Edit location</h1>
+      <h1 className="page-title">Edit location</h1>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <EditLocation params={params} />
       </Suspense>

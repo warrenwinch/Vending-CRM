@@ -6,8 +6,8 @@ import { MachineForm } from "../machine-form";
 export default function NewMachinePage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Add a machine</h1>
-      <p className="text-zinc-600 dark:text-zinc-400">
+      <h1 className="page-title">Add a machine</h1>
+      <p className="text-zinc-600">
         The machine number (VM-001, VM-002…) is given automatically when you save.
       </p>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>

@@ -90,14 +90,14 @@ export function ImportClients() {
     const count = result.imported;
     return (
       <div className="flex flex-col gap-4">
-        <p className="rounded-md bg-green-50 p-4 text-green-900 dark:bg-green-950 dark:text-green-100">
+        <p className="rounded-md bg-green-50 p-4 text-green-900">
           Imported {count} client{count === 1 ? "" : "s"}.
         </p>
         <div className="flex gap-3">
-          <Link href="/clients" className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900">
+          <Link href="/clients" className="btn-primary">
             View clients
           </Link>
-          <button type="button" onClick={() => { reset(); setFileName(""); }} className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700">
+          <button type="button" onClick={() => { reset(); setFileName(""); }} className="btn-secondary">
             Import another file
           </button>
         </div>
@@ -107,9 +107,9 @@ export function ImportClients() {
 
   return (
     <div className="flex flex-col gap-6">
-      <ol className="list-decimal space-y-1 pl-5 text-sm text-zinc-600 dark:text-zinc-400">
+      <ol className="list-decimal space-y-1 pl-5 text-sm text-zinc-600">
         <li>
-          <a href="/client-import-template.csv" download className="font-medium text-zinc-900 underline dark:text-zinc-100">
+          <a href="/client-import-template.csv" download className="font-bold text-brand-deep underline">
             Download the template
           </a>{" "}
           and open it in Excel or Google Sheets.
@@ -118,14 +118,14 @@ export function ImportClients() {
         <li>Save it as CSV UTF-8 and choose it below. Nothing is saved until you click Import.</li>
       </ol>
 
-      <details className="rounded-lg border border-zinc-200 p-4 text-sm dark:border-zinc-800">
+      <details className="rounded-2xl border-2 border-zinc-200 bg-white p-4 text-sm">
         <summary className="cursor-pointer font-medium">What goes in each column</summary>
-        <dl className="mt-3 grid gap-2 text-zinc-600 dark:text-zinc-400">
-          <div><dt className="inline font-medium text-zinc-900 dark:text-zinc-100">company_name: </dt><dd className="inline">Required. Must not already be one of your clients.</dd></div>
-          <div><dt className="inline font-medium text-zinc-900 dark:text-zinc-100">abn: </dt><dd className="inline">Optional. 11 digits; spaces are fine.</dd></div>
-          <div><dt className="inline font-medium text-zinc-900 dark:text-zinc-100">gst_registered: </dt><dd className="inline">Yes or No. Blank means No.</dd></div>
-          <div><dt className="inline font-medium text-zinc-900 dark:text-zinc-100">status: </dt><dd className="inline">{CLIENT_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
-          <div><dt className="inline font-medium text-zinc-900 dark:text-zinc-100">billing_contact, billing_email, billing_phone: </dt><dd className="inline">Optional.</dd></div>
+        <dl className="mt-3 grid gap-2 text-zinc-600">
+          <div><dt className="inline font-medium text-ink">company_name: </dt><dd className="inline">Required. Must not already be one of your clients.</dd></div>
+          <div><dt className="inline font-medium text-ink">abn: </dt><dd className="inline">Optional. 11 digits; spaces are fine.</dd></div>
+          <div><dt className="inline font-medium text-ink">gst_registered: </dt><dd className="inline">Yes or No. Blank means No.</dd></div>
+          <div><dt className="inline font-medium text-ink">status: </dt><dd className="inline">{CLIENT_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
+          <div><dt className="inline font-medium text-ink">billing_contact, billing_email, billing_phone: </dt><dd className="inline">Optional.</dd></div>
         </dl>
       </details>
 
@@ -135,33 +135,33 @@ export function ImportClients() {
           type="file"
           accept=".csv,text/csv"
           onChange={(e) => onFile(e.target.files?.[0])}
-          className="text-sm file:mr-3 file:rounded-md file:border-0 file:bg-zinc-900 file:px-4 file:py-2 file:text-sm file:font-medium file:text-white dark:file:bg-zinc-100 dark:file:text-zinc-900"
+          className="text-sm file:mr-3 file:min-h-12 file:rounded-xl file:border-0 file:bg-brand-strong file:px-5 file:py-3 file:text-base file:font-bold file:text-white"
         />
       </label>
 
       {fileError && (
-        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-900 dark:bg-red-950 dark:text-red-100">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-900">
           {fileError}
         </p>
       )}
       {result.error && (
-        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-900 dark:bg-red-950 dark:text-red-100">
+        <p role="alert" className="rounded-md bg-red-50 p-3 text-sm text-red-900">
           {result.error}
         </p>
       )}
 
       {shown.length > 0 && (
         <>
-          <p className={`rounded-md p-3 text-sm ${problemCount ? "bg-red-50 text-red-900 dark:bg-red-950 dark:text-red-100" : "bg-zinc-100 dark:bg-zinc-900"}`}>
+          <p className={`rounded-md p-3 text-sm ${problemCount ? "bg-red-50 text-red-900" : "bg-zinc-100"}`}>
             {fileName}: {shown.length} client{shown.length === 1 ? "" : "s"}.{" "}
             {problemCount
               ? `${problemCount} row${problemCount === 1 ? " has" : "s have"} a problem. Fix ${problemCount === 1 ? "it" : "them"} in the spreadsheet, save, and choose the file again.`
               : "Everything looks right."}
           </p>
 
-          <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+          <div className="overflow-x-auto rounded-2xl border-2 border-zinc-200 bg-white">
             <table className="w-full text-left text-sm">
-              <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900">
+              <thead className="bg-zinc-100 text-zinc-600">
                 <tr>
                   <th className="p-2 font-medium">Row</th>
                   <th className="p-2 font-medium">Company</th>
@@ -171,14 +171,14 @@ export function ImportClients() {
                   <th className="p-2 font-medium">Status</th>
                 </tr>
               </thead>
-              <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+              <tbody className="divide-y divide-zinc-200">
                 {shown.map((r) => {
                   const { row } = checkRow(r.raw);
                   return (
-                    <tr key={r.line} className={r.errors.length ? "bg-red-50 dark:bg-red-950/40" : undefined}>
+                    <tr key={r.line} className={r.errors.length ? "bg-red-50" : undefined}>
                       <td className="p-2 align-top text-zinc-500">{r.line}</td>
                       {r.errors.length ? (
-                        <td colSpan={5} className="p-2 text-red-900 dark:text-red-200">
+                        <td colSpan={5} className="p-2 text-red-900">
                           <span className="font-medium">{r.raw.company_name?.trim() || "(no name)"}: </span>
                           <ul className="list-disc pl-4">
                             {r.errors.map((e) => <li key={e}>{e}</li>)}
@@ -206,7 +206,7 @@ export function ImportClients() {
             type="button"
             onClick={onImport}
             disabled={pending || problemCount > 0}
-            className="self-start rounded-md bg-zinc-900 px-4 py-3 text-base font-medium text-white disabled:opacity-50 dark:bg-zinc-100 dark:text-zinc-900"
+            className="btn-primary self-start"
           >
             {pending ? "Importing…" : `Import ${shown.length} client${shown.length === 1 ? "" : "s"}`}
           </button>

@@ -31,21 +31,21 @@ async function PaymentDetails({ params }: Pick<PageProps<"/commission/[id]">, "p
         <Link href="/commission" className="text-sm font-medium text-zinc-500 underline">
           Commission payments
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="page-title">
           {formatAud(payment.total_amount_paid)} to{" "}
           <Link href={`/clients/${payment.client_id}`} className="underline">
             {payment.client_name}
           </Link>
         </h1>
-        <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+        <p className="mt-1 text-zinc-600">
           Paid {formatDate(payment.paid_on)} by {PAYMENT_METHODS.find((m) => m.value === payment.method)?.label.toLowerCase()}
           {payment.reference && <> · Ref {payment.reference}</>}
         </p>
       </div>
 
-      <div className="overflow-x-auto rounded-lg border border-zinc-200 dark:border-zinc-800">
+      <div className="overflow-x-auto rounded-2xl border-2 border-zinc-200 bg-white">
         <table className="w-full text-left text-sm">
-          <thead className="bg-zinc-50 text-zinc-500 dark:bg-zinc-900">
+          <thead className="bg-zinc-100 text-zinc-600">
             <tr>
               <th className="p-3 font-medium">Site</th>
               <th className="p-3 font-medium">Period</th>
@@ -54,7 +54,7 @@ async function PaymentDetails({ params }: Pick<PageProps<"/commission/[id]">, "p
               <th className="p-3 text-right font-medium">Commission</th>
             </tr>
           </thead>
-          <tbody className="divide-y divide-zinc-200 dark:divide-zinc-800">
+          <tbody className="divide-y divide-zinc-200">
             {payment.lines.map((l) => (
               <tr key={l.id}>
                 <td className="p-3">
@@ -71,7 +71,7 @@ async function PaymentDetails({ params }: Pick<PageProps<"/commission/[id]">, "p
               </tr>
             ))}
           </tbody>
-          <tfoot className="border-t border-zinc-200 dark:border-zinc-800">
+          <tfoot className="border-t border-zinc-200">
             <tr>
               <td colSpan={4} className="p-3 text-right text-zinc-500">Commission</td>
               <td className="p-3 text-right">{formatAud(subtotal)}</td>
@@ -88,7 +88,7 @@ async function PaymentDetails({ params }: Pick<PageProps<"/commission/[id]">, "p
         </table>
       </div>
 
-      {payment.notes && <p className="whitespace-pre-line text-sm text-zinc-600 dark:text-zinc-400">{payment.notes}</p>}
+      {payment.notes && <p className="whitespace-pre-line text-sm text-zinc-600">{payment.notes}</p>}
 
       <DeletePaymentButton paymentId={payment.id} />
     </>

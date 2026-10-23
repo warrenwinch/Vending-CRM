@@ -9,10 +9,10 @@ export default function CommissionPage() {
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Commission payments</h1>
+        <h1 className="page-title">Commission payments</h1>
         <Link
           href="/commission/new"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          className="btn-primary"
         >
           Record payment
         </Link>
@@ -37,7 +37,7 @@ async function Payments() {
 
   return (
     <>
-      <p className="rounded-lg bg-zinc-50 p-4 text-sm dark:bg-zinc-900">
+      <p className="rounded-2xl bg-white ring-2 ring-zinc-200 p-4 text-sm">
         Paid this financial year (from 01/07/{fyStartYear}):{" "}
         <span className="font-semibold">{formatAud(fyTotal)}</span> across {thisYear.length} payment
         {thisYear.length === 1 ? "" : "s"}.

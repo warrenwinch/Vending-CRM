@@ -33,7 +33,7 @@ async function NewContact({ params, searchParams }: PageProps<"/clients/[id]/con
         <Link href={`/clients/${id}`} className="text-sm font-medium text-zinc-500 underline">
           {client.company_name}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Add a contact</h1>
+        <h1 className="page-title">Add a contact</h1>
       </div>
       <ContactForm
         clientId={id}

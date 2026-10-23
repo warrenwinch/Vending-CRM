@@ -10,7 +10,7 @@ export default function LocationsPage({ searchParams }: PageProps<"/locations">)
     <Suspense
       fallback={
         <>
-          <h1 className="text-2xl font-semibold tracking-tight">Locations</h1>
+          <h1 className="page-title">Locations</h1>
           <p className="text-sm text-zinc-500">Loading locations…</p>
         </>
       }
@@ -40,11 +40,11 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="text-2xl font-semibold tracking-tight">Locations</h1>
+        <h1 className="page-title">Locations</h1>
         {canEdit && (
           <Link
             href="/locations/new"
-            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+            className="btn-primary"
           >
             Add location
           </Link>
@@ -57,10 +57,10 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
             <Link
               key={s.label}
               href={filterHref(s.value)}
-              className={`rounded-full px-3 py-1.5 font-medium ${
+              className={`rounded-full px-4 py-2 font-bold ${
                 status === s.value
-                  ? "bg-zinc-900 text-white dark:bg-zinc-100 dark:text-zinc-900"
-                  : "bg-zinc-100 text-zinc-700 dark:bg-zinc-900 dark:text-zinc-300"
+                  ? "chip-active"
+                  : "chip"
               }`}
             >
               {s.label}
@@ -74,9 +74,9 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
             name="q"
             defaultValue={search}
             placeholder="Search site or address"
-            className="w-full rounded-md border border-zinc-300 bg-white px-3 py-2 text-base dark:border-zinc-700 dark:bg-zinc-900 sm:w-56 sm:text-sm"
+            className="input w-full sm:w-60"
           />
-          <button type="submit" className="rounded-md border border-zinc-300 px-3 py-2 text-sm font-medium dark:border-zinc-700">
+          <button type="submit" className="btn-secondary">
             Search
           </button>
         </form>

@@ -7,16 +7,17 @@ import { NavLinks, type NavItem } from "./nav-links";
 export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
-      <header className="border-b border-zinc-200 dark:border-zinc-800">
-        <div className="mx-auto flex w-full max-w-4xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-          <Suspense fallback={<p className="text-sm font-semibold">Vending CRM</p>}>
+      {/* Watwin charcoal bar with an orange stripe, like the launch artwork. */}
+      <header className="border-b-[6px] border-brand bg-ink text-white">
+        <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-3">
+          <Suspense
+            fallback={<p className="font-display text-2xl font-extrabold tracking-wide uppercase">Vending CRM</p>}
+          >
             <Menu />
           </Suspense>
         </div>
       </header>
-      <main className="mx-auto flex w-full max-w-4xl flex-1 flex-col gap-6 px-4 py-6">
-        {children}
-      </main>
+      <main className="mx-auto flex w-full max-w-5xl flex-1 flex-col gap-6 px-4 py-6">{children}</main>
     </>
   );
 }
@@ -37,16 +38,20 @@ async function Menu() {
 
   return (
     <>
-      <p className="mr-auto truncate text-sm font-semibold">{profile.organizationName}</p>
+      <div className="flex items-center justify-between gap-4">
+        <p className="min-w-0 truncate font-display text-2xl font-extrabold tracking-wide uppercase sm:text-3xl">
+          {profile.organizationName}
+        </p>
+        <form action={logOut}>
+          <button
+            type="submit"
+            className="min-h-10 rounded-lg border-2 border-white/70 px-3 py-1.5 text-sm font-bold text-white hover:bg-white hover:text-ink"
+          >
+            Log out
+          </button>
+        </form>
+      </div>
       <NavLinks items={items} />
-      <form action={logOut}>
-        <button
-          type="submit"
-          className="rounded-md border border-zinc-300 px-3 py-1.5 text-sm font-medium dark:border-zinc-700"
-        >
-          Log out
-        </button>
-      </form>
     </>
   );
 }

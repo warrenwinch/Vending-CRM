@@ -30,7 +30,7 @@ async function EditContact({ params }: Pick<PageProps<"/clients/[id]/contacts/[c
         <Link href={`/clients/${id}`} className="text-sm font-medium text-zinc-500 underline">
           {client.company_name}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">Edit contact</h1>
+        <h1 className="page-title">Edit contact</h1>
       </div>
       <ContactForm clientId={id} contact={contact} sites={sites.map((s) => ({ value: s.id, label: s.site_name }))} />
     </>

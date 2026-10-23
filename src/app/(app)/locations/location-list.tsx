@@ -14,19 +14,19 @@ export function LocationList({
 }) {
   if (locations.length === 0) {
     return (
-      <p className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+      <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
         {empty}
       </p>
     );
   }
 
   return (
-    <ul className="divide-y divide-zinc-200 rounded-lg border border-zinc-200 dark:divide-zinc-800 dark:border-zinc-800">
+    <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">
       {locations.map((l) => (
         <li key={l.id}>
           <Link
             href={`/locations/${l.id}`}
-            className="flex flex-col gap-1 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:flex-row sm:items-center sm:gap-4"
+            className="flex flex-col gap-1 p-4 hover:bg-brand-soft sm:flex-row sm:items-center sm:gap-4"
           >
             <div className="min-w-0 flex-1">
               <p className="truncate font-medium">{l.site_name}</p>

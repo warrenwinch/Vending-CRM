@@ -5,7 +5,7 @@ import { ClientForm } from "../client-form";
 export default function NewClientPage() {
   return (
     <>
-      <h1 className="text-2xl font-semibold tracking-tight">Add a client</h1>
+      <h1 className="page-title">Add a client</h1>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <NewClient />
       </Suspense>

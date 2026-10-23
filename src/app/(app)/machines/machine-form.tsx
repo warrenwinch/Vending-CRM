@@ -32,7 +32,7 @@ export function MachineForm({
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
       {machine && (
         <p className="text-sm text-zinc-500">
-          Machine number <span className="font-semibold text-zinc-900 dark:text-zinc-100">{machine.machine_number}</span>{" "}
+          Machine number <span className="font-semibold text-ink">{machine.machine_number}</span>{" "}
           (given automatically, can&apos;t be changed)
         </p>
       )}
@@ -46,7 +46,7 @@ export function MachineForm({
         {placedAt ? (
           <div className="flex flex-col gap-1">
             <span className="text-sm font-medium">Status</span>
-            <p className="py-2.5 text-sm text-zinc-600 dark:text-zinc-400">
+            <p className="py-2.5 text-sm text-zinc-600">
               Installed at {placedAt}. Use Move or Take out on the machine&apos;s page to change this.
             </p>
             <input type="hidden" name="status" value="installed" />

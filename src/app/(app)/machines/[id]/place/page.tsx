@@ -37,22 +37,22 @@ async function Place({ params }: Pick<PageProps<"/machines/[id]/place">, "params
         <Link href={`/machines/${id}`} className="text-sm font-medium text-zinc-500 underline">
           {machine.machine_number}
         </Link>
-        <h1 className="text-2xl font-semibold tracking-tight">
+        <h1 className="page-title">
           {current ? `Move ${machine.machine_number}` : `Place ${machine.machine_number}`}
         </h1>
         {current && (
-          <p className="mt-1 text-zinc-600 dark:text-zinc-400">
+          <p className="mt-1 text-zinc-600">
             Now at {placeName(current)} since {formatDate(current.started_on)}.
           </p>
         )}
       </div>
 
       {machine.status === "retired" ? (
-        <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-900 dark:bg-amber-950 dark:text-amber-100">
+        <p className="rounded-md bg-amber-50 p-4 text-sm text-amber-900">
           This machine is retired. Edit it and change its status before placing it.
         </p>
       ) : locations.length === 0 ? (
-        <p className="rounded-lg border border-dashed border-zinc-300 p-8 text-center text-zinc-500 dark:border-zinc-700">
+        <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
           There are no locations to place it at. Add a location first.
         </p>
       ) : (

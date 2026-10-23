@@ -46,7 +46,7 @@ export function ClientForm({ client }: { client?: Client }) {
         defaultChecked={v ? v.gst_registered === "on" : (client?.gst_registered ?? false)}
       />
 
-      <fieldset className="flex flex-col gap-4 rounded-lg border border-zinc-200 p-4 dark:border-zinc-800">
+      <fieldset className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
         <legend className="px-1 text-sm font-semibold">Billing contact</legend>
         <Field
           label="Name"

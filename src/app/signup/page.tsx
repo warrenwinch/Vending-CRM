@@ -9,7 +9,7 @@ export default function SignupPage({ searchParams }: PageProps<"/signup">) {
       <Suspense fallback={<SignupForm />}>
         <SignupWithEmail searchParams={searchParams} />
       </Suspense>
-      <p className="text-sm text-zinc-600 dark:text-zinc-400">
+      <p className="text-sm text-zinc-600">
         Already have an account?{" "}
         <Link href="/login" className="font-medium underline">
           Log in
