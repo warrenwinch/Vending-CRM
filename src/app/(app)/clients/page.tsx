@@ -11,12 +11,20 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
     <>
       <div className="flex items-center justify-between gap-4">
         <h1 className="text-2xl font-semibold tracking-tight">Clients</h1>
-        <Link
-          href="/clients/new"
-          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
-        >
-          Add client
-        </Link>
+        <div className="flex gap-2">
+          <Link
+            href="/clients/import"
+            className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+          >
+            Import CSV
+          </Link>
+          <Link
+            href="/clients/new"
+            className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+          >
+            Add client
+          </Link>
+        </div>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading clients…</p>}>
         <ClientList searchParams={searchParams} />

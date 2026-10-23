@@ -1,0 +1,3 @@
+company_name,abn,gst_registered,billing_contact,billing_email,billing_phone,status
+ABS Holdings Pty Ltd,51 824 753 556,Yes,Jane Smith,accounts@absholdings.com.au,02 9123 4567,Active
+Harbour Fitness,,No,Tom Lee,tom@harbourfitness.com.au,0412 345 678,Prospect

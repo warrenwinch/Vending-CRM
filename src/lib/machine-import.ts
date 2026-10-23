@@ -1,6 +1,7 @@
 // Checks for machine rows coming from a CSV file. Used twice: in the browser
 // to preview the file, and again on the server before anything is saved.
 import { parseAud } from "@/lib/au";
+import { matchOption, normaliseHeader } from "@/lib/csv";
 import { MACHINE_STATUSES, MACHINE_TYPES, type MachineStatus, type MachineType } from "@/lib/machine-types";
 
 export const MAX_IMPORT_ROWS = 500;
@@ -29,18 +30,7 @@ export type MachineInsert = {
   purchase_cost?: number | null;
 };
 
-// "Purchase Date" -> "purchase_date"
-export function normaliseHeader(header: string) {
-  return header.replace(/^﻿/, "").trim().toLowerCase().replace(/[\s-]+/g, "_");
-}
-
-const squash = (s: string) => s.toLowerCase().replace(/[\s_-]+/g, "");
-
-// Accepts the stored value or the label people see: "micro_market", "Micro market".
-function matchOption<T extends string>(list: { value: T; label: string }[], text: string) {
-  const key = squash(text);
-  return list.find((o) => squash(o.value) === key || squash(o.label) === key)?.value;
-}
+export { normaliseHeader };
 
 // "23/10/2026", "3/1/2026" or "2026-10-23" -> "2026-10-23"; null if not a real date.
 function parseDate(text: string) {
