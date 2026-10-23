@@ -87,7 +87,7 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
             type="search"
             name="q"
             defaultValue={search}
-            placeholder="Number, serial, make or model"
+            placeholder="Site, number, serial, make or model"
             className="input w-full sm:w-64"
           />
           <button type="submit" className="btn-secondary">

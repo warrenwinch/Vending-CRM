@@ -21,6 +21,24 @@ type ListRow = Row & {
   machine_placements: { position: string | null; locations: { site_name: string } | null }[];
 };
 
+// Machines now at a site whose name or address matches (e.g. "ABS House",
+// "George St"), or whose position on site matches (e.g. "Level 4").
+async function machinesAtSitesMatching(term: string) {
+  const supabase = await createClient();
+  const { data: sites } = await supabase
+    .from("locations")
+    .select("id")
+    .or(`site_name.ilike.%${term}%,address.ilike.%${term}%`);
+  const siteIds = (sites ?? []).map((s) => s.id as string);
+
+  const { data: placements } = await supabase
+    .from("machine_placements")
+    .select("machine_id")
+    .is("ended_on", null)
+    .or([`position.ilike.%${term}%`, ...(siteIds.length ? [`location_id.in.(${siteIds.join(",")})`] : [])].join(","));
+  return [...new Set((placements ?? []).map((p) => p.machine_id as string))];
+}
+
 export async function listMachines({ status, search }: { status?: MachineStatus; search?: string }) {
   const supabase = await createClient();
   // Newest first: numbers go VM-999, VM-1000, so sorting the text would mix them up.
@@ -33,8 +51,15 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
   if (status) query = query.eq("status", status);
   if (search) {
     const term = search.replace(/[%_\\,()]/g, (c) => `\\${c}`);
+    const atMatchingSites = await machinesAtSitesMatching(term);
     query = query.or(
-      `machine_number.ilike.%${term}%,serial_number.ilike.%${term}%,manufacturer.ilike.%${term}%,model.ilike.%${term}%`,
+      [
+        `machine_number.ilike.%${term}%`,
+        `serial_number.ilike.%${term}%`,
+        `manufacturer.ilike.%${term}%`,
+        `model.ilike.%${term}%`,
+        ...(atMatchingSites.length ? [`id.in.(${atMatchingSites.join(",")})`] : []),
+      ].join(","),
     );
   }
   const { data, error } = await query;

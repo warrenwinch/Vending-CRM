@@ -9,9 +9,16 @@ export default function FaultsPage({ searchParams }: PageProps<"/faults">) {
   return (
     <>
       <h1 className="page-title">Faults</h1>
-      <p className="text-sm text-zinc-600">
-        To report a fault, open the machine from Machines and tap “Report a fault”.
-      </p>
+      {/* Reporting starts by finding the machine, then tapping "Report a fault" on its page. */}
+      <form action="/machines" className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-2 ring-zinc-200 sm:flex-row sm:items-end">
+        <label className="flex flex-1 flex-col gap-1">
+          <span className="text-sm font-bold">Report a fault: find the machine</span>
+          <input type="search" name="q" required placeholder="Site name, address or machine number" className="input" />
+        </label>
+        <button type="submit" className="btn-primary">
+          Find machine
+        </button>
+      </form>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading faults…</p>}>
         <Faults searchParams={searchParams} />
       </Suspense>
