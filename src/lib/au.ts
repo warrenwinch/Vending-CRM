@@ -24,6 +24,20 @@ export function formatAud(amount: number) {
   return aud.format(amount);
 }
 
+// "2026-10-23" (how the database stores dates) -> "23/10/2026"
+export function formatDate(isoDate: string | null) {
+  if (!isoDate) return "";
+  const [y, m, d] = isoDate.split("-");
+  return `${d}/${m}/${y}`;
+}
+
+// "$1,200.50" or "1200.5" -> 1200.5; null if it isn't a sensible amount.
+export function parseAud(text: string) {
+  const cleaned = text.replace(/[$,\s]/g, "");
+  if (!/^\d+(\.\d{1,2})?$/.test(cleaned)) return null;
+  return Number(cleaned);
+}
+
 // 51824753556 -> "51 824 753 556"
 export function formatAbn(digits: string | null) {
   if (!digits) return "";

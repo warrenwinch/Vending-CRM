@@ -4,8 +4,9 @@ import "server-only";
 import { cache } from "react";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
+import type { Role } from "@/lib/auth-types";
 
-export type Role = "administrator" | "manager" | "warehouse" | "filler";
+export type { Role };
 
 export type CurrentUser = {
   id: string;
