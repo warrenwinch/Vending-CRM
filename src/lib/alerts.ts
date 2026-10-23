@@ -53,10 +53,13 @@ export async function sendEmail({
     `${subject}\n\n${intro ? `${intro}\n\n` : ""}${lines.map(([l, v]) => `${l}: ${v}`).join("\n")}` +
     `\n\n${button.label}: ${button.href}`;
 
+  // Settings pasted into Vercel sometimes keep their quote marks; drop them.
+  const from = (process.env.ALERT_FROM ?? DEFAULT_FROM).trim().replace(/^["']|["']$/g, "");
+
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.ALERT_FROM ?? DEFAULT_FROM, to: recipients, subject, html, text }),
+    body: JSON.stringify({ from, to: recipients, subject, html, text }),
   });
   if (!res.ok) {
     // Visible in Vercel's logs; callers decide what (if anything) to tell people.
@@ -68,7 +71,7 @@ export async function sendEmail({
     } catch {
       // not JSON; keep the status
     }
-    return { skipped: false, ok: false, reason };
+    return { skipped: false, ok: false, reason: `${reason} Sent from: ${from}${process.env.ALERT_FROM ? "" : " (ALERT_FROM is not set)"}` };
   }
   return { skipped: false, ok: true };
 }
