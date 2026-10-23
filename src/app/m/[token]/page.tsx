@@ -29,7 +29,13 @@ function Header({ title, business }: { title: string; business?: string }) {
   );
 }
 
-type PublicMachine = { machine_number: string; business_name: string; site_name: string | null };
+// site_position arrives once 07_qr_page_position.sql has been run; until then it is simply missing.
+type PublicMachine = {
+  machine_number: string;
+  business_name: string;
+  site_name: string | null;
+  site_position?: string | null;
+};
 
 async function QrReport({ params }: Pick<PageProps<"/m/[token]">, "params">) {
   const { token } = await params;
@@ -54,10 +60,16 @@ async function QrReport({ params }: Pick<PageProps<"/m/[token]">, "params">) {
     <>
       <Header title="Report a problem" business={machine.business_name} />
       <div className="mx-auto flex w-full max-w-sm flex-col gap-6 px-4 py-8">
-        <p className="rounded-2xl bg-white p-4 text-center ring-2 ring-zinc-200">
-          Machine <span className="font-mono font-bold">{machine.machine_number}</span>
-          {machine.site_name && <> at {machine.site_name}</>}
-        </p>
+        <div className="rounded-2xl bg-white p-4 text-center ring-2 ring-zinc-200">
+          <p>
+            Machine <span className="font-mono font-bold">{machine.machine_number}</span>
+          </p>
+          {machine.site_name && (
+            <p className="mt-1 text-lg font-extrabold">
+              {[machine.site_name, machine.site_position].filter(Boolean).join(", ")}
+            </p>
+          )}
+        </div>
         <CustomerReportForm token={token} />
         <div className="flex flex-col gap-2 border-t-2 border-zinc-200 pt-6 text-center">
           <p className="font-bold">Prefer to talk to someone?</p>
