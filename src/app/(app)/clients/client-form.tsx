@@ -80,7 +80,7 @@ export function ClientForm({ client }: { client?: Client }) {
       <FormMessage state={state} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
         <SubmitButton pending={pending}>{client ? "Save changes" : "Add client"}</SubmitButton>
-        <Link href="/clients" className="text-center text-sm font-medium underline">
+        <Link href={client ? `/clients/${client.id}` : "/clients"} className="text-center text-sm font-medium underline">
           Cancel
         </Link>
       </div>

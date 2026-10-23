@@ -59,5 +59,5 @@ export async function saveClient(
   // No row back means it wasn't found, or this login isn't allowed to change it.
   if (!data?.length) return fail("Could not save this client. It may have been removed.");
 
-  redirect("/clients");
+  redirect(`/clients/${data[0].id}`);
 }

@@ -4,6 +4,7 @@ import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { listClients } from "@/lib/clients";
 import { CLIENT_STATUSES, isClientStatus, type ClientStatus } from "@/lib/client-types";
 import { formatAbn } from "@/lib/au";
+import { StatusBadge } from "@/components/status-badge";
 
 export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
   return (
@@ -23,12 +24,6 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
     </>
   );
 }
-
-const statusStyles: Record<ClientStatus, string> = {
-  prospect: "bg-amber-100 text-amber-900 dark:bg-amber-950 dark:text-amber-200",
-  active: "bg-green-100 text-green-900 dark:bg-green-950 dark:text-green-200",
-  lost: "bg-zinc-200 text-zinc-700 dark:bg-zinc-800 dark:text-zinc-300",
-};
 
 async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchParams">) {
   await requireRole(OFFICE_ROLES);
@@ -88,7 +83,7 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
           {clients.map((c) => (
             <li key={c.id}>
               <Link
-                href={`/clients/${c.id}/edit`}
+                href={`/clients/${c.id}`}
                 className="flex flex-col gap-1 p-4 hover:bg-zinc-50 dark:hover:bg-zinc-900 sm:flex-row sm:items-center sm:gap-4"
               >
                 <div className="min-w-0 flex-1">
@@ -100,9 +95,7 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
                 </div>
                 <div className="flex items-center gap-3 text-sm">
                   {c.abn && <span className="text-zinc-500">ABN {formatAbn(c.abn)}</span>}
-                  <span className={`rounded-full px-2.5 py-0.5 text-xs font-medium ${statusStyles[c.status]}`}>
-                    {CLIENT_STATUSES.find((s) => s.value === c.status)?.label}
-                  </span>
+                  <StatusBadge status={c.status} />
                 </div>
               </Link>
             </li>

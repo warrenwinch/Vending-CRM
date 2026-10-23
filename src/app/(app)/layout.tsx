@@ -27,6 +27,7 @@ async function Menu() {
   // Only show links to screens this role can use.
   const items: NavItem[] = [{ href: "/", label: "Home" }];
   if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/clients", label: "Clients" });
+  items.push({ href: "/locations", label: "Locations" });
 
   return (
     <>

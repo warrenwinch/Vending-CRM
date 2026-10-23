@@ -1,5 +1,10 @@
 // Small building blocks shared by every form, sized for phones.
-import type { InputHTMLAttributes, ReactNode, SelectHTMLAttributes } from "react";
+import type {
+  InputHTMLAttributes,
+  ReactNode,
+  SelectHTMLAttributes,
+  TextareaHTMLAttributes,
+} from "react";
 
 // values: what the person typed, handed back so a failed save doesn't wipe the form.
 export type FormState = { error?: string; message?: string; values?: Record<string, string> };
@@ -16,6 +21,20 @@ export function Field({
     <label className="flex flex-col gap-1">
       <span className="text-sm font-medium">{label}</span>
       <input {...input} className={inputClass} />
+      {hint && <span className="text-xs text-zinc-500">{hint}</span>}
+    </label>
+  );
+}
+
+export function TextAreaField({
+  label,
+  hint,
+  ...textarea
+}: { label: string; hint?: string } & TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <label className="flex flex-col gap-1">
+      <span className="text-sm font-medium">{label}</span>
+      <textarea rows={3} {...textarea} className={inputClass} />
       {hint && <span className="text-xs text-zinc-500">{hint}</span>}
     </label>
   );

@@ -2,9 +2,8 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getClient } from "@/lib/clients";
+import { isUuid } from "@/lib/ids";
 import { ClientForm } from "../../client-form";
-
-const UUID = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
 
 export default function EditClientPage({ params }: PageProps<"/clients/[id]/edit">) {
   return (
@@ -20,7 +19,7 @@ export default function EditClientPage({ params }: PageProps<"/clients/[id]/edit
 async function EditClient({ params }: Pick<PageProps<"/clients/[id]/edit">, "params">) {
   await requireRole(OFFICE_ROLES);
   const { id } = await params;
-  if (!UUID.test(id)) notFound();
+  if (!isUuid(id)) notFound();
 
   const client = await getClient(id);
   if (!client) notFound();

@@ -17,6 +17,13 @@ export function isValidAbn(digits: string) {
   return sum % 89 === 0;
 }
 
+const aud = new Intl.NumberFormat("en-AU", { style: "currency", currency: "AUD" });
+
+// 1234.5 -> "$1,234.50"
+export function formatAud(amount: number) {
+  return aud.format(amount);
+}
+
 // 51824753556 -> "51 824 753 556"
 export function formatAbn(digits: string | null) {
   if (!digits) return "";
