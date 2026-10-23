@@ -3,7 +3,10 @@
 import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole } from "@/lib/auth";
-import { isRole } from "@/lib/auth-types";
+import { ROLES, isRole } from "@/lib/auth-types";
+import { sendEmail } from "@/lib/alerts";
+import { SITE_URL } from "@/lib/qr";
+import { formatDate } from "@/lib/au";
 import { isUuid } from "@/lib/ids";
 import type { FormState } from "@/components/form-ui";
 
@@ -21,7 +24,7 @@ function explain(message: string) {
 }
 
 export async function inviteMember(_prev: FormState, formData: FormData): Promise<FormState> {
-  await requireRole(["administrator"]);
+  const { profile } = await requireRole(["administrator"]);
 
   const values = {
     full_name: String(formData.get("full_name") ?? "").trim(),
@@ -38,13 +41,63 @@ export async function inviteMember(_prev: FormState, formData: FormData): Promis
   const { data: existing } = await supabase.from("profiles").select("full_name").eq("email", values.email).maybeSingle();
   if (existing) return fail(`${existing.full_name} is already in your team.`);
 
-  const { error } = await supabase
+  const { data: created, error } = await supabase
     .from("invitations")
-    .insert({ email: values.email, full_name: values.full_name || null, role: values.role });
+    .insert({ email: values.email, full_name: values.full_name || null, role: values.role })
+    .select("email, full_name, role, expires_at")
+    .single();
   if (error) return fail(`Could not create the invitation: ${explain(error.message)}`);
 
+  const sent = await emailInvitation(created, profile.organizationName, profile.fullName);
   revalidatePath("/team");
-  return { message: `Invitation created for ${values.email}. Send them the message shown under “Waiting to join”.` };
+  return sent.ok
+    ? { message: `Invitation emailed to ${values.email}.` }
+    : {
+        message: `Invitation created for ${values.email}, but the email couldn't be sent. Copy the message under “Waiting to join” and send it yourself.`,
+      };
+}
+
+type InviteDetails = { email: string; full_name: string | null; role: string; expires_at: string };
+
+// The invitation email: who invited them, their role, and a button to sign up
+// with the invited address already filled in.
+async function emailInvitation(inv: InviteDetails, businessName: string, inviterName: string) {
+  const role = ROLES.find((r) => r.value === inv.role);
+  const result = await sendEmail({
+    to: [inv.email],
+    subject: `You're invited to join ${businessName}`,
+    intro: `${inv.full_name ? `Hi ${inv.full_name.split(" ")[0]}, ` : ""}${inviterName} has invited you to the ${businessName} team on Watwin CRM.`,
+    lines: [
+      ["Your role", role ? `${role.label}: ${role.description}` : inv.role],
+      ["Sign up with", inv.email],
+      ["Invitation lasts until", formatDate(inv.expires_at.slice(0, 10))],
+      ["What to do", "1. Create your account with the button below.\n2. Click the link in the confirmation email.\n3. Click “Join” on the page that opens."],
+    ],
+    button: { label: "Create your account", href: `${SITE_URL}/signup?email=${encodeURIComponent(inv.email)}` },
+  });
+  return { ok: !result.skipped && result.ok };
+}
+
+// Sends the invitation email again (e.g. it went to spam, or was deleted).
+export async function resendInvitation(invitationId: string): Promise<FormState> {
+  const { profile } = await requireRole(["administrator"]);
+  if (!isUuid(invitationId)) return { error: "That invitation wasn't found." };
+
+  const supabase = await createClient();
+  const { data: inv } = await supabase
+    .from("invitations")
+    .select("email, full_name, role, expires_at")
+    .eq("id", invitationId)
+    .is("accepted_at", null)
+    .is("revoked_at", null)
+    .maybeSingle();
+  if (!inv) return { error: "That invitation is no longer open." };
+  if (inv.expires_at < new Date().toISOString()) return { error: "This invitation has expired. Cancel it and invite them again." };
+
+  const sent = await emailInvitation(inv, profile.organizationName, profile.fullName);
+  return sent.ok
+    ? { message: `Sent again to ${inv.email}.` }
+    : { error: "The email couldn't be sent. Copy the message below and send it yourself." };
 }
 
 export async function cancelInvitation(invitationId: string) {

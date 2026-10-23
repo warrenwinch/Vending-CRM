@@ -1,7 +1,7 @@
 "use client";
 
 import { useActionState, useState } from "react";
-import { inviteMember, updateMember } from "./actions";
+import { inviteMember, resendInvitation, updateMember } from "./actions";
 import { Field, FormMessage, SelectField, SubmitButton, type FormState } from "@/components/form-ui";
 import { ROLES, type Role } from "@/lib/auth-types";
 
@@ -105,5 +105,19 @@ export function CopyInvite({ text }: { text: string }) {
         {copied ? "Copied" : "Copy message"}
       </button>
     </div>
+  );
+}
+
+// Sends the invitation email again, and says whether it went.
+export function ResendInvite({ invitationId }: { invitationId: string }) {
+  const [state, formAction, pending] = useActionState<FormState>(resendInvitation.bind(null, invitationId), {});
+  return (
+    <form action={formAction} className="flex flex-wrap items-center gap-3">
+      <button type="submit" disabled={pending} className="btn-small">
+        {pending ? "Sending…" : "Resend invite email"}
+      </button>
+      {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
+      {state.message && <span className="text-sm text-leaf-deep">{state.message}</span>}
+    </form>
   );
 }

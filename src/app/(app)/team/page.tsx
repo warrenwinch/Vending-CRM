@@ -5,7 +5,7 @@ import { ROLES } from "@/lib/auth-types";
 import { listMembers, listOpenInvitations, type Invitation } from "@/lib/team";
 import { formatDate } from "@/lib/au";
 import { cancelInvitation } from "./actions";
-import { CopyInvite, InviteForm, MemberForm } from "./team-forms";
+import { CopyInvite, InviteForm, MemberForm, ResendInvite } from "./team-forms";
 
 export default function TeamPage() {
   return (
@@ -87,7 +87,7 @@ async function Team() {
         <section className="flex flex-col gap-3">
           <h2 className="section-title">Waiting to join</h2>
           <p className="text-sm text-zinc-500">
-            Send each person their message by email or text. They join once they sign up with that email address.
+            Each person gets an invitation email from Watwin CRM. If it doesn&apos;t arrive, resend it or copy the message and send it by text. They join once they sign up with that email address.
           </p>
           <ul className="flex flex-col gap-4">
             {invitations.map((inv) => {
@@ -113,7 +113,15 @@ async function Team() {
                   {expired ? (
                     <p className="text-sm text-zinc-500">This invitation has expired. Cancel it and invite them again.</p>
                   ) : (
-                    <CopyInvite text={inviteMessage(inv, profile.organizationName, site)} />
+                    <>
+                      <ResendInvite invitationId={inv.id} />
+                      <details>
+                        <summary className="cursor-pointer text-sm font-bold">Or copy the message to send by text</summary>
+                        <div className="mt-2">
+                          <CopyInvite text={inviteMessage(inv, profile.organizationName, site)} />
+                        </div>
+                      </details>
+                    </>
                   )}
                 </li>
               );

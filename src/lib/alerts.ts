@@ -1,9 +1,9 @@
-// Email alerts, sent through Resend (resend.com). Needs these settings in
-// Vercel (never in the code):
+// Emails sent through Resend (resend.com): fault alerts and team invitations.
+// Needs these settings in Vercel (never in the code):
 //   RESEND_API_KEY  the key from Resend
-//   ALERT_EMAIL     who gets alerts; several addresses separated by commas
+//   ALERT_EMAIL     who gets fault alerts; several addresses separated by commas
 //   ALERT_FROM      optional sender, e.g. "Watwin CRM <alerts@watwinvending.com.au>"
-// If RESEND_API_KEY or ALERT_EMAIL is missing, alerts are simply skipped.
+// Without RESEND_API_KEY nothing is sent (and the app carries on as normal).
 import "server-only";
 import { SITE_URL } from "@/lib/qr";
 
@@ -12,10 +12,26 @@ const DEFAULT_FROM = "Watwin CRM <onboarding@resend.dev>"; // Resend's test send
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
 
-export async function sendEmail({ subject, lines }: { subject: string; lines: [string, string][] }) {
+export type EmailResult = { skipped: true } | { skipped: false; ok: boolean };
+
+// One Watwin-styled email: a charcoal heading, optional intro, a table of
+// details and a big orange button.
+export async function sendEmail({
+  to,
+  subject,
+  intro,
+  lines,
+  button = { label: "Open Faults", href: `${SITE_URL}/faults` },
+}: {
+  to?: string[]; // leave out to send to the ALERT_EMAIL list
+  subject: string;
+  intro?: string;
+  lines: [string, string][];
+  button?: { label: string; href: string };
+}): Promise<EmailResult> {
   const key = process.env.RESEND_API_KEY;
-  const to = (process.env.ALERT_EMAIL ?? "").split(",").map((s) => s.trim()).filter(Boolean);
-  if (!key || to.length === 0) return { skipped: true };
+  const recipients = (to ?? (process.env.ALERT_EMAIL ?? "").split(",")).map((s) => s.trim()).filter(Boolean);
+  if (!key || recipients.length === 0) return { skipped: true };
 
   const rows = lines
     .map(
@@ -27,19 +43,22 @@ export async function sendEmail({ subject, lines }: { subject: string; lines: [s
   const html =
     `<div style="font-family:Arial,sans-serif;max-width:560px">` +
     `<div style="background:#2f2e2c;border-bottom:6px solid #ea631a;color:#fff;padding:16px 20px;font-size:20px;font-weight:800">${escape(subject)}</div>` +
+    (intro ? `<p style="margin:16px 20px 0;font-size:15px;color:#2f2e2c">${escape(intro)}</p>` : "") +
     `<table style="margin:16px 20px;font-size:15px;border-collapse:collapse">${rows}</table>` +
-    `<p style="margin:0 20px 20px"><a href="${SITE_URL}/faults" style="background:#c2500f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700">Open Faults</a></p>` +
+    `<p style="margin:0 20px 20px"><a href="${escape(button.href)}" style="background:#c2500f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700">${escape(button.label)}</a></p>` +
     `</div>`;
-  const text = `${subject}\n\n${lines.map(([l, v]) => `${l}: ${v}`).join("\n")}\n\nOpen Faults: ${SITE_URL}/faults`;
+  const text =
+    `${subject}\n\n${intro ? `${intro}\n\n` : ""}${lines.map(([l, v]) => `${l}: ${v}`).join("\n")}` +
+    `\n\n${button.label}: ${button.href}`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${key}`, "Content-Type": "application/json" },
-    body: JSON.stringify({ from: process.env.ALERT_FROM ?? DEFAULT_FROM, to, subject, html, text }),
+    body: JSON.stringify({ from: process.env.ALERT_FROM ?? DEFAULT_FROM, to: recipients, subject, html, text }),
   });
   if (!res.ok) {
-    // Never shown to the customer; visible in Vercel's logs for us.
-    console.error("Alert email failed", res.status, await res.text());
+    // Visible in Vercel's logs; callers decide what (if anything) to tell people.
+    console.error("Email failed", res.status, await res.text());
     return { skipped: false, ok: false };
   }
   return { skipped: false, ok: true };
