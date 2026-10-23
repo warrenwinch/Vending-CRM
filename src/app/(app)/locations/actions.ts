@@ -89,3 +89,42 @@ export async function saveLocation(
 
   redirect(`/locations/${savedId}`);
 }
+
+// Deletes a site, but only if nothing in its history depends on it.
+// Sites with machines, faults or commission payments should be set to Lost instead.
+export async function deleteLocation(locationId: string): Promise<FormState> {
+  await requireRole(OFFICE_ROLES);
+  if (!isUuid(locationId)) return { error: "This location wasn't found." };
+
+  const supabase = await createClient();
+  const howMany = { count: "exact", head: true } as const;
+  const [placements, faults, payments] = await Promise.all([
+    supabase.from("machine_placements").select("id", howMany).eq("location_id", locationId),
+    supabase.from("machine_faults").select("id", howMany).eq("location_id", locationId),
+    supabase.from("commission_payment_lines").select("id", howMany).eq("location_id", locationId),
+  ]);
+
+  const reasons = [
+    placements.count ? "machines have been placed there" : null,
+    faults.count ? "faults have been logged there" : null,
+    payments.count ? "commission has been paid for it" : null,
+  ].filter(Boolean);
+  if (reasons.length) {
+    return {
+      error: `This site can't be deleted because ${reasons.join(", and ")}, and that history must be kept. Set its status to Lost instead: it then drops out of the active lists.`,
+    };
+  }
+
+  const { data: site } = await supabase.from("locations").select("client_id").eq("id", locationId).maybeSingle();
+
+  // Keep the people: the database would delete this site's contacts with it,
+  // so move them to "All sites" for the client first.
+  const { error: contactsError } = await supabase.from("contacts").update({ location_id: null }).eq("location_id", locationId);
+  if (contactsError) return { error: `Could not move this site's contacts: ${contactsError.message}` };
+
+  // Its notes and commission setting go with it.
+  const { error } = await supabase.from("locations").delete().eq("id", locationId);
+  if (error) return { error: `Could not delete this site: ${error.message}` };
+
+  redirect(site?.client_id ? `/clients/${site.client_id}` : "/locations");
+}

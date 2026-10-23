@@ -4,6 +4,7 @@ import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getLocation, listClientOptions } from "@/lib/locations";
 import { isUuid } from "@/lib/ids";
 import { LocationForm } from "../../location-form";
+import { DeleteLocation } from "./delete-location";
 
 export default function EditLocationPage({ params }: PageProps<"/locations/[id]/edit">) {
   return (
@@ -24,5 +25,10 @@ async function EditLocation({ params }: Pick<PageProps<"/locations/[id]/edit">, 
   const [location, clients] = await Promise.all([getLocation(id), listClientOptions()]);
   if (!location) notFound();
 
-  return <LocationForm location={location} clients={clients} cancelHref={`/locations/${id}`} />;
+  return (
+    <>
+      <LocationForm location={location} clients={clients} cancelHref={`/locations/${id}`} />
+      <DeleteLocation locationId={location.id} siteName={location.site_name} />
+    </>
+  );
 }
