@@ -15,6 +15,7 @@ export type Machine = {
   status: MachineStatus;
   purchase_date: string | null; // YYYY-MM-DD
   purchase_cost: number | null;
+  public_token: string; // the secret in its QR sticker's link
 };
 
 export const MACHINE_TYPES: { value: MachineType; label: string }[] = [

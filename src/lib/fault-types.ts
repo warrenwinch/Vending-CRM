@@ -42,7 +42,9 @@ export type Fault = {
   category: FaultCategory;
   severity: FaultSeverity;
   description: string;
-  reported_by: string;
+  reported_by: string | null; // null when a customer reported it by QR code
+  reported_by_public: boolean;
+  reporter_contact: string | null;
   reporter_name: string;
   reported_at: string; // ISO timestamp
   fixed_by: string | null;
@@ -83,3 +85,15 @@ export function formatDateTime(iso: string) {
 export function nowMs() {
   return Date.now();
 }
+
+// What a customer can pick when they scan a machine's QR code, in everyday words.
+export const CUSTOMER_FAULT_CHOICES: { value: FaultCategory; label: string }[] = [
+  { value: "vend_failure", label: "I paid but nothing came out / item stuck" },
+  { value: "card_reader", label: "Card or tap payment not working" },
+  { value: "coin_mechanism", label: "Coins not accepted" },
+  { value: "note_reader", label: "Notes not accepted" },
+  { value: "refrigeration", label: "Drinks or food not cold" },
+  { value: "display", label: "Screen or buttons not working" },
+  { value: "power", label: "Machine is off / no power" },
+  { value: "other", label: "Something else" },
+];

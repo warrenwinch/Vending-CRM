@@ -8,7 +8,7 @@ export default function AppLayout({ children }: LayoutProps<"/">) {
   return (
     <>
       {/* Watwin charcoal bar with an orange stripe, like the launch artwork. */}
-      <header className="border-b-[6px] border-brand bg-ink pt-[env(safe-area-inset-top)] text-white">
+      <header className="border-b-[6px] border-brand bg-ink pt-[env(safe-area-inset-top)] text-white print:hidden">
         <div className="mx-auto flex w-full max-w-5xl flex-col gap-3 px-4 py-3">
           <Suspense
             fallback={<p className="font-display text-2xl font-extrabold tracking-wide uppercase">Vending CRM</p>}

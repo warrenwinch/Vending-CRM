@@ -5,7 +5,8 @@ import { createServerClient } from "@supabase/ssr";
 import { supabaseKey, supabaseUrl } from "./env";
 
 // Pages anyone can open without logging in.
-const PUBLIC_PATHS = ["/login", "/signup", "/auth/confirm"];
+// "/m" is the page customers reach by scanning a machine's QR sticker.
+const PUBLIC_PATHS = ["/login", "/signup", "/auth/confirm", "/m"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

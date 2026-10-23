@@ -56,3 +56,16 @@ body {
     @apply font-display text-2xl font-extrabold tracking-wide text-ink uppercase;
   }
 }
+
+/* Printing stickers: plain white page, real colours, no browser margins wasted. */
+@media print {
+  body {
+    background: #fff;
+    print-color-adjust: exact;
+    -webkit-print-color-adjust: exact;
+  }
+  @page {
+    size: A4;
+    margin: 10mm;
+  }
+}

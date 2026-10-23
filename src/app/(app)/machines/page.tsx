@@ -48,7 +48,10 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
       <div className="flex items-center justify-between gap-4">
         <h1 className="page-title">Machines</h1>
         {canEdit && (
-          <div className="flex gap-2">
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link href="/machines/labels" className="btn-secondary">
+              QR stickers
+            </Link>
             <Link
               href="/machines/import"
               className="btn-secondary"

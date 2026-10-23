@@ -37,6 +37,9 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
     ],
     ["Found", `${formatDateTime(fault.reported_at)} by ${fault.reporter_name}`],
   ];
+  if (fault.reported_by_public) {
+    rows.push(["Customer contact", fault.reporter_contact ?? "None given"]);
+  }
   if (fault.fixed_at) {
     rows.push(["Fixed", `${formatDateTime(fault.fixed_at)} by ${fault.fixer_name}`]);
     rows.push(["Time to fix", formatDuration(fixedIn!)]);

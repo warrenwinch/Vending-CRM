@@ -5,7 +5,7 @@ import type { Fault } from "@/lib/fault-types";
 
 // Two links to people (who reported, who fixed), so each is named.
 const COLUMNS =
-  "id, machine_id, location_id, category, severity, description, reported_by, reported_at, fixed_by, fixed_at, fix_notes, " +
+  "id, machine_id, location_id, category, severity, description, reported_by, reported_by_public, reporter_contact, reported_at, fixed_by, fixed_at, fix_notes, " +
   "machines(machine_number), locations(site_name), " +
   "reporter:profiles!machine_faults_reported_by_fkey(full_name), fixer:profiles!machine_faults_fixed_by_fkey(full_name)";
 
@@ -20,7 +20,8 @@ const toFault = ({ machines, locations, reporter, fixer, ...row }: Row): Fault =
   ...row,
   machine_number: machines?.machine_number ?? "Unknown machine",
   site_name: locations?.site_name ?? null,
-  reporter_name: reporter?.full_name ?? "Former team member",
+  // Customers who scanned a QR sticker have no account, just optional contact details.
+  reporter_name: row.reported_by_public ? "Customer" : (reporter?.full_name ?? "Former team member"),
   fixer_name: row.fixed_by ? (fixer?.full_name ?? "Former team member") : null,
 });
 

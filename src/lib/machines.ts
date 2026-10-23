@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Machine, MachineStatus } from "@/lib/machine-types";
 
 const COLUMNS =
-  "id, machine_number, manufacturer, model, serial_number, type, payment_hardware, status, purchase_date";
+  "id, machine_number, manufacturer, model, serial_number, type, payment_hardware, status, purchase_date, public_token";
 
 // Purchase cost lives in its own table that only Administrators and
 // Managers can read; for everyone else it simply comes back empty.
