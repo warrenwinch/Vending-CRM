@@ -114,13 +114,13 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
               >
                 <span className="w-20 shrink-0 font-mono text-sm font-semibold">{m.machine_number}</span>
                 <div className="min-w-0 flex-1">
-                  <p className="truncate font-medium">
-                    {[m.manufacturer, m.model].filter(Boolean).join(" ") ||
-                      MACHINE_TYPES.find((t) => t.value === m.type)?.label}
+                  {/* Where it is comes first: that's what people look for on the road. */}
+                  <p className={`truncate ${m.site_name ? "font-bold" : "font-medium text-zinc-500"}`}>
+                    {m.site_name ?? "Not at a location"}
                   </p>
                   <p className="truncate text-sm text-zinc-500">
                     {[
-                      m.site_name ? `At ${m.site_name}` : null,
+                      [m.manufacturer, m.model].filter(Boolean).join(" ") || null,
                       MACHINE_TYPES.find((t) => t.value === m.type)?.label,
                       m.serial_number && `S/N ${m.serial_number}`,
                     ]
