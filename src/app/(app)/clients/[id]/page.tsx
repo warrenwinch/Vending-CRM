@@ -10,6 +10,8 @@ import { StatusBadge } from "@/components/status-badge";
 import { LocationList } from "../../locations/location-list";
 import { listContacts } from "@/lib/contacts";
 import { ContactList } from "./contacts/contact-list";
+import { listPayments } from "@/lib/commission";
+import { PaymentList } from "../../commission/payment-list";
 
 export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
   return (
@@ -24,10 +26,11 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const [client, locations, contacts] = await Promise.all([
+  const [client, locations, contacts, payments] = await Promise.all([
     getClient(id),
     listLocations({ clientId: id }),
     listContacts({ clientId: id }),
+    listPayments({ clientId: id }),
   ]);
   if (!client) notFound();
 
@@ -89,6 +92,17 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
         </Link>
       </div>
       <LocationList locations={locations} showClient={false} empty="No locations for this client yet." />
+
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold">Commission payments</h2>
+        <Link
+          href={`/commission/new?client=${client.id}`}
+          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          Record payment
+        </Link>
+      </div>
+      <PaymentList payments={payments} showClient={false} empty="No commission paid to this client yet." />
     </>
   );
 }

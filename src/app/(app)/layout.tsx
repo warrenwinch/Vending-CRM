@@ -28,6 +28,7 @@ async function Menu() {
   const items: NavItem[] = [{ href: "/", label: "Home" }];
   if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/clients", label: "Clients" });
   items.push({ href: "/locations", label: "Locations" }, { href: "/machines", label: "Machines" });
+  if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/commission", label: "Commission" });
   if (profile.role === "administrator") items.push({ href: "/team", label: "Team" });
 
   return (

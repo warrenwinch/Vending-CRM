@@ -29,6 +29,16 @@ export function todayInSydney() {
   return new Intl.DateTimeFormat("en-CA", { timeZone: "Australia/Sydney" }).format(new Date());
 }
 
+// Last calendar month in Sydney, as ["2026-09-01", "2026-09-30"].
+export function lastMonthInSydney(): [string, string] {
+  const [y, m] = todayInSydney().split("-").map(Number);
+  const year = m === 1 ? y - 1 : y;
+  const month = m === 1 ? 12 : m - 1;
+  const lastDay = new Date(Date.UTC(year, month, 0)).getUTCDate();
+  const mm = String(month).padStart(2, "0");
+  return [`${year}-${mm}-01`, `${year}-${mm}-${lastDay}`];
+}
+
 // "2026-10-23" (how the database stores dates) -> "23/10/2026"
 export function formatDate(isoDate: string | null) {
   if (!isoDate) return "";
