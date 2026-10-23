@@ -1,7 +1,9 @@
 # Vending CRM
 
 A CRM for vending machine operators. See `CLAUDE.md` for the project brief and
-`01_schema.sql` for the database.
+`01_schema.sql` (plus the numbered change files) for the database.
+
+Live at **https://crm.watwinvending.com.au** (Vercel, deployed from `main`).
 
 ## Run it on your computer
 
@@ -9,5 +11,3 @@ A CRM for vending machine operators. See `CLAUDE.md` for the project brief and
    publishable (anon) key.
 2. `npm install` (first time only)
 3. `npm run dev`, then open http://localhost:3000
-
-The home page says **Connected to Supabase** when the keys are right.
