@@ -8,6 +8,7 @@ import "server-only";
 import { SITE_URL } from "@/lib/qr";
 
 const DEFAULT_FROM = "Watwin CRM <onboarding@resend.dev>"; // Resend's test sender, until your domain is verified
+const DEFAULT_ADDRESS = "alerts@watwinvending.com.au"; // on the domain verified in Resend
 
 const escape = (s: string) =>
   s.replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[c]!);
@@ -54,7 +55,9 @@ export async function sendEmail({
     `\n\n${button.label}: ${button.href}`;
 
   // Settings pasted into Vercel sometimes keep their quote marks; drop them.
-  const from = (process.env.ALERT_FROM ?? DEFAULT_FROM).trim().replace(/^["']|["']$/g, "");
+  // A name on its own ("Watwin CRM") gets the Watwin alerts address added.
+  const setting = (process.env.ALERT_FROM ?? DEFAULT_FROM).trim().replace(/^["']|["']$/g, "");
+  const from = setting.includes("@") ? setting : `${setting || "Watwin CRM"} <${DEFAULT_ADDRESS}>`;
 
   const res = await fetch("https://api.resend.com/emails", {
     method: "POST",
