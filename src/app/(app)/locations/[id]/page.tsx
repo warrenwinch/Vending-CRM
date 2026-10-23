@@ -6,6 +6,8 @@ import { getLocation } from "@/lib/locations";
 import { isUuid } from "@/lib/ids";
 import { formatAud, formatDate } from "@/lib/au";
 import { listMachinesAtLocation } from "@/lib/placements";
+import { listContacts } from "@/lib/contacts";
+import { ContactList } from "../../clients/[id]/contacts/contact-list";
 import { MACHINE_TYPES } from "@/lib/machine-types";
 import { LOCATION_TYPES, labelOf, type Location } from "@/lib/location-types";
 import { StatusBadge } from "@/components/status-badge";
@@ -33,6 +35,11 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
   if (!isUuid(id)) notFound();
   const [location, machines] = await Promise.all([getLocation(id), listMachinesAtLocation(id)]);
   if (!location) notFound();
+
+  // Contacts are office-only: this site's own contacts, plus the client's whole-company ones.
+  const contacts = isOffice
+    ? (await listContacts({ clientId: location.client_id })).filter((c) => c.location_id === null || c.location_id === id)
+    : [];
 
   // Fillers and Warehouse see what they need on site; commission stays with the office.
   const rows: [string, React.ReactNode][] = [
@@ -77,6 +84,21 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
           </div>
         ))}
       </dl>
+
+      {isOffice && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="text-lg font-semibold">Contacts</h2>
+            <Link
+              href={`/clients/${location.client_id}/contacts/new?location=${location.id}`}
+              className="rounded-md border border-zinc-300 px-4 py-2 text-sm font-medium dark:border-zinc-700"
+            >
+              Add contact
+            </Link>
+          </div>
+          <ContactList contacts={contacts} showSite empty="No contacts for this site yet." />
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
         <h2 className="text-lg font-semibold">Machines here</h2>

@@ -8,6 +8,8 @@ import { isUuid } from "@/lib/ids";
 import { formatAbn } from "@/lib/au";
 import { StatusBadge } from "@/components/status-badge";
 import { LocationList } from "../../locations/location-list";
+import { listContacts } from "@/lib/contacts";
+import { ContactList } from "./contacts/contact-list";
 
 export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
   return (
@@ -22,7 +24,11 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const [client, locations] = await Promise.all([getClient(id), listLocations({ clientId: id })]);
+  const [client, locations, contacts] = await Promise.all([
+    getClient(id),
+    listLocations({ clientId: id }),
+    listContacts({ clientId: id }),
+  ]);
   if (!client) notFound();
 
   const rows: [string, string | null][] = [
@@ -61,6 +67,17 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
           </div>
         ))}
       </dl>
+
+      <div className="flex items-center justify-between gap-4">
+        <h2 className="text-lg font-semibold">Contacts</h2>
+        <Link
+          href={`/clients/${client.id}/contacts/new`}
+          className="rounded-md bg-zinc-900 px-4 py-2 text-sm font-medium text-white dark:bg-zinc-100 dark:text-zinc-900"
+        >
+          Add contact
+        </Link>
+      </div>
+      <ContactList contacts={contacts} showSite empty="No contacts for this client yet." />
 
       <div className="flex items-center justify-between gap-4">
         <h2 className="text-lg font-semibold">Locations</h2>
