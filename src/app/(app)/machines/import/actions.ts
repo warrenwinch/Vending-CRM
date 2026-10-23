@@ -56,8 +56,24 @@ export async function importMachines(rows: RawRow[]): Promise<ImportResult> {
 
   if (rowErrors.length) return { rowErrors };
 
-  const { data, error } = await supabase.from("machines").insert(inserts).select("machine_number, created_at");
+  // Machines first; purchase costs go in their own private table afterwards.
+  // (undefined fields are left out of what's sent to the database)
+  const machines = inserts.map((m) => ({ ...m, purchase_cost: undefined }));
+  const { data, error } = await supabase.from("machines").insert(machines).select("id, machine_number");
   if (error) return { error: `Could not save the machines: ${error.message}` };
+
+  // The database returns the new machines in the same order as the file.
+  const costs = inserts
+    .map((m, i) => ({ machine_id: data[i]?.id as string, purchase_cost: m.purchase_cost ?? null }))
+    .filter((c) => c.machine_id && c.purchase_cost !== null);
+  if (allowCost && costs.length) {
+    const { error: costError } = await supabase.from("machine_costs").insert(costs);
+    if (costError) {
+      return {
+        error: `The ${data.length} machines were added (${data[0]?.machine_number} to ${data[data.length - 1]?.machine_number}), but their purchase costs weren't saved (${costError.message}). Don't import this file again: add the costs on each machine's page.`,
+      };
+    }
+  }
 
   return {
     imported: {

@@ -14,7 +14,7 @@ test each step before moving on.
 
 ## Rules
 1. The database schema is in `01_schema.sql`, plus later changes in numbered files
-   (`02_placement_position.sql`, `03_team_invitations.sql`, ...), all run in Supabase in order.
+   (`02_placement_position.sql`, `03_team_invitations.sql`, `04_private_costs.sql`, ...), all run in Supabase in order.
    Do not change table structure unless I ask. If you think it needs changing, explain why first.
 2. Security is enforced by Row Level Security in the database. Never use the Supabase
    "service role" key in browser code. Never bypass RLS.

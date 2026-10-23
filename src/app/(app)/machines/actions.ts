@@ -56,14 +56,10 @@ export async function saveMachine(
   }
 
   // Only Administrators and Managers see or change what a machine cost.
-  if (canSeeCost) {
-    if (values.purchase_cost) {
-      const cost = parseAud(values.purchase_cost);
-      if (cost === null) return fail("Please enter the purchase cost in dollars, for example 4500 or 4,500.00.");
-      row.purchase_cost = cost;
-    } else {
-      row.purchase_cost = null;
-    }
+  let cost: number | null = null;
+  if (canSeeCost && values.purchase_cost) {
+    cost = parseAud(values.purchase_cost);
+    if (cost === null) return fail("Please enter the purchase cost in dollars, for example 4500 or 4,500.00.");
   }
 
   const supabase = await createClient();
@@ -73,6 +69,21 @@ export async function saveMachine(
 
   if (error) return fail(`Could not save: ${error.message}`);
   if (!data?.length) return fail("Could not save this machine. It may have been removed.");
+  const savedId = data[0].id as string;
 
-  redirect(`/machines/${data[0].id}`);
+  // The cost is kept in its own table, private to Administrators and Managers.
+  if (canSeeCost) {
+    const { error: costError } = await supabase
+      .from("machine_costs")
+      .upsert({ machine_id: savedId, purchase_cost: cost }, { onConflict: "machine_id" });
+    if (costError) {
+      // The machine itself is saved; say so, so it isn't added a second time.
+      return {
+        error: `The machine was saved, but its purchase cost wasn't (${costError.message}). Don't save this form again: open the machine from Machines and edit its cost there.`,
+        values,
+      };
+    }
+  }
+
+  redirect(`/machines/${savedId}`);
 }

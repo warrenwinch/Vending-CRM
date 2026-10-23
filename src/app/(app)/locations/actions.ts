@@ -61,8 +61,6 @@ export async function saveLocation(
     operating_hours: values.operating_hours || null,
     access_instructions: values.access_instructions || null,
     status: values.status,
-    commission_type: values.commission_type,
-    commission_rate: rate,
   };
 
   const supabase = await createClient();
@@ -72,6 +70,22 @@ export async function saveLocation(
 
   if (error) return fail(`Could not save: ${error.message}`);
   if (!data?.length) return fail("Could not save this location. It may have been removed.");
+  const savedId = data[0].id as string;
 
-  redirect(`/locations/${data[0].id}`);
+  // Commission is kept in its own table, private to Administrators and Managers.
+  const { error: commissionError } = await supabase
+    .from("location_commissions")
+    .upsert(
+      { location_id: savedId, commission_type: values.commission_type, commission_rate: rate },
+      { onConflict: "location_id" },
+    );
+  if (commissionError) {
+    // The site itself is saved; say so, so it isn't added a second time.
+    return {
+      error: `The site was saved, but its commission wasn't (${commissionError.message}). Don't save this form again: open the site from Locations and edit its commission there.`,
+      values,
+    };
+  }
+
+  redirect(`/locations/${savedId}`);
 }

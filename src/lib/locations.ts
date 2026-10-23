@@ -5,19 +5,25 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Location, LocationStatus } from "@/lib/location-types";
 
+// Commission lives in its own table that only Administrators and Managers
+// can read; for everyone else it simply comes back empty.
 const COLUMNS =
   "id, client_id, site_name, address, placement_notes, type, foot_traffic, operating_hours, " +
-  "access_instructions, status, commission_type, commission_rate, clients(company_name)";
+  "access_instructions, status, clients(company_name), location_commissions(commission_type, commission_rate)";
 
-type Row = Omit<Location, "client_name" | "commission_rate"> & {
-  commission_rate: number | string | null;
+type Commission = { commission_type: Location["commission_type"]; commission_rate: number | string | null };
+
+type Row = Omit<Location, "client_name" | "commission_type" | "commission_rate"> & {
   clients: { company_name: string } | null;
+  location_commissions: Commission | Commission[] | null;
 };
 
-function toLocation({ clients, ...row }: Row): Location {
+function toLocation({ clients, location_commissions, ...row }: Row): Location {
+  const c = Array.isArray(location_commissions) ? location_commissions[0] : location_commissions;
   return {
     ...row,
-    commission_rate: row.commission_rate === null ? null : Number(row.commission_rate),
+    commission_type: c?.commission_type ?? "none",
+    commission_rate: c?.commission_rate == null ? null : Number(c.commission_rate),
     client_name: clients?.company_name ?? null,
   };
 }

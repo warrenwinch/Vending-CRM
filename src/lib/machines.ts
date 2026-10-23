@@ -5,14 +5,17 @@ import { createClient } from "@/lib/supabase/server";
 import type { Machine, MachineStatus } from "@/lib/machine-types";
 
 const COLUMNS =
-  "id, machine_number, manufacturer, model, serial_number, type, payment_hardware, status, purchase_date, purchase_cost";
+  "id, machine_number, manufacturer, model, serial_number, type, payment_hardware, status, purchase_date";
 
-type Row = Omit<Machine, "purchase_cost"> & { purchase_cost: number | string | null };
+// Purchase cost lives in its own table that only Administrators and
+// Managers can read; for everyone else it simply comes back empty.
+type Cost = { purchase_cost: number | string | null };
+type Row = Omit<Machine, "purchase_cost"> & { machine_costs?: Cost | Cost[] | null };
 
-const toMachine = (row: Row): Machine => ({
-  ...row,
-  purchase_cost: row.purchase_cost === null ? null : Number(row.purchase_cost),
-});
+const toMachine = ({ machine_costs, ...row }: Row): Machine => {
+  const c = Array.isArray(machine_costs) ? machine_costs[0] : machine_costs;
+  return { ...row, purchase_cost: c?.purchase_cost == null ? null : Number(c.purchase_cost) };
+};
 
 type ListRow = Row & {
   machine_placements: { position: string | null; locations: { site_name: string } | null }[];
@@ -49,7 +52,11 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
 
 export async function getMachine(id: string) {
   const supabase = await createClient();
-  const { data, error } = await supabase.from("machines").select(COLUMNS).eq("id", id).maybeSingle();
+  const { data, error } = await supabase
+    .from("machines")
+    .select(`${COLUMNS}, machine_costs(purchase_cost)`)
+    .eq("id", id)
+    .maybeSingle();
   if (error) throw new Error(`Could not load this machine: ${error.message}`);
-  return data ? toMachine(data as Row) : null;
+  return data ? toMachine(data as unknown as Row) : null;
 }
