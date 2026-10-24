@@ -19,6 +19,14 @@ function checkDate(date: string, since: string | undefined) {
   return null;
 }
 
+// The move functions' own messages (code P0001) are written for people;
+// anything else gets a lead-in. A missing function means 12 hasn't been run.
+function dbProblem(lead: string, error: { code?: string; message: string }) {
+  if (error.code === "P0001") return error.message;
+  if (error.code === "PGRST202") return `${lead}: the database needs updating (run 12_atomic_machine_moves.sql in Supabase).`;
+  return `${lead}: ${error.message}`;
+}
+
 // Places a machine at a location, or moves it. Moving closes the current
 // placement (sets its end date) and opens a new one, so history is never lost.
 export async function placeMachine(machineId: string, _prev: FormState, formData: FormData): Promise<FormState> {
@@ -49,47 +57,17 @@ export async function placeMachine(machineId: string, _prev: FormState, formData
   const dateProblem = checkDate(values.date, current?.started_on);
   if (dateProblem) return fail(dateProblem);
 
+  // One database step (12_atomic_machine_moves.sql): closes where it is now,
+  // opens the new placement and sets Installed, or saves none of it.
   const supabase = await createClient();
-
-  // 1. Close where it is now (if anywhere).
-  if (current) {
-    const { data, error } = await supabase
-      .from("machine_placements")
-      .update({ ended_on: values.date })
-      .eq("id", current.id)
-      .is("ended_on", null)
-      .select("id");
-    if (error) return fail(`Could not move the machine: ${error.message}`);
-    if (!data.length) return fail("Someone else just moved this machine. Please reload the page and try again.");
-  }
-
-  // 2. Open the new placement. If that fails, put the old one back as it was.
-  const { error: placeError } = await supabase
-    .from("machine_placements")
-    .insert({
-      machine_id: machineId,
-      location_id: values.location_id,
-      position: values.position || null,
-      started_on: values.date,
-    });
-  if (placeError) {
-    if (current) {
-      await supabase.from("machine_placements").update({ ended_on: null }).eq("id", current.id);
-    }
-    return fail(`Could not place the machine: ${placeError.message}`);
-  }
-
-  // 3. A placed machine is installed, unless a "not working at all" fault is
-  // still open: then it stays Needs repair until that fault is fixed.
-  const { count: stillBroken } = await supabase
-    .from("machine_faults")
-    .select("id", { count: "exact", head: true })
-    .eq("machine_id", machineId)
-    .is("fixed_at", null)
-    .eq("severity", "not_working");
-  if (machine.status !== "installed" && !stillBroken) {
-    await supabase.from("machines").update({ status: "installed" }).eq("id", machineId);
-  }
+  const { error } = await supabase.rpc("move_machine", {
+    p_machine_id: machineId,
+    p_location_id: values.location_id,
+    p_position: values.position,
+    p_date: values.date,
+    p_from_placement: current?.id ?? null,
+  });
+  if (error) return fail(dbProblem("Could not place the machine", error));
 
   redirect(`/machines/${machineId}`);
 }
@@ -116,16 +94,13 @@ export async function takeOutMachine(machineId: string, _prev: FormState, formDa
   if (dateProblem) return fail(dateProblem);
 
   const supabase = await createClient();
-  const { data, error } = await supabase
-    .from("machine_placements")
-    .update({ ended_on: values.date })
-    .eq("id", current.id)
-    .is("ended_on", null)
-    .select("id");
-  if (error) return fail(`Could not take the machine out: ${error.message}`);
-  if (!data.length) return fail("Someone else just moved this machine. Please reload the page and try again.");
-
-  await supabase.from("machines").update({ status: values.status }).eq("id", machineId);
+  const { error } = await supabase.rpc("take_out_machine", {
+    p_machine_id: machineId,
+    p_date: values.date,
+    p_status: values.status,
+    p_from_placement: current.id,
+  });
+  if (error) return fail(dbProblem("Could not take the machine out", error));
 
   redirect(`/machines/${machineId}`);
 }
