@@ -13,12 +13,14 @@ import { sendWeeklySummary } from "@/lib/weekly-summary";
 export async function GET(request: NextRequest) {
   const secret = process.env.CRON_SECRET;
   if (!secret || request.headers.get("authorization") !== `Bearer ${secret}`) {
+    console.warn("Weekly summary: refused a call without the right CRON_SECRET");
     return NextResponse.json({ error: "Not allowed" }, { status: 401 });
   }
 
   const email = process.env.REPORTS_EMAIL;
   const password = process.env.REPORTS_PASSWORD;
   if (!email || !password) {
+    console.error("Weekly summary: REPORTS_EMAIL or REPORTS_PASSWORD is missing");
     return NextResponse.json({ error: "REPORTS_EMAIL or REPORTS_PASSWORD is missing" }, { status: 500 });
   }
 
@@ -31,6 +33,8 @@ export async function GET(request: NextRequest) {
 
   try {
     const result = await sendWeeklySummary(supabase);
+    // Always leave a line in Vercel's logs, so each Monday's run can be checked.
+    console.log("Weekly summary:", result.skipped ? `skipped (${result.reason})` : result.ok ? "sent" : `failed (${result.reason})`);
     return NextResponse.json(result);
   } finally {
     await supabase.auth.signOut();
