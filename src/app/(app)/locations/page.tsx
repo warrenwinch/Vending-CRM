@@ -43,12 +43,14 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
       <div className="flex items-center justify-between gap-4">
         <h1 className="page-title">Locations</h1>
         {canEdit && (
-          <Link
-            href="/locations/new"
-            className="btn-primary"
-          >
-            Add location
-          </Link>
+          <div className="flex flex-wrap justify-end gap-2">
+            <Link href="/locations/import" className="btn-secondary">
+              Import CSV
+            </Link>
+            <Link href="/locations/new" className="btn-primary">
+              Add location
+            </Link>
+          </div>
         )}
       </div>
 
