@@ -9,6 +9,7 @@ export type LocationType =
   | "retail"
   | "industrial"
   | "government"
+  | "construction"
   | "other";
 export type CommissionType = "none" | "percentage" | "fixed_monthly";
 
@@ -47,6 +48,7 @@ export const LOCATION_TYPES: { value: LocationType; label: string }[] = [
   { value: "retail", label: "Retail" },
   { value: "industrial", label: "Industrial" },
   { value: "government", label: "Government" },
+  { value: "construction", label: "Construction" },
   { value: "other", label: "Other" },
 ];
 
