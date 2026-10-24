@@ -101,6 +101,7 @@ export async function buildWeeklySummary(supabase: SupabaseClient, now = new Dat
 
 export async function sendWeeklySummary(supabase: SupabaseClient): Promise<EmailResult> {
   const { subject, lines } = await buildWeeklySummary(supabase);
-  const to = (process.env.SUMMARY_EMAIL ?? process.env.ALERT_EMAIL ?? "").split(",");
+  // A blank SUMMARY_EMAIL counts as not set: use the alert addresses instead.
+  const to = (process.env.SUMMARY_EMAIL?.trim() || process.env.ALERT_EMAIL || "").split(",");
   return sendEmail({ to, subject, lines, button: { label: "Open Faults", href: `${SITE_URL}/faults` } });
 }
