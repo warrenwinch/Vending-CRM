@@ -4,7 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { isUuid } from "@/lib/ids";
-import { isCommissionType, isLocationStatus, isLocationType } from "@/lib/location-types";
+import { isCommissionType, isLocationStatus, isLocationType, parseCommissionRate } from "@/lib/location-types";
 import type { FormState } from "@/components/form-ui";
 
 // Saves a new location (locationId null) or changes an existing one.
@@ -35,21 +35,12 @@ export async function saveLocation(
   if (!values.site_name) return fail("Please enter the site name.");
   if (!isLocationType(values.type)) return fail("Please choose the type of site.");
   if (!isLocationStatus(values.status)) return fail("Please choose a status.");
-  if (!isCommissionType(values.commission_type)) return fail("Please choose a commission type.");
-
-  // Commission: a percentage (0 to 100) or dollars per month. None means no rate.
-  let rate: number | null = null;
-  if (values.commission_type !== "none") {
-    const cleaned = values.commission_rate.replace(/[$,%\s]/g, "");
-    rate = Number(cleaned);
-    if (!cleaned || !Number.isFinite(rate) || rate < 0) {
-      return fail("Please enter the commission as a number, for example 10 or 150.");
-    }
-    if (values.commission_type === "percentage" && rate > 100) {
-      return fail("A percentage commission can't be more than 100.");
-    }
-    rate = Math.round(rate * 100) / 100;
-  }
+  // "client" = use the client's default; otherwise the site's own deal.
+  const followsClient = values.commission_type === "client";
+  const ownType = followsClient ? "none" : values.commission_type;
+  if (!isCommissionType(ownType)) return fail("Please choose the commission.");
+  const parsed = parseCommissionRate(ownType, values.commission_rate);
+  if ("error" in parsed) return fail(parsed.error);
 
   const row = {
     client_id: values.client_id,
@@ -76,7 +67,7 @@ export async function saveLocation(
   const { error: commissionError } = await supabase
     .from("location_commissions")
     .upsert(
-      { location_id: savedId, commission_type: values.commission_type, commission_rate: rate },
+      { location_id: savedId, follows_client: followsClient, commission_type: ownType, commission_rate: parsed.rate },
       { onConflict: "location_id" },
     );
   if (commissionError) {

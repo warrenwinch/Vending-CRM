@@ -5,7 +5,8 @@ import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getClient } from "@/lib/clients";
 import { listLocations } from "@/lib/locations";
 import { isUuid } from "@/lib/ids";
-import { formatAbn } from "@/lib/au";
+import { formatAbn, formatAud } from "@/lib/au";
+import { describeCommission } from "@/lib/location-types";
 import { StatusBadge } from "@/components/status-badge";
 import { LocationList } from "../../locations/location-list";
 import { listContacts } from "@/lib/contacts";
@@ -43,6 +44,7 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
     ["Billing contact", client.billing_contact],
     ["Billing email", client.billing_email],
     ["Billing phone", client.billing_phone],
+    ["Commission", `${describeCommission(client.commission_type, client.commission_rate, formatAud)} (for all sites unless a site has its own deal)`],
   ];
 
   return (

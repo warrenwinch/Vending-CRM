@@ -41,6 +41,7 @@ export type LocationInsert = {
   access_instructions: string | null;
   operating_hours: string | null;
   foot_traffic: string | null;
+  follows_client: boolean; // true = the site uses its client's commission
   commission_type: CommissionType;
   commission_rate: number | null;
 };
@@ -48,9 +49,12 @@ export type LocationInsert = {
 // Client names people might type, matched without caring about capitals or spaces.
 export const clientKey = (name: string) => name.trim().toLowerCase().replace(/\s+/g, " ");
 
-// Short forms people use for commission in spreadsheets.
-const COMMISSION_ALIASES: Record<string, CommissionType> = {
-  "": "none",
+// Short forms people use for commission in spreadsheets. Blank (or
+// "client") means the site uses its client's commission.
+const COMMISSION_ALIASES: Record<string, CommissionType | "client"> = {
+  "": "client",
+  client: "client",
+  "same as client": "client",
   no: "none",
   "%": "percentage",
   percent: "percentage",
@@ -85,7 +89,7 @@ export function checkRow(raw: RawRow, clients: Map<string, string>) {
   }
 
   let rate: number | null = null;
-  if (commission && commission !== "none") {
+  if (commission && commission !== "none" && commission !== "client") {
     const cleaned = get("commission_rate").replace(/[$,%\s]/g, "");
     rate = Number(cleaned);
     if (!cleaned || !Number.isFinite(rate) || rate < 0) {
@@ -109,8 +113,9 @@ export function checkRow(raw: RawRow, clients: Map<string, string>) {
     access_instructions: get("access_instructions") || null,
     operating_hours: get("operating_hours") || null,
     foot_traffic: get("foot_traffic") || null,
-    commission_type: commission,
-    commission_rate: commission === "none" ? null : rate,
+    follows_client: commission === "client",
+    commission_type: commission === "client" ? "none" : commission,
+    commission_rate: commission === "none" || commission === "client" ? null : rate,
   };
   return { errors, row };
 }

@@ -11,15 +11,11 @@ import {
   TextAreaField,
   type FormState,
 } from "@/components/form-ui";
-import {
-  COMMISSION_TYPES,
-  LOCATION_STATUSES,
-  LOCATION_TYPES,
-  type CommissionType,
-  type Location,
-} from "@/lib/location-types";
+import { LOCATION_STATUSES, LOCATION_TYPES, type CommissionType, type Location } from "@/lib/location-types";
+import { CommissionFields } from "@/components/commission-fields";
 
-type Option = { value: string; label: string };
+// commission: the client's default, described ("10% of sales"), for "Same as client".
+type Option = { value: string; label: string; commission?: string };
 
 export function LocationForm({
   location,
@@ -42,10 +38,13 @@ export function LocationForm({
   const value = (name: string, saved: string | number | null | undefined) =>
     v?.[name] ?? (saved === null || saved === undefined ? "" : String(saved));
 
-  // The rate box only appears, and changes its label, for the chosen commission type.
-  const [commission, setCommission] = useState<CommissionType>(
-    (v?.commission_type as CommissionType) ?? location?.commission_type ?? "none",
-  );
+  // Which client is chosen, so "Same as client" can show that client's rate.
+  const [chosenClient, setChosenClient] = useState(value("client_id", location?.client_id ?? clientId));
+  const clientDefault = clients.find((c) => c.value === chosenClient)?.commission ?? "choose a client";
+
+  // The site's own deal, or "client" when it follows its client.
+  const savedCommission: CommissionType | "client" =
+    !location || location.commission_follows_client ? "client" : location.site_commission_type;
 
   return (
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
@@ -54,6 +53,7 @@ export function LocationForm({
         name="client_id"
         options={[{ value: "", label: "Choose a client…" }, ...clients]}
         defaultValue={value("client_id", location?.client_id ?? clientId)}
+        onChange={(e) => setChosenClient(e.target.value)}
         required
       />
       <Field label="Site name" name="site_name" defaultValue={value("site_name", location?.site_name)} required />
@@ -107,27 +107,12 @@ export function LocationForm({
         />
       </fieldset>
 
-      <fieldset className="flex flex-col gap-4 rounded-2xl border-2 border-zinc-200 bg-white p-4">
-        <legend className="px-1 text-sm font-semibold">Commission paid to the client</legend>
-        <SelectField
-          label="Commission type"
-          name="commission_type"
-          options={COMMISSION_TYPES}
-          value={commission}
-          onChange={(e) => setCommission(e.target.value as CommissionType)}
-        />
-        {commission !== "none" && (
-          <Field
-            key={commission}
-            label={commission === "percentage" ? "Rate (% of sales)" : "Amount per month ($ AUD)"}
-            name="commission_rate"
-            inputMode="decimal"
-            placeholder={commission === "percentage" ? "10" : "150.00"}
-            defaultValue={value("commission_rate", location?.commission_type === commission ? location.commission_rate : null)}
-            required
-          />
-        )}
-      </fieldset>
+      <CommissionFields
+        title="Commission paid to the client for this site"
+        type={(v?.commission_type as CommissionType | "client") ?? savedCommission}
+        rate={value("commission_rate", location?.site_commission_rate)}
+        clientDefault={clientDefault}
+      />
 
       <FormMessage state={state} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

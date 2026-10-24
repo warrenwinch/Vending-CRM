@@ -1,4 +1,5 @@
 // Client shapes and labels, safe to use in browser code and on the server.
+import type { CommissionType } from "@/lib/location-types";
 
 export type ClientStatus = "prospect" | "active" | "lost";
 
@@ -11,6 +12,9 @@ export type Client = {
   billing_phone: string | null;
   gst_registered: boolean;
   status: ClientStatus;
+  // Default commission for the client's sites (Administrators and Managers only).
+  commission_type: CommissionType;
+  commission_rate: number | null;
 };
 
 export const CLIENT_STATUSES: { value: ClientStatus; label: string }[] = [

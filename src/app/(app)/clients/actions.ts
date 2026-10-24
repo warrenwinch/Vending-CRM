@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { isClientStatus } from "@/lib/client-types";
+import { isCommissionType, parseCommissionRate } from "@/lib/location-types";
 import { digitsOnly, isValidAbn } from "@/lib/au";
 import type { FormState } from "@/components/form-ui";
 
@@ -26,6 +27,8 @@ export async function saveClient(
     billing_phone: get("billing_phone"),
     gst_registered: formData.get("gst_registered") === "on" ? "on" : "",
     status: get("status"),
+    commission_type: get("commission_type"),
+    commission_rate: get("commission_rate"),
   };
   const fail = (error: string): FormState => ({ error, values });
 
@@ -39,6 +42,9 @@ export async function saveClient(
     return fail("Please check the billing email address.");
   }
   if (!isClientStatus(values.status)) return fail("Please choose a status.");
+  if (!isCommissionType(values.commission_type)) return fail("Please choose the commission.");
+  const commission = parseCommissionRate(values.commission_type, values.commission_rate);
+  if ("error" in commission) return fail(commission.error);
 
   const row = {
     company_name: values.company_name,
@@ -59,5 +65,22 @@ export async function saveClient(
   // No row back means it wasn't found, or this login isn't allowed to change it.
   if (!data?.length) return fail("Could not save this client. It may have been removed.");
 
-  redirect(`/clients/${data[0].id}`);
+  const savedId = data[0].id as string;
+
+  // The default commission is kept in its own office-only table.
+  const { error: commissionError } = await supabase
+    .from("client_commissions")
+    .upsert(
+      { client_id: savedId, commission_type: values.commission_type, commission_rate: commission.rate },
+      { onConflict: "client_id" },
+    );
+  if (commissionError) {
+    // The client itself is saved; say so, so it isn't added a second time.
+    return {
+      error: `The client was saved, but its commission wasn't (${commissionError.message}). Don't save this form again: open the client and edit its commission there.`,
+      values,
+    };
+  }
+
+  redirect(`/clients/${savedId}`);
 }

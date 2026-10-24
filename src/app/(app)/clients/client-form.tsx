@@ -13,6 +13,8 @@ import {
 } from "@/components/form-ui";
 import { CLIENT_STATUSES, type Client } from "@/lib/client-types";
 import { formatAbn } from "@/lib/au";
+import { CommissionFields } from "@/components/commission-fields";
+import type { CommissionType } from "@/lib/location-types";
 
 export function ClientForm({ client }: { client?: Client }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(
@@ -75,6 +77,12 @@ export function ClientForm({ client }: { client?: Client }) {
         name="status"
         options={CLIENT_STATUSES}
         defaultValue={value("status", client?.status ?? "prospect")}
+      />
+
+      <CommissionFields
+        title="Commission paid to this client (used by all its sites unless a site has its own deal)"
+        type={(v?.commission_type as CommissionType) ?? client?.commission_type ?? "none"}
+        rate={v?.commission_rate ?? (client?.commission_rate == null ? "" : String(client.commission_rate))}
       />
 
       <FormMessage state={state} />

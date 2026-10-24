@@ -12,7 +12,7 @@ import { listFaults } from "@/lib/faults";
 import { FaultList } from "../../faults/fault-list";
 import { ContactList } from "../../clients/[id]/contacts/contact-list";
 import { MACHINE_TYPES } from "@/lib/machine-types";
-import { LOCATION_TYPES, labelOf, type Location } from "@/lib/location-types";
+import { LOCATION_TYPES, describeCommission, labelOf, type Location } from "@/lib/location-types";
 import { StatusBadge } from "@/components/status-badge";
 
 export default function LocationPage({ params }: PageProps<"/locations/[id]">) {
@@ -24,10 +24,8 @@ export default function LocationPage({ params }: PageProps<"/locations/[id]">) {
 }
 
 function commissionText(l: Location) {
-  if (l.commission_type === "none" || l.commission_rate === null) return "None";
-  return l.commission_type === "percentage"
-    ? `${l.commission_rate}% of sales`
-    : `${formatAud(l.commission_rate)} per month`;
+  const text = describeCommission(l.commission_type, l.commission_rate, formatAud);
+  return l.commission_follows_client ? `${text} (the client's rate)` : `${text} (this site's own deal)`;
 }
 
 async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "params">) {

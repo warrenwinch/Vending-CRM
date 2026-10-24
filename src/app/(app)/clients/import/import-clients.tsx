@@ -126,6 +126,7 @@ export function ImportClients() {
           <div><dt className="inline font-medium text-ink">gst_registered: </dt><dd className="inline">Yes or No. Blank means No.</dd></div>
           <div><dt className="inline font-medium text-ink">status: </dt><dd className="inline">{CLIENT_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
           <div><dt className="inline font-medium text-ink">billing_contact, billing_email, billing_phone: </dt><dd className="inline">Optional.</dd></div>
+          <div><dt className="inline font-medium text-ink">commission_type, commission_rate: </dt><dd className="inline">Optional default for all the client&apos;s sites: None, Percentage (rate = %, e.g. 10) or Fixed monthly (rate = $ per month, e.g. 150). Blank means None.</dd></div>
         </dl>
       </details>
 

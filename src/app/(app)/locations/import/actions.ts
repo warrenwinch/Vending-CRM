@@ -55,13 +55,14 @@ export async function importLocations(rows: RawRow[]): Promise<ImportResult> {
   if (rowErrors.length) return { rowErrors };
 
   // Sites first (the commission fields live in their own private table).
-  const sites = inserts.map((l) => ({ ...l, commission_type: undefined, commission_rate: undefined }));
+  const sites = inserts.map((l) => ({ ...l, follows_client: undefined, commission_type: undefined, commission_rate: undefined }));
   const { data, error } = await supabase.from("locations").insert(sites).select("id");
   if (error) return { error: `Could not save the locations: ${error.message}` };
 
   // The database returns the new sites in the same order as the file.
   const commissions = inserts.map((l, i) => ({
     location_id: data[i]?.id as string,
+    follows_client: l.follows_client,
     commission_type: l.commission_type,
     commission_rate: l.commission_rate,
   }));

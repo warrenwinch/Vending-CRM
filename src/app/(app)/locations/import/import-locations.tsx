@@ -136,7 +136,7 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
           <div><dt className="inline font-bold text-ink">site_name: </dt><dd className="inline">Required, for example &ldquo;ABS House&rdquo;.</dd></div>
           <div><dt className="inline font-bold text-ink">type: </dt><dd className="inline">{LOCATION_TYPES.map((t) => t.label).join(", ")}. Blank means Other.</dd></div>
           <div><dt className="inline font-bold text-ink">status: </dt><dd className="inline">{LOCATION_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
-          <div><dt className="inline font-bold text-ink">commission_type: </dt><dd className="inline">None, Percentage or Fixed monthly. Blank means None.</dd></div>
+          <div><dt className="inline font-bold text-ink">commission_type: </dt><dd className="inline">Leave blank to use the client&apos;s commission. Or None, Percentage or Fixed monthly for a deal just for this site.</dd></div>
           <div><dt className="inline font-bold text-ink">commission_rate: </dt><dd className="inline">For Percentage, the % (e.g. 10). For Fixed monthly, dollars per month (e.g. 150).</dd></div>
           <div><dt className="inline font-bold text-ink">address, placement_notes, access_instructions, operating_hours, foot_traffic: </dt><dd className="inline">Optional.</dd></div>
         </dl>
@@ -199,7 +199,7 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
                           <td className="p-2">{row && labelOf(LOCATION_TYPES, row.type)}</td>
                           <td className="p-2">{row && labelOf(LOCATION_STATUSES, row.status)}</td>
                           <td className="p-2 whitespace-nowrap">
-                            {row && (row.commission_type === "none" ? labelOf(COMMISSION_TYPES, "none") : commissionText(row.commission_type, row.commission_rate))}
+                            {row && (row.follows_client ? "Same as client" : row.commission_type === "none" ? labelOf(COMMISSION_TYPES, "none") : commissionText(row.commission_type, row.commission_rate))}
                           </td>
                         </>
                       )}

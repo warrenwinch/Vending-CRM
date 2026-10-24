@@ -55,8 +55,20 @@ export async function importClients(rows: RawRow[]): Promise<ImportResult> {
 
   if (rowErrors.length) return { rowErrors };
 
-  const { data, error } = await supabase.from("clients").insert(inserts).select("id");
+  // Clients first; their default commission goes in its own office-only table.
+  const clients = inserts.map((c) => ({ ...c, commission_type: undefined, commission_rate: undefined }));
+  const { data, error } = await supabase.from("clients").insert(clients).select("id");
   if (error) return { error: `Could not save the clients: ${error.message}` };
+
+  // The database returns the new clients in the same order as the file.
+  const { error: commissionError } = await supabase.from("client_commissions").insert(
+    inserts.map((c, i) => ({ client_id: data[i]?.id as string, commission_type: c.commission_type, commission_rate: c.commission_rate })),
+  );
+  if (commissionError) {
+    return {
+      error: `The ${data.length} clients were added, but their commission settings weren't saved (${commissionError.message}). Don't import this file again: set the commission on each client's Edit page.`,
+    };
+  }
 
   return { imported: data.length };
 }
