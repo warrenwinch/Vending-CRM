@@ -12,3 +12,13 @@ export function matchOption<T extends string>(list: { value: T; label: string }[
   const key = squash(text);
   return list.find((o) => squash(o.value) === key || squash(o.label) === key)?.value;
 }
+
+// A copy of each row without the given fields. (Setting them to undefined
+// isn't enough: the database is still told about those column names.)
+export function withoutFields<T extends object, K extends keyof T>(rows: T[], keys: K[]): Omit<T, K>[] {
+  return rows.map((row) => {
+    const copy = { ...row };
+    for (const k of keys) delete copy[k];
+    return copy;
+  });
+}

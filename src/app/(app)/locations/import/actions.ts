@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { withoutFields } from "@/lib/csv";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { listClientOptions } from "@/lib/locations";
 import {
@@ -55,7 +56,7 @@ export async function importLocations(rows: RawRow[]): Promise<ImportResult> {
   if (rowErrors.length) return { rowErrors };
 
   // Sites first (the commission fields live in their own private table).
-  const sites = inserts.map((l) => ({ ...l, follows_client: undefined, commission_type: undefined, commission_rate: undefined }));
+  const sites = withoutFields(inserts, ["follows_client", "commission_type", "commission_rate"]);
   const { data, error } = await supabase.from("locations").insert(sites).select("id");
   if (error) return { error: `Could not save the locations: ${error.message}` };
 

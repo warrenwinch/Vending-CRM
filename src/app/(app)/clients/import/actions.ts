@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { withoutFields } from "@/lib/csv";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { formatAbn } from "@/lib/au";
 import {
@@ -56,7 +57,7 @@ export async function importClients(rows: RawRow[]): Promise<ImportResult> {
   if (rowErrors.length) return { rowErrors };
 
   // Clients first; their default commission goes in its own office-only table.
-  const clients = inserts.map((c) => ({ ...c, commission_type: undefined, commission_rate: undefined }));
+  const clients = withoutFields(inserts, ["commission_type", "commission_rate"]);
   const { data, error } = await supabase.from("clients").insert(clients).select("id");
   if (error) return { error: `Could not save the customers: ${error.message}` };
 

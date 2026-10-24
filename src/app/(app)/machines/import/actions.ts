@@ -1,6 +1,7 @@
 "use server";
 
 import { createClient } from "@/lib/supabase/server";
+import { withoutFields } from "@/lib/csv";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
 import {
@@ -57,8 +58,7 @@ export async function importMachines(rows: RawRow[]): Promise<ImportResult> {
   if (rowErrors.length) return { rowErrors };
 
   // Machines first; purchase costs go in their own private table afterwards.
-  // (undefined fields are left out of what's sent to the database)
-  const machines = inserts.map((m) => ({ ...m, purchase_cost: undefined }));
+  const machines = withoutFields(inserts, ["purchase_cost"]);
   const { data, error } = await supabase.from("machines").insert(machines).select("id, machine_number");
   if (error) return { error: `Could not save the machines: ${error.message}` };
 
