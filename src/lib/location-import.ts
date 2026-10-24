@@ -55,6 +55,7 @@ const COMMISSION_ALIASES: Record<string, CommissionType | "client"> = {
   "": "client",
   client: "client",
   "same as client": "client",
+  "same as customer": "client",
   no: "none",
   "%": "percentage",
   percent: "percentage",
@@ -69,8 +70,8 @@ export function checkRow(raw: RawRow, clients: Map<string, string>) {
 
   const clientName = get("client_name");
   const clientId = clientName ? clients.get(clientKey(clientName)) : undefined;
-  if (!clientName) errors.push("Client name is missing.");
-  else if (!clientId) errors.push(`There's no client called “${clientName}”. Add or import the client first.`);
+  if (!clientName) errors.push("Customer name is missing.");
+  else if (!clientId) errors.push(`There's no customer called “${clientName}”. Add or import the customer first.`);
 
   const siteName = get("site_name");
   if (!siteName) errors.push("Site name is missing.");
@@ -127,7 +128,7 @@ export function findDuplicates(rows: RawRow[]) {
   rows.forEach((r, i) => {
     const key = `${clientKey(r.client_name ?? "")}|${clientKey(r.site_name ?? "")}`;
     if (!r.client_name?.trim() || !r.site_name?.trim()) return;
-    if (seen.has(key)) dupes.set(i, `“${r.site_name?.trim()}” for this client is also on row ${seen.get(key)! + 2}.`);
+    if (seen.has(key)) dupes.set(i, `“${r.site_name?.trim()}” for this customer is also on row ${seen.get(key)! + 2}.`);
     else seen.set(key, i);
   });
   return dupes;

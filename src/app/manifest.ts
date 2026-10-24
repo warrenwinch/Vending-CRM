@@ -6,7 +6,7 @@ export default function manifest(): MetadataRoute.Manifest {
   return {
     name: "Watwin Vending CRM",
     short_name: "Watwin CRM",
-    description: "Clients, sites, machines and faults for Watwin Vending",
+    description: "Customers, sites, machines and faults for Watwin Vending",
     start_url: "/",
     scope: "/",
     display: "standalone",

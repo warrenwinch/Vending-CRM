@@ -176,7 +176,7 @@ export function PaymentForm({
             <dt>
               GST{" "}
               <span className="text-zinc-500">
-                {gstRegistered ? "(client is GST registered: 10%)" : "(client isn't GST registered)"}
+                {gstRegistered ? "(customer is GST registered: 10%)" : "(customer isn't GST registered)"}
               </span>
             </dt>
             <dd>

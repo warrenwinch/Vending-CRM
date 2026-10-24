@@ -18,7 +18,7 @@ const barlowCondensed = Barlow_Condensed({
 
 export const metadata: Metadata = {
   title: "Vending CRM",
-  description: "Clients, sites and machines for vending operators",
+  description: "Customers, sites and machines for vending operators",
   // iPhone: open full screen from the home screen, with the time and battery
   // shown over the charcoal top bar.
   appleWebApp: { capable: true, title: "Watwin CRM", statusBarStyle: "black-translucent" },

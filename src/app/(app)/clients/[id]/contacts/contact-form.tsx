@@ -53,11 +53,11 @@ export function ContactForm({
         <SelectField
           label="Site"
           name="location_id"
-          options={[{ value: "", label: "All sites (the whole client)" }, ...sites]}
+          options={[{ value: "", label: "All sites (the whole customer)" }, ...sites]}
           defaultValue={value("location_id", contact?.location_id ?? defaultLocationId)}
         />
         <CheckboxField
-          label="Main contact for this client"
+          label="Main contact for this customer"
           name="is_main_contact"
           defaultChecked={v ? v.is_main_contact === "on" : (contact?.is_main_contact ?? false)}
         />

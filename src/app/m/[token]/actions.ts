@@ -54,14 +54,14 @@ export async function reportFromQr(token: string, _prev: FormState, formData: Fo
     const place = m ? [m.site_name, m.site_position].filter(Boolean).join(", ") : "";
     const label = CUSTOMER_FAULT_CHOICES.find((c) => c.value === values.category)?.label ?? values.category;
     await sendEmail({
-      subject: `Customer fault: ${m?.machine_number ?? "machine"}${place ? ` at ${place}` : ""}`,
+      subject: `Public fault report: ${m?.machine_number ?? "machine"}${place ? ` at ${place}` : ""}`,
       lines: [
         ["Machine", m?.machine_number ?? "Unknown"],
         ["Where", place || "Not at a location"],
         ["Problem", label],
         ["Working at all?", values.severity === "not_working" ? "No, not at all" : "Yes, partly"],
         ["Details", values.description],
-        ["Customer contact", values.contact || "None given"],
+        ["Their contact details", values.contact || "None given"],
         ["Reported", formatDateTime(new Date().toISOString())],
       ],
     });

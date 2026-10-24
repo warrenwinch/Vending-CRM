@@ -45,7 +45,7 @@ export async function importLocations(rows: RawRow[]): Promise<ImportResult> {
     const { errors, row } = checkRow(raw, clients);
     if (dupes.has(i)) errors.push(dupes.get(i)!);
     if (row && known.has(`${row.client_id}|${clientKey(row.site_name)}`)) {
-      errors.push(`“${row.site_name}” already exists for this client.`);
+      errors.push(`“${row.site_name}” already exists for this customer.`);
     }
     // Row numbers match the spreadsheet: row 1 is the headings.
     if (errors.length || !row) rowErrors.push({ row: i + 2, errors });

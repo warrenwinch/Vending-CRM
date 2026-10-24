@@ -20,7 +20,7 @@ export function CommissionFields({
 }) {
   const [choice, setChoice] = useState(type);
   const options = [
-    ...(clientDefault !== undefined ? [{ value: "client", label: `Same as client (${clientDefault})` }] : []),
+    ...(clientDefault !== undefined ? [{ value: "client", label: `Same as customer (${clientDefault})` }] : []),
     ...COMMISSION_TYPES,
   ];
 

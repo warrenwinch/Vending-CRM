@@ -29,7 +29,7 @@ export async function saveContact(
   };
   const fail = (error: string): FormState => ({ error, values });
 
-  if (!isUuid(clientId)) return fail("This client wasn't found.");
+  if (!isUuid(clientId)) return fail("This customer wasn't found.");
   if (!values.full_name) return fail("Please enter the contact's name.");
   if (values.email && !EMAIL.test(values.email)) return fail("Please check the email address.");
   if (values.location_id && !isUuid(values.location_id)) return fail("Please choose a site from the list.");
@@ -56,7 +56,7 @@ export async function saveContact(
       .eq("id", row.location_id)
       .eq("client_id", clientId)
       .maybeSingle();
-    if (!site) return fail("That site doesn't belong to this client. Please choose another.");
+    if (!site) return fail("That site doesn't belong to this customer. Please choose another.");
   }
 
   // Each client has one main contact: making this one main un-marks the others.

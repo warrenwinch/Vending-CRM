@@ -40,7 +40,7 @@ export function LocationForm({
 
   // Which client is chosen, so "Same as client" can show that client's rate.
   const [chosenClient, setChosenClient] = useState(value("client_id", location?.client_id ?? clientId));
-  const clientDefault = clients.find((c) => c.value === chosenClient)?.commission ?? "choose a client";
+  const clientDefault = clients.find((c) => c.value === chosenClient)?.commission ?? "choose a customer";
 
   // The site's own deal, or "client" when it follows its client.
   const savedCommission: CommissionType | "client" =
@@ -49,9 +49,9 @@ export function LocationForm({
   return (
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
       <SelectField
-        label="Client"
+        label="Customer"
         name="client_id"
-        options={[{ value: "", label: "Choose a client…" }, ...clients]}
+        options={[{ value: "", label: "Choose a customer…" }, ...clients]}
         defaultValue={value("client_id", location?.client_id ?? clientId)}
         onChange={(e) => setChosenClient(e.target.value)}
         required
@@ -108,7 +108,7 @@ export function LocationForm({
       </fieldset>
 
       <CommissionFields
-        title="Commission paid to the client for this site"
+        title="Commission paid to the customer for this site"
         type={(v?.commission_type as CommissionType | "client") ?? savedCommission}
         rate={value("commission_rate", location?.site_commission_rate)}
         clientDefault={clientDefault}

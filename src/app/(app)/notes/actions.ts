@@ -18,7 +18,7 @@ export async function addNote(target: NoteTarget, _prev: FormState, formData: Fo
   if (!body) return { error: "Please type a note first." };
   if (body.length > MAX_LENGTH) return { error: `Please keep notes under ${MAX_LENGTH} characters.`, values: { body } };
   // Client notes are for the office (the database enforces this too).
-  if (target.kind === "client" && !OFFICE_ROLES.includes(profile.role)) return { error: "You can't add notes to clients." };
+  if (target.kind === "client" && !OFFICE_ROLES.includes(profile.role)) return { error: "You can't add notes to customers." };
 
   const supabase = await createClient();
   const { error } = await supabase.from("notes").insert({ [targetColumn(target.kind)]: target.id, body });

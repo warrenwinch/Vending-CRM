@@ -67,7 +67,7 @@ export async function buildWeeklySummary(supabase: SupabaseClient, now = new Dat
       "Reported",
       `${opened.length} fault${opened.length === 1 ? "" : "s"}` +
         (opened.some((f) => f.reported_by_public)
-          ? ` (${opened.filter((f) => f.reported_by_public).length} by customers)`
+          ? ` (${opened.filter((f) => f.reported_by_public).length} by the public)`
           : ""),
     ],
     ["Fixed", `${fixed.length}`],

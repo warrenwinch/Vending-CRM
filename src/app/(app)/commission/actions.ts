@@ -27,7 +27,7 @@ export async function recordPayment(clientId: string, _prev: FormState, formData
   };
   const fail = (error: string): FormState => ({ error, values });
 
-  if (!isUuid(clientId)) return fail("This client wasn't found.");
+  if (!isUuid(clientId)) return fail("This customer wasn't found.");
   if (!DATE.test(values.paid_on)) return fail("Please choose the date paid.");
   if (values.paid_on > todayInSydney()) return fail("The date paid can't be in the future.");
   if (!isPaymentMethod(values.method)) return fail("Please choose how it was paid.");
@@ -47,7 +47,7 @@ export async function recordPayment(clientId: string, _prev: FormState, formData
   const lines = [];
   for (const l of input) {
     const site = sites.get(l.location_id);
-    if (!site) return fail("One of the sites doesn't belong to this client. Please reload the page.");
+    if (!site) return fail("One of the sites doesn't belong to this customer. Please reload the page.");
     const name = site.site_name;
     if (!DATE.test(l.period_start) || !DATE.test(l.period_end)) return fail(`${name}: please choose the From and To dates.`);
     if (l.period_end < l.period_start) {

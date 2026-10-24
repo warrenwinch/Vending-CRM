@@ -32,7 +32,7 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
         </Link>
         <h1 className="page-title">QR sticker</h1>
         <p className="text-zinc-600">
-          Stick this on the front of the machine. Customers scan it to report a problem (it goes straight into Faults) or call the number. It shows where the machine is now, so print a new one if you move it.
+          Stick this on the front of the machine. Anyone can scan it to report a problem (it goes straight into Faults) or call the number. It shows where the machine is now, so print a new one if you move it.
         </p>
         <div className="flex flex-wrap gap-3">
           <PrintButton label="Print sticker" />

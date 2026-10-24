@@ -26,7 +26,7 @@ export function FaultList({ faults, showMachine, empty }: { faults: Fault[]; sho
                 {f.site_name && <span className="text-zinc-400">·</span>}
                 <span className="font-bold">{categoryLabel(f.category)}</span>
                 {f.reported_by_public && (
-                  <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-900">Customer report</span>
+                  <span className="rounded-full bg-sky-100 px-2.5 py-0.5 text-xs font-medium text-sky-900">Public report</span>
                 )}
                 {fixedIn === null ? (
                   <span

@@ -52,7 +52,7 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="min-w-0">
           <Link href="/clients" className="text-sm font-medium text-zinc-500 underline">
-            Clients
+            Customers
           </Link>
           <h1 className="flex flex-wrap items-center gap-3 page-title">
             {client.company_name}
@@ -85,7 +85,7 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
           Add contact
         </Link>
       </div>
-      <ContactList contacts={contacts} showSite empty="No contacts for this client yet." />
+      <ContactList contacts={contacts} showSite empty="No contacts for this customer yet." />
 
       <div className="flex items-center justify-between gap-4">
         <h2 className="section-title">Locations</h2>
@@ -100,7 +100,7 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
         locations={locations}
         showClient={false}
         openFaults={Object.fromEntries(bySite)}
-        empty="No locations for this client yet."
+        empty="No locations for this customer yet."
       />
 
       <div className="flex items-center justify-between gap-4">
@@ -112,7 +112,7 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
           Record payment
         </Link>
       </div>
-      <PaymentList payments={payments} showClient={false} empty="No commission paid to this client yet." />
+      <PaymentList payments={payments} showClient={false} empty="No commission paid to this customer yet." />
 
       <NotesSection target={{ kind: "client", id: client.id }} canDelete />
     </>

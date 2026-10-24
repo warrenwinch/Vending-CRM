@@ -41,8 +41,8 @@ async function Dashboard() {
   ];
   if (isOffice) {
     tiles.push(
-      { href: "/clients", title: "Clients", detail: "Companies and contacts", tone: "plain" },
-      { href: "/commission", title: "Commission", detail: "Payments to clients", tone: "plain" },
+      { href: "/clients", title: "Customers", detail: "Companies and contacts", tone: "plain" },
+      { href: "/commission", title: "Commission", detail: "Payments to customers", tone: "plain" },
     );
   }
 

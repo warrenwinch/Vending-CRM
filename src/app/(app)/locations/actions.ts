@@ -31,7 +31,7 @@ export async function saveLocation(
   };
   const fail = (error: string): FormState => ({ error, values });
 
-  if (!isUuid(values.client_id)) return fail("Please choose which client this site belongs to.");
+  if (!isUuid(values.client_id)) return fail("Please choose which customer this site belongs to.");
   if (!values.site_name) return fail("Please enter the site name.");
   if (!isLocationType(values.type)) return fail("Please choose the type of site.");
   if (!isLocationStatus(values.status)) return fail("Please choose a status.");

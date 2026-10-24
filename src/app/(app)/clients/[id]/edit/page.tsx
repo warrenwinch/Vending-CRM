@@ -8,7 +8,7 @@ import { ClientForm } from "../../client-form";
 export default function EditClientPage({ params }: PageProps<"/clients/[id]/edit">) {
   return (
     <>
-      <h1 className="page-title">Edit client</h1>
+      <h1 className="page-title">Edit customer</h1>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <EditClient params={params} />
       </Suspense>

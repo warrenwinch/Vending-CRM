@@ -80,14 +80,14 @@ export function ClientForm({ client }: { client?: Client }) {
       />
 
       <CommissionFields
-        title="Commission paid to this client (used by all its sites unless a site has its own deal)"
+        title="Commission paid to this customer (used by all its sites unless a site has its own deal)"
         type={(v?.commission_type as CommissionType) ?? client?.commission_type ?? "none"}
         rate={v?.commission_rate ?? (client?.commission_rate == null ? "" : String(client.commission_rate))}
       />
 
       <FormMessage state={state} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">
-        <SubmitButton pending={pending}>{client ? "Save changes" : "Add client"}</SubmitButton>
+        <SubmitButton pending={pending}>{client ? "Save changes" : "Add customer"}</SubmitButton>
         <Link href={client ? `/clients/${client.id}` : "/clients"} className="text-center text-sm font-medium underline">
           Cancel
         </Link>

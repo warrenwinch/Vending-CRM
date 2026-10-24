@@ -26,9 +26,9 @@ async function Importer() {
   if (clients.length === 0) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-        Every location belongs to a client.{" "}
+        Every location belongs to a customer.{" "}
         <Link href="/clients/import" className="font-medium underline">
-          Import or add your clients first
+          Import or add your customers first
         </Link>
         .
       </p>

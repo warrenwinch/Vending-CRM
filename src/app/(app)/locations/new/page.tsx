@@ -25,9 +25,9 @@ async function NewLocation({ searchParams }: Pick<PageProps<"/locations/new">, "
   if (clients.length === 0) {
     return (
       <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-        Every location belongs to a client.{" "}
+        Every location belongs to a customer.{" "}
         <Link href="/clients/new" className="font-medium underline">
-          Add a client first
+          Add a customer first
         </Link>
         .
       </p>

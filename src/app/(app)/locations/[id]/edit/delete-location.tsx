@@ -12,7 +12,7 @@ export function DeleteLocation({ locationId, siteName }: { locationId: string; s
     <form
       action={formAction}
       onSubmit={(e) => {
-        if (!confirm(`Delete ${siteName}? Its notes are deleted too; its contacts move to "All sites" for the client. This can't be undone.`)) {
+        if (!confirm(`Delete ${siteName}? Its notes are deleted too; its contacts move to "All sites" for the customer. This can't be undone.`)) {
           e.preventDefault();
         }
       }}

@@ -25,7 +25,7 @@ export default function LocationPage({ params }: PageProps<"/locations/[id]">) {
 
 function commissionText(l: Location) {
   const text = describeCommission(l.commission_type, l.commission_rate, formatAud);
-  return l.commission_follows_client ? `${text} (the client's rate)` : `${text} (this site's own deal)`;
+  return l.commission_follows_client ? `${text} (the customer's rate)` : `${text} (this site's own deal)`;
 }
 
 async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "params">) {

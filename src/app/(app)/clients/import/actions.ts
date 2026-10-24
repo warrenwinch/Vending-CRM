@@ -22,7 +22,7 @@ export type ImportResult = {
 export async function importClients(rows: RawRow[]): Promise<ImportResult> {
   await requireRole(OFFICE_ROLES);
 
-  if (!Array.isArray(rows) || rows.length === 0) return { error: "The file has no clients in it." };
+  if (!Array.isArray(rows) || rows.length === 0) return { error: "The file has no customers in it." };
   if (rows.length > MAX_IMPORT_ROWS) {
     return { error: `Please import at most ${MAX_IMPORT_ROWS} clients at a time.` };
   }
@@ -31,7 +31,7 @@ export async function importClients(rows: RawRow[]): Promise<ImportResult> {
 
   // Clients already in the system, matched by name or ABN.
   const { data: existing, error: loadError } = await supabase.from("clients").select("company_name, abn");
-  if (loadError) return { error: `Could not check existing clients: ${loadError.message}` };
+  if (loadError) return { error: `Could not check existing customers: ${loadError.message}` };
   const knownNames = new Set(existing.map((c) => String(c.company_name).trim().toLowerCase()));
   const knownAbns = new Map(existing.filter((c) => c.abn).map((c) => [String(c.abn), c.company_name as string]));
 
@@ -43,7 +43,7 @@ export async function importClients(rows: RawRow[]): Promise<ImportResult> {
     const { errors, row } = checkRow(raw);
     errors.push(...(dupes.get(i) ?? []));
     if (row && knownNames.has(row.company_name.toLowerCase())) {
-      errors.push(`“${row.company_name}” is already one of your clients.`);
+      errors.push(`“${row.company_name}” is already one of your customers.`);
     }
     if (row?.abn && knownAbns.has(row.abn)) {
       errors.push(`ABN ${formatAbn(row.abn)} already belongs to ${knownAbns.get(row.abn)}.`);
@@ -58,7 +58,7 @@ export async function importClients(rows: RawRow[]): Promise<ImportResult> {
   // Clients first; their default commission goes in its own office-only table.
   const clients = inserts.map((c) => ({ ...c, commission_type: undefined, commission_rate: undefined }));
   const { data, error } = await supabase.from("clients").insert(clients).select("id");
-  if (error) return { error: `Could not save the clients: ${error.message}` };
+  if (error) return { error: `Could not save the customers: ${error.message}` };
 
   // The database returns the new clients in the same order as the file.
   const { error: commissionError } = await supabase.from("client_commissions").insert(

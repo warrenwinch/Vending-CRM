@@ -63,7 +63,7 @@ export async function saveClient(
 
   if (error) return fail(`Could not save: ${error.message}`);
   // No row back means it wasn't found, or this login isn't allowed to change it.
-  if (!data?.length) return fail("Could not save this client. It may have been removed.");
+  if (!data?.length) return fail("Could not save this customer. It may have been removed.");
 
   const savedId = data[0].id as string;
 
@@ -77,7 +77,7 @@ export async function saveClient(
   if (commissionError) {
     // The client itself is saved; say so, so it isn't added a second time.
     return {
-      error: `The client was saved, but its commission wasn't (${commissionError.message}). Don't save this form again: open the client and edit its commission there.`,
+      error: `The customer was saved, but its commission wasn't (${commissionError.message}). Don't save this form again: open the customer and edit its commission there.`,
       values,
     };
   }

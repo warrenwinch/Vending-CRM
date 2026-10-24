@@ -53,7 +53,7 @@ export function ImportClients() {
           return;
         }
         if (data.length === 0) {
-          setFileError("The file has headings but no clients.");
+          setFileError("The file has headings but no customers.");
           return;
         }
         if (data.length > MAX_IMPORT_ROWS) {
@@ -91,11 +91,11 @@ export function ImportClients() {
     return (
       <div className="flex flex-col gap-4">
         <p className="rounded-md bg-green-50 p-4 text-green-900">
-          Imported {count} client{count === 1 ? "" : "s"}.
+          Imported {count} customer{count === 1 ? "" : "s"}.
         </p>
         <div className="flex gap-3">
           <Link href="/clients" className="btn-primary">
-            View clients
+            View customers
           </Link>
           <button type="button" onClick={() => { reset(); setFileName(""); }} className="btn-secondary">
             Import another file
@@ -114,19 +114,19 @@ export function ImportClients() {
           </a>{" "}
           and open it in Excel or Google Sheets.
         </li>
-        <li>Replace the two example rows with your clients, one per row. Only “company_name” is needed; leave anything you don&apos;t know blank.</li>
+        <li>Replace the two example rows with your customers, one per row. Only “company_name” is needed; leave anything you don&apos;t know blank.</li>
         <li>Save it as CSV UTF-8 and choose it below. Nothing is saved until you click Import.</li>
       </ol>
 
       <details className="rounded-2xl border-2 border-zinc-200 bg-white p-4 text-sm">
         <summary className="cursor-pointer font-medium">What goes in each column</summary>
         <dl className="mt-3 grid gap-2 text-zinc-600">
-          <div><dt className="inline font-medium text-ink">company_name: </dt><dd className="inline">Required. Must not already be one of your clients.</dd></div>
+          <div><dt className="inline font-medium text-ink">company_name: </dt><dd className="inline">Required. Must not already be one of your customers.</dd></div>
           <div><dt className="inline font-medium text-ink">abn: </dt><dd className="inline">Optional. 11 digits; spaces are fine.</dd></div>
           <div><dt className="inline font-medium text-ink">gst_registered: </dt><dd className="inline">Yes or No. Blank means No.</dd></div>
           <div><dt className="inline font-medium text-ink">status: </dt><dd className="inline">{CLIENT_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
           <div><dt className="inline font-medium text-ink">billing_contact, billing_email, billing_phone: </dt><dd className="inline">Optional.</dd></div>
-          <div><dt className="inline font-medium text-ink">commission_type, commission_rate: </dt><dd className="inline">Optional default for all the client&apos;s sites: None, Percentage (rate = %, e.g. 10) or Fixed monthly (rate = $ per month, e.g. 150). Blank means None.</dd></div>
+          <div><dt className="inline font-medium text-ink">commission_type, commission_rate: </dt><dd className="inline">Optional default for all the customer&apos;s sites: None, Percentage (rate = %, e.g. 10) or Fixed monthly (rate = $ per month, e.g. 150). Blank means None.</dd></div>
         </dl>
       </details>
 
@@ -154,7 +154,7 @@ export function ImportClients() {
       {shown.length > 0 && (
         <>
           <p className={`rounded-md p-3 text-sm ${problemCount ? "bg-red-50 text-red-900" : "bg-zinc-100"}`}>
-            {fileName}: {shown.length} client{shown.length === 1 ? "" : "s"}.{" "}
+            {fileName}: {shown.length} customer{shown.length === 1 ? "" : "s"}.{" "}
             {problemCount
               ? `${problemCount} row${problemCount === 1 ? " has" : "s have"} a problem. Fix ${problemCount === 1 ? "it" : "them"} in the spreadsheet, save, and choose the file again.`
               : "Everything looks right."}
@@ -209,7 +209,7 @@ export function ImportClients() {
             disabled={pending || problemCount > 0}
             className="btn-primary self-start"
           >
-            {pending ? "Importing…" : `Import ${shown.length} client${shown.length === 1 ? "" : "s"}`}
+            {pending ? "Importing…" : `Import ${shown.length} customer${shown.length === 1 ? "" : "s"}`}
           </button>
         </>
       )}

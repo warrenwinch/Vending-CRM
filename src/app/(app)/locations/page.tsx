@@ -93,7 +93,7 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
           search || status
             ? "No locations match."
             : canEdit
-              ? "No locations yet. Click “Add location”, or add one from a client's page."
+              ? "No locations yet. Click “Add location”, or add one from a customer's page."
               : "No locations yet."
         }
       />

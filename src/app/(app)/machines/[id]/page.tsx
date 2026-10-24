@@ -153,9 +153,9 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
       <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-2 ring-zinc-200 sm:flex-row sm:items-center sm:justify-between">
         <div>
-          <h2 className="section-title">Customer QR sticker</h2>
+          <h2 className="section-title">Public QR sticker</h2>
           <p className="text-sm text-zinc-600">
-            Customers scan it to report a problem without logging in. Reports appear under Faults as “Customer”.
+            Anyone at the site can scan it to report a problem without logging in. Reports appear under Faults as “Public report”.
           </p>
         </div>
         <Link href={`/machines/${machine.id}/label`} className="btn-secondary shrink-0">

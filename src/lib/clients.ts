@@ -33,13 +33,13 @@ export async function listClients({ status, search }: { status?: ClientStatus; s
     query = query.or(`company_name.ilike.%${term}%,billing_contact.ilike.%${term}%`);
   }
   const { data, error } = await query;
-  if (error) throw new Error(`Could not load clients: ${error.message}`);
+  if (error) throw new Error(`Could not load customers: ${error.message}`);
   return (data as unknown as Row[]).map(toClient);
 }
 
 export async function getClient(id: string) {
   const supabase = await createClient();
   const { data, error } = await supabase.from("clients").select(COLUMNS).eq("id", id).maybeSingle();
-  if (error) throw new Error(`Could not load this client: ${error.message}`);
+  if (error) throw new Error(`Could not load this customer: ${error.message}`);
   return data ? toClient(data as unknown as Row) : null;
 }

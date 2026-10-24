@@ -10,7 +10,7 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
   return (
     <>
       <div className="flex items-center justify-between gap-4">
-        <h1 className="page-title">Clients</h1>
+        <h1 className="page-title">Customers</h1>
         <div className="flex gap-2">
           <Link
             href="/clients/import"
@@ -22,11 +22,11 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
             href="/clients/new"
             className="btn-primary"
           >
-            Add client
+            Add customer
           </Link>
         </div>
       </div>
-      <Suspense fallback={<p className="text-sm text-zinc-500">Loading clients…</p>}>
+      <Suspense fallback={<p className="text-sm text-zinc-500">Loading customers…</p>}>
         <ClientList searchParams={searchParams} />
       </Suspense>
     </>
@@ -84,7 +84,7 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
 
       {clients.length === 0 ? (
         <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-          {search || status ? "No clients match." : "No clients yet. Click “Add client” to add your first one."}
+          {search || status ? "No customers match." : "No customers yet. Click “Add customer” to add your first one."}
         </p>
       ) : (
         <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">

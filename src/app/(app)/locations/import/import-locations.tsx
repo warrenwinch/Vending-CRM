@@ -124,7 +124,7 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
         </li>
         <li>
           Replace the two example rows with your sites, one per row. Each row needs the <b>client_name</b> (exactly as it
-          is in Clients) and a <b>site_name</b>; leave anything you don&apos;t know blank.
+          is in Customers) and a <b>site_name</b>; leave anything you don&apos;t know blank.
         </li>
         <li>Save it as CSV UTF-8 and choose it below. Nothing is saved until you click Import.</li>
       </ol>
@@ -132,11 +132,11 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
       <details className="rounded-2xl bg-white p-4 text-sm ring-2 ring-zinc-200">
         <summary className="cursor-pointer font-bold">What goes in each column</summary>
         <dl className="mt-3 grid gap-2 text-zinc-600">
-          <div><dt className="inline font-bold text-ink">client_name: </dt><dd className="inline">Required. Must match one of your clients ({clients.length} so far). Capitals don&apos;t matter.</dd></div>
+          <div><dt className="inline font-bold text-ink">client_name: </dt><dd className="inline">Required. Must match one of your customers ({clients.length} so far). Capitals don&apos;t matter.</dd></div>
           <div><dt className="inline font-bold text-ink">site_name: </dt><dd className="inline">Required, for example &ldquo;ABS House&rdquo;.</dd></div>
           <div><dt className="inline font-bold text-ink">type: </dt><dd className="inline">{LOCATION_TYPES.map((t) => t.label).join(", ")}. Blank means Other.</dd></div>
           <div><dt className="inline font-bold text-ink">status: </dt><dd className="inline">{LOCATION_STATUSES.map((s) => s.label).join(", ")}. Blank means Prospect.</dd></div>
-          <div><dt className="inline font-bold text-ink">commission_type: </dt><dd className="inline">Leave blank to use the client&apos;s commission. Or None, Percentage or Fixed monthly for a deal just for this site.</dd></div>
+          <div><dt className="inline font-bold text-ink">commission_type: </dt><dd className="inline">Leave blank to use the customer&apos;s commission. Or None, Percentage or Fixed monthly for a deal just for this site.</dd></div>
           <div><dt className="inline font-bold text-ink">commission_rate: </dt><dd className="inline">For Percentage, the % (e.g. 10). For Fixed monthly, dollars per month (e.g. 150).</dd></div>
           <div><dt className="inline font-bold text-ink">address, placement_notes, access_instructions, operating_hours, foot_traffic: </dt><dd className="inline">Optional.</dd></div>
         </dl>
@@ -172,7 +172,7 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
               <thead className="bg-zinc-100 text-zinc-600">
                 <tr>
                   <th className="p-2 font-medium">Row</th>
-                  <th className="p-2 font-medium">Client</th>
+                  <th className="p-2 font-medium">Customer</th>
                   <th className="p-2 font-medium">Site</th>
                   <th className="p-2 font-medium">Type</th>
                   <th className="p-2 font-medium">Status</th>
@@ -199,7 +199,7 @@ export function ImportLocations({ clients }: { clients: { value: string; label: 
                           <td className="p-2">{row && labelOf(LOCATION_TYPES, row.type)}</td>
                           <td className="p-2">{row && labelOf(LOCATION_STATUSES, row.status)}</td>
                           <td className="p-2 whitespace-nowrap">
-                            {row && (row.follows_client ? "Same as client" : row.commission_type === "none" ? labelOf(COMMISSION_TYPES, "none") : commissionText(row.commission_type, row.commission_rate))}
+                            {row && (row.follows_client ? "Same as customer" : row.commission_type === "none" ? labelOf(COMMISSION_TYPES, "none") : commissionText(row.commission_type, row.commission_rate))}
                           </td>
                         </>
                       )}

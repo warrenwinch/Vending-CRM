@@ -95,7 +95,7 @@ export async function listClientOptions() {
     .from("clients")
     .select("id, company_name, client_commissions(commission_type, commission_rate)")
     .order("company_name");
-  if (error) throw new Error(`Could not load clients: ${error.message}`);
+  if (error) throw new Error(`Could not load customers: ${error.message}`);
   return (data as unknown as { id: string; company_name: string; client_commissions: Commission | Commission[] | null }[]).map(
     (c) => {
       const d = one(c.client_commissions);

@@ -29,13 +29,13 @@ async function NewPayment({ searchParams }: Pick<PageProps<"/commission/new">, "
         <h1 className="page-title">Record a commission payment</h1>
         <form action="/commission/new" className="flex max-w-lg flex-col gap-4">
           <label className="flex flex-col gap-1">
-            <span className="text-sm font-medium">Which client are you paying?</span>
+            <span className="text-sm font-medium">Which customer are you paying?</span>
             <select
               name="client"
               required
               className="input"
             >
-              <option value="">Choose a client…</option>
+              <option value="">Choose a customer…</option>
               {clients.map((c) => (
                 <option key={c.value} value={c.value}>
                   {c.label}
@@ -70,7 +70,7 @@ async function NewPayment({ searchParams }: Pick<PageProps<"/commission/new">, "
       </div>
       {sites.length === 0 ? (
         <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-          This client has no sites yet. Add a location with commission first.
+          This customer has no sites yet. Add a location with commission first.
         </p>
       ) : (
         <PaymentForm

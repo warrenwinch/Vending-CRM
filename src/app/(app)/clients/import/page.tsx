@@ -8,9 +8,9 @@ export default function ImportClientsPage() {
     <>
       <div>
         <Link href="/clients" className="text-sm font-medium text-zinc-500 underline">
-          Clients
+          Customers
         </Link>
-        <h1 className="page-title">Import clients from a CSV file</h1>
+        <h1 className="page-title">Import customers from a CSV file</h1>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <Importer />
