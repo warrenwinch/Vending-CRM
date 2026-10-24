@@ -1,11 +1,20 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { after } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, requireRole, OFFICE_ROLES } from "@/lib/auth";
-import { getOpenPlacement } from "@/lib/placements";
+import { getOpenPlacement, placeName } from "@/lib/placements";
 import { getFault } from "@/lib/faults";
-import { isFaultCategory, isFaultSeverity } from "@/lib/fault-types";
+import {
+  categoryLabel,
+  formatDateTime,
+  isFaultCategory,
+  isFaultSeverity,
+  type FaultCategory,
+} from "@/lib/fault-types";
+import { sendEmail } from "@/lib/alerts";
+import { SITE_URL } from "@/lib/qr";
 import { isUuid } from "@/lib/ids";
 import { sendWeeklySummary } from "@/lib/weekly-summary";
 import type { FormState } from "@/components/form-ui";
@@ -23,7 +32,7 @@ function readTime(text: string, label: string): { at?: string; error?: string } 
 
 // Logs a fault on a machine, optionally already fixed.
 export async function reportFault(machineId: string, _prev: FormState, formData: FormData): Promise<FormState> {
-  const { user } = await requireProfile();
+  const { user, profile } = await requireProfile();
 
   const get = (name: string) => String(formData.get(name) ?? "").trim();
   const values = {
@@ -72,6 +81,29 @@ export async function reportFault(machineId: string, _prev: FormState, formData:
     .select("id")
     .single();
   if (error) return fail(`Could not save the fault: ${error.message}`);
+
+  // A machine that's not working at all (and not already fixed) emails the
+  // ALERT_EMAIL list, after the page has moved on so nobody waits for it.
+  if (values.severity === "not_working" && !fixedAt) {
+    const faultId = data.id as string;
+    after(async () => {
+      const { data: m } = await supabase.from("machines").select("machine_number").eq("id", machineId).maybeSingle();
+      const number = m?.machine_number ?? "machine";
+      const place = placement ? placeName(placement) : "";
+      await sendEmail({
+        subject: `Not working: ${number}${place ? ` at ${place}` : ""}`,
+        lines: [
+          ["Machine", number],
+          ["Where", place || "Not at a location"],
+          ["Problem", categoryLabel(values.category as FaultCategory)],
+          ["Details", values.description],
+          ["Logged by", profile.fullName || "A team member"],
+          ["Found", formatDateTime(found.at!)],
+        ],
+        button: { label: "Open this fault", href: `${SITE_URL}/faults/${faultId}` },
+      });
+    });
+  }
 
   redirect(`/faults/${data.id}`);
 }
