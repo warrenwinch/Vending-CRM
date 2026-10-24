@@ -88,13 +88,16 @@ export async function listPlaceableLocations() {
     }));
 }
 
-// Names for the "which client?" drop-down on the location form.
-export async function listClientOptions() {
+// Names for the "which customer?" drop-downs. Archived customers are left
+// out, except `keep` (e.g. the customer of the site being edited).
+export async function listClientOptions({ keep }: { keep?: string } = {}) {
   const supabase = await createClient();
-  const { data, error } = await supabase
+  let query = supabase
     .from("clients")
     .select("id, company_name, client_commissions(commission_type, commission_rate)")
     .order("company_name");
+  query = keep ? query.or(`archived_at.is.null,id.eq.${keep}`) : query.is("archived_at", null);
+  const { data, error } = await query;
   if (error) throw new Error(`Could not load customers: ${error.message}`);
   return (data as unknown as { id: string; company_name: string; client_commissions: Commission | Commission[] | null }[]).map(
     (c) => {

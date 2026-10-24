@@ -5,7 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import type { Client, ClientStatus } from "@/lib/client-types";
 
 const COLUMNS =
-  "id, company_name, abn, billing_contact, billing_email, billing_phone, gst_registered, status, " +
+  "id, company_name, abn, billing_contact, billing_email, billing_phone, gst_registered, status, archived_at, " +
   "client_commissions(commission_type, commission_rate)";
 
 type Commission = { commission_type: Client["commission_type"]; commission_rate: number | string | null };
@@ -23,9 +23,19 @@ const toClient = ({ client_commissions, ...row }: Row): Client => {
   };
 };
 
-export async function listClients({ status, search }: { status?: ClientStatus; search?: string }) {
+// Archived customers are left out unless asked for (then only they are listed).
+export async function listClients({
+  status,
+  search,
+  archived = false,
+}: {
+  status?: ClientStatus;
+  search?: string;
+  archived?: boolean;
+}) {
   const supabase = await createClient();
   let query = supabase.from("clients").select(COLUMNS).order("company_name");
+  query = archived ? query.not("archived_at", "is", null) : query.is("archived_at", null);
   if (status) query = query.eq("status", status);
   if (search) {
     // Escape the characters the search syntax treats specially.

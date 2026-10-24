@@ -1,11 +1,13 @@
 "use server";
 
 import { redirect } from "next/navigation";
+import { revalidatePath } from "next/cache";
 import { createClient } from "@/lib/supabase/server";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { isClientStatus } from "@/lib/client-types";
 import { isCommissionType, parseCommissionRate } from "@/lib/location-types";
 import { digitsOnly, isValidAbn } from "@/lib/au";
+import { isUuid } from "@/lib/ids";
 import type { FormState } from "@/components/form-ui";
 
 const EMAIL = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -83,4 +85,40 @@ export async function saveClient(
   }
 
   redirect(`/clients/${savedId}`);
+}
+
+// Hides a customer from lists (nothing is deleted), or brings it back.
+// A customer can't be archived while machines are still placed at its sites.
+export async function setArchived(clientId: string, archive: boolean): Promise<FormState> {
+  await requireRole(OFFICE_ROLES);
+  if (!isUuid(clientId)) return { error: "This customer wasn't found." };
+  const supabase = await createClient();
+
+  if (archive) {
+    const { data: sites } = await supabase.from("locations").select("id").eq("client_id", clientId);
+    const siteIds = (sites ?? []).map((s) => s.id as string);
+    if (siteIds.length) {
+      const { count } = await supabase
+        .from("machine_placements")
+        .select("id", { count: "exact", head: true })
+        .in("location_id", siteIds)
+        .is("ended_on", null);
+      if (count) {
+        return {
+          error: `${count} machine${count === 1 ? " is" : "s are"} still placed at this customer's sites. Move or take ${count === 1 ? "it" : "them"} out first, then archive.`,
+        };
+      }
+    }
+  }
+
+  const { data, error } = await supabase
+    .from("clients")
+    .update({ archived_at: archive ? new Date().toISOString() : null })
+    .eq("id", clientId)
+    .select("id");
+  if (error) return { error: `Could not save: ${error.message}` };
+  if (!data.length) return { error: "This customer wasn't found." };
+
+  revalidatePath(`/clients/${clientId}`);
+  return { message: archive ? "Archived. It no longer appears in your Customers list." : "Back in your Customers list." };
 }

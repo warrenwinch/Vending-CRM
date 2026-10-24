@@ -37,13 +37,15 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
   await requireRole(OFFICE_ROLES);
 
   const params = await searchParams;
-  const status = isClientStatus(params.status) ? params.status : undefined;
+  const archived = params.archived === "1";
+  const status = !archived && isClientStatus(params.status) ? params.status : undefined;
   const search = typeof params.q === "string" ? params.q.trim() : "";
-  const clients = await listClients({ status, search });
+  const clients = await listClients({ status, search, archived });
 
-  const filterHref = (s?: ClientStatus) => {
+  const filterHref = (s?: ClientStatus, showArchived = false) => {
     const qs = new URLSearchParams();
-    if (s) qs.set("status", s);
+    if (showArchived) qs.set("archived", "1");
+    else if (s) qs.set("status", s);
     if (search) qs.set("q", search);
     const str = qs.toString();
     return str ? `/clients?${str}` : "/clients";
@@ -58,7 +60,7 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
               key={s.label}
               href={filterHref(s.value)}
               className={`rounded-full px-4 py-2 font-bold ${
-                status === s.value
+                !archived && status === s.value
                   ? "chip-active"
                   : "chip"
               }`}
@@ -66,9 +68,17 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
               {s.label}
             </Link>
           ))}
+          {/* Archived customers are hidden from the other views. */}
+          <Link
+            href={filterHref(undefined, true)}
+            className={`rounded-full px-4 py-2 font-bold ${archived ? "chip-active" : "chip text-zinc-500"}`}
+          >
+            Archived
+          </Link>
         </nav>
         <form action="/clients" className="flex gap-2">
           {status && <input type="hidden" name="status" value={status} />}
+          {archived && <input type="hidden" name="archived" value="1" />}
           <input
             type="search"
             name="q"
@@ -84,7 +94,11 @@ async function ClientList({ searchParams }: Pick<PageProps<"/clients">, "searchP
 
       {clients.length === 0 ? (
         <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-          {search || status ? "No customers match." : "No customers yet. Click “Add customer” to add your first one."}
+          {archived
+            ? "No archived customers."
+            : search || status
+              ? "No customers match."
+              : "No customers yet. Click “Add customer” to add your first one."}
         </p>
       ) : (
         <ul className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white">

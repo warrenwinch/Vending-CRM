@@ -15,6 +15,7 @@ export type Client = {
   // Default commission for the client's sites (Administrators and Managers only).
   commission_type: CommissionType;
   commission_rate: number | null;
+  archived_at: string | null; // set when archived: hidden from lists, nothing deleted
 };
 
 export const CLIENT_STATUSES: { value: ClientStatus; label: string }[] = [

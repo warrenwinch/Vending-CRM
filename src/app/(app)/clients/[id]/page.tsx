@@ -5,7 +5,8 @@ import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getClient } from "@/lib/clients";
 import { listLocations } from "@/lib/locations";
 import { isUuid } from "@/lib/ids";
-import { formatAbn, formatAud } from "@/lib/au";
+import { formatAbn, formatAud, formatDate } from "@/lib/au";
+import { ArchiveButton } from "./archive-button";
 import { describeCommission } from "@/lib/location-types";
 import { StatusBadge } from "@/components/status-badge";
 import { LocationList } from "../../locations/location-list";
@@ -57,6 +58,11 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
           <h1 className="flex flex-wrap items-center gap-3 page-title">
             {client.company_name}
             <StatusBadge status={client.status} />
+            {client.archived_at && (
+              <span className="rounded-full bg-zinc-200 px-2.5 py-0.5 text-xs font-medium text-zinc-700">
+                Archived {formatDate(client.archived_at.slice(0, 10))}
+              </span>
+            )}
           </h1>
         </div>
         <Link
@@ -115,6 +121,8 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
       <PaymentList payments={payments} showClient={false} empty="No commission paid to this customer yet." />
 
       <NotesSection target={{ kind: "client", id: client.id }} canDelete />
+
+      <ArchiveButton clientId={client.id} archived={Boolean(client.archived_at)} />
     </>
   );
 }

@@ -22,8 +22,10 @@ async function EditLocation({ params }: Pick<PageProps<"/locations/[id]/edit">, 
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const [location, clients] = await Promise.all([getLocation(id), listClientOptions()]);
+  const location = await getLocation(id);
   if (!location) notFound();
+  // Keep this site's own customer in the list even if it's archived.
+  const clients = await listClientOptions({ keep: location.client_id });
 
   return (
     <>
