@@ -8,6 +8,8 @@ import { formatAud, formatDate } from "@/lib/au";
 import { listMachinesAtLocation } from "@/lib/placements";
 import { listContacts } from "@/lib/contacts";
 import { NotesSection } from "../../notes/notes-section";
+import { listFaults } from "@/lib/faults";
+import { FaultList } from "../../faults/fault-list";
 import { ContactList } from "../../clients/[id]/contacts/contact-list";
 import { MACHINE_TYPES } from "@/lib/machine-types";
 import { LOCATION_TYPES, labelOf, type Location } from "@/lib/location-types";
@@ -34,7 +36,13 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const [location, machines] = await Promise.all([getLocation(id), listMachinesAtLocation(id)]);
+  const [location, machines, openFaults] = await Promise.all([
+    getLocation(id),
+    listMachinesAtLocation(id),
+    listFaults({ locationId: id, open: true }),
+  ]);
+  const openByMachine = new Map<string, number>();
+  for (const f of openFaults) openByMachine.set(f.machine_id, (openByMachine.get(f.machine_id) ?? 0) + 1);
   if (!location) notFound();
 
   // Contacts are office-only: this site's own contacts, plus the client's whole-company ones.
@@ -76,6 +84,16 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
           </Link>
         )}
       </div>
+
+      {/* First thing a Filler sees on arrival: anything that needs fixing here. */}
+      {openFaults.length > 0 && (
+        <section className="flex flex-col gap-3 rounded-2xl border-l-8 border-red-600 bg-red-50 p-4">
+          <h2 className="section-title text-red-900">
+            {openFaults.length} open fault{openFaults.length === 1 ? "" : "s"} here
+          </h2>
+          <FaultList faults={openFaults} showMachine empty="" />
+        </section>
+      )}
 
       <dl className="divide-y divide-zinc-200 rounded-2xl border-2 border-zinc-200 bg-white text-sm">
         {rows.map(([label, value]) => (
@@ -123,6 +141,11 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
                     </span>
                     {m.position && <span className="block truncate text-zinc-500">{m.position}</span>}
                   </span>
+                  {openByMachine.get(m.id) ? (
+                    <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold text-red-900">
+                      {openByMachine.get(m.id)} open fault{openByMachine.get(m.id) === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
                   <span className="text-zinc-500">since {formatDate(m.started_on)}</span>
                 </Link>
               </li>

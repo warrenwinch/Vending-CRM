@@ -7,9 +7,11 @@ export function LocationList({
   locations,
   showClient,
   empty,
+  openFaults = {},
 }: {
   locations: Location[];
   showClient: boolean;
+  openFaults?: Record<string, number>; // open faults per site, for a red badge
   empty: React.ReactNode;
 }) {
   if (locations.length === 0) {
@@ -37,6 +39,11 @@ export function LocationList({
               </p>
             </div>
             <div className="flex items-center gap-3 text-sm">
+              {openFaults[l.id] ? (
+                <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-red-900">
+                  {openFaults[l.id]} open fault{openFaults[l.id] === 1 ? "" : "s"}
+                </span>
+              ) : null}
               <span className="text-zinc-500">{labelOf(LOCATION_TYPES, l.type)}</span>
               <StatusBadge status={l.status} />
             </div>

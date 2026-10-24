@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { listLocations } from "@/lib/locations";
+import { openFaultCounts } from "@/lib/faults";
 import { LOCATION_STATUSES, isLocationStatus, type LocationStatus } from "@/lib/location-types";
 import { LocationList } from "./location-list";
 
@@ -27,7 +28,7 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
   const params = await searchParams;
   const status = isLocationStatus(params.status) ? params.status : undefined;
   const search = typeof params.q === "string" ? params.q.trim() : "";
-  const locations = await listLocations({ status, search });
+  const [locations, { bySite }] = await Promise.all([listLocations({ status, search }), openFaultCounts()]);
 
   const filterHref = (s?: LocationStatus) => {
     const qs = new URLSearchParams();
@@ -85,6 +86,7 @@ async function Locations({ searchParams }: Pick<PageProps<"/locations">, "search
       <LocationList
         locations={locations}
         showClient={canEdit}
+        openFaults={Object.fromEntries(bySite)}
         empty={
           search || status
             ? "No locations match."

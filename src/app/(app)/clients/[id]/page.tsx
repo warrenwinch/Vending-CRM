@@ -11,6 +11,7 @@ import { LocationList } from "../../locations/location-list";
 import { listContacts } from "@/lib/contacts";
 import { ContactList } from "./contacts/contact-list";
 import { listPayments } from "@/lib/commission";
+import { openFaultCounts } from "@/lib/faults";
 import { PaymentList } from "../../commission/payment-list";
 import { NotesSection } from "../../notes/notes-section";
 
@@ -27,11 +28,12 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const [client, locations, contacts, payments] = await Promise.all([
+  const [client, locations, contacts, payments, { bySite }] = await Promise.all([
     getClient(id),
     listLocations({ clientId: id }),
     listContacts({ clientId: id }),
     listPayments({ clientId: id }),
+    openFaultCounts(),
   ]);
   if (!client) notFound();
 
@@ -92,7 +94,12 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
           Add location
         </Link>
       </div>
-      <LocationList locations={locations} showClient={false} empty="No locations for this client yet." />
+      <LocationList
+        locations={locations}
+        showClient={false}
+        openFaults={Object.fromEntries(bySite)}
+        empty="No locations for this client yet."
+      />
 
       <div className="flex items-center justify-between gap-4">
         <h2 className="section-title">Commission payments</h2>

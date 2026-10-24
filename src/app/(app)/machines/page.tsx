@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireProfile } from "@/lib/auth";
 import { listMachines } from "@/lib/machines";
+import { openFaultCounts } from "@/lib/faults";
 import {
   MACHINE_EDIT_ROLES,
   MACHINE_STATUSES,
@@ -33,7 +34,7 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
   const params = await searchParams;
   const status = isMachineStatus(params.status) ? params.status : undefined;
   const search = typeof params.q === "string" ? params.q.trim() : "";
-  const machines = await listMachines({ status, search });
+  const [machines, { byMachine }] = await Promise.all([listMachines({ status, search }), openFaultCounts()]);
 
   const filterHref = (s?: MachineStatus) => {
     const qs = new URLSearchParams();
@@ -131,6 +132,11 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
                       .join(" · ")}
                   </p>
                 </div>
+                {byMachine.get(m.id) ? (
+                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-red-900">
+                    {byMachine.get(m.id)} open fault{byMachine.get(m.id) === 1 ? "" : "s"}
+                  </span>
+                ) : null}
                 <MachineStatusBadge status={m.status} />
               </Link>
             </li>

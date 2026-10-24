@@ -59,10 +59,15 @@ async function withPositions(faults: Fault[]) {
   });
 }
 
-export async function listFaults({ machineId, open }: { machineId?: string; open?: boolean } = {}) {
+export async function listFaults({
+  machineId,
+  locationId,
+  open,
+}: { machineId?: string; locationId?: string; open?: boolean } = {}) {
   const supabase = await createClient();
   let query = supabase.from("machine_faults").select(COLUMNS).order("reported_at", { ascending: false });
   if (machineId) query = query.eq("machine_id", machineId);
+  if (locationId) query = query.eq("location_id", locationId);
   if (open === true) query = query.is("fixed_at", null);
   if (open === false) query = query.not("fixed_at", "is", null);
   const { data, error } = await query.limit(500);
@@ -75,4 +80,17 @@ export async function getFault(id: string) {
   const { data, error } = await supabase.from("machine_faults").select(COLUMNS).eq("id", id).maybeSingle();
   if (error) throw new Error(`Could not load this fault: ${error.message}`);
   return data ? (await withPositions([toFault(data as unknown as Row)]))[0] : null;
+}
+
+// How many faults are open, per site and per machine, for the badges on lists.
+export async function openFaultCounts() {
+  const supabase = await createClient();
+  const { data } = await supabase.from("machine_faults").select("machine_id, location_id").is("fixed_at", null);
+  const bySite = new Map<string, number>();
+  const byMachine = new Map<string, number>();
+  for (const f of (data ?? []) as { machine_id: string; location_id: string | null }[]) {
+    byMachine.set(f.machine_id, (byMachine.get(f.machine_id) ?? 0) + 1);
+    if (f.location_id) bySite.set(f.location_id, (bySite.get(f.location_id) ?? 0) + 1);
+  }
+  return { bySite, byMachine };
 }

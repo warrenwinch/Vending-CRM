@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireProfile, roleLabels, OFFICE_ROLES } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
+import { listFaults } from "@/lib/faults";
+import { FaultList } from "./faults/fault-list";
 
 export default function Home() {
   return (
@@ -18,12 +20,12 @@ async function Dashboard() {
   // Counts only (head: true fetches no rows).
   const supabase = await createClient();
   const howMany = { count: "exact", head: true } as const;
-  const [faults, machines, locations] = await Promise.all([
-    supabase.from("machine_faults").select("id", howMany).is("fixed_at", null),
+  const [openFaultList, machines, locations] = await Promise.all([
+    listFaults({ open: true }),
     supabase.from("machines").select("id", howMany).eq("status", "installed"),
     supabase.from("locations").select("id", howMany).eq("status", "active"),
   ]);
-  const openFaults = faults.count ?? 0;
+  const openFaults = openFaultList.length;
   const installed = machines.count ?? 0;
   const sites = locations.count ?? 0;
 
@@ -70,6 +72,19 @@ async function Dashboard() {
           </li>
         ))}
       </ul>
+
+      {openFaults > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="section-title">Open faults</h2>
+            <Link href="/faults" className="btn-small">
+              See all
+            </Link>
+          </div>
+          <FaultList faults={[...openFaultList].reverse().slice(0, 5)} showMachine empty="" />
+          {openFaults > 5 && <p className="text-sm text-zinc-500">Showing the 5 waiting longest.</p>}
+        </section>
+      )}
     </>
   );
 }
