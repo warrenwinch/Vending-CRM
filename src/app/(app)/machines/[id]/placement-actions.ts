@@ -79,8 +79,15 @@ export async function placeMachine(machineId: string, _prev: FormState, formData
     return fail(`Could not place the machine: ${placeError.message}`);
   }
 
-  // 3. A placed machine is installed.
-  if (machine.status !== "installed") {
+  // 3. A placed machine is installed, unless a "not working at all" fault is
+  // still open: then it stays Needs repair until that fault is fixed.
+  const { count: stillBroken } = await supabase
+    .from("machine_faults")
+    .select("id", { count: "exact", head: true })
+    .eq("machine_id", machineId)
+    .is("fixed_at", null)
+    .eq("severity", "not_working");
+  if (machine.status !== "installed" && !stillBroken) {
     await supabase.from("machines").update({ status: "installed" }).eq("id", machineId);
   }
 
