@@ -11,7 +11,10 @@ export default function ClientsPage({ searchParams }: PageProps<"/clients">) {
     <>
       <div className="flex items-center justify-between gap-4">
         <h1 className="page-title">Customers</h1>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link href="/clients/website-form" className="btn-secondary">
+            Website form
+          </Link>
           <Link
             href="/clients/import"
             className="btn-secondary"
