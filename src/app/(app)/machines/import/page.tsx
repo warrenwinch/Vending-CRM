@@ -2,6 +2,8 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
+import { listLocations } from "@/lib/locations";
+import { todayInSydney } from "@/lib/au";
 import { ImportMachines } from "./import-machines";
 
 export default function ImportMachinesPage() {
@@ -22,5 +24,9 @@ export default function ImportMachinesPage() {
 
 async function Importer() {
   const { profile } = await requireRole(MACHINE_EDIT_ROLES);
-  return <ImportMachines allowCost={OFFICE_ROLES.includes(profile.role)} />;
+  // Sites machines can be placed at, for matching the file's site_name.
+  const sites = (await listLocations({}))
+    .filter((l) => l.status !== "lost")
+    .map((l) => ({ id: l.id, site_name: l.site_name, client_name: l.client_name }));
+  return <ImportMachines allowCost={OFFICE_ROLES.includes(profile.role)} sites={sites} today={todayInSydney()} />;
 }

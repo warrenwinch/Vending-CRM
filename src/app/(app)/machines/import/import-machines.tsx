@@ -9,6 +9,8 @@ import {
   MAX_IMPORT_ROWS,
   checkRow,
   findDuplicateSerials,
+  findDuplicateSpots,
+  type SiteOption,
   normaliseHeader,
   type RawRow,
 } from "@/lib/machine-import";
@@ -17,7 +19,16 @@ import { formatAud, formatDate } from "@/lib/au";
 
 type Checked = { line: number; raw: RawRow; errors: string[] };
 
-export function ImportMachines({ allowCost }: { allowCost: boolean }) {
+export function ImportMachines({
+  allowCost,
+  sites,
+  today,
+}: {
+  allowCost: boolean;
+  sites: SiteOption[];
+  today: string;
+}) {
+  const siteName = new Map(sites.map((s) => [s.id, [s.site_name, s.client_name].filter(Boolean).join(" — ")]));
   const [fileName, setFileName] = useState("");
   const [rows, setRows] = useState<Checked[]>([]);
   const [fileError, setFileError] = useState("");
@@ -62,9 +73,11 @@ export function ImportMachines({ allowCost }: { allowCost: boolean }) {
 
         const raws = data as RawRow[];
         const dupes = findDuplicateSerials(raws);
+        const spots = findDuplicateSpots(raws);
         setRows(
           raws.map((raw, i) => {
-            const { errors } = checkRow(raw, { allowCost });
+            const { errors } = checkRow(raw, { allowCost, sites, today });
+            if (spots.has(i)) errors.push(spots.get(i)!);
             if (dupes.has(i)) errors.push(dupes.get(i)!);
             return { line: i + 2, raw, errors };
           }),
@@ -86,11 +99,12 @@ export function ImportMachines({ allowCost }: { allowCost: boolean }) {
   const problemCount = shown.filter((r) => r.errors.length).length;
 
   if (result.imported) {
-    const { count, first, last } = result.imported;
+    const { count, first, last, placed } = result.imported;
     return (
       <div className="flex flex-col gap-4">
         <p className="rounded-md bg-green-50 p-4 text-green-900">
           Imported {count} machine{count === 1 ? "" : "s"}: {first === last ? first : `${first} to ${last}`}.
+          {placed > 0 && ` ${placed} placed at their sites.`}
         </p>
         <div className="flex gap-3">
           <Link href="/machines" className="btn-primary">
@@ -124,9 +138,13 @@ export function ImportMachines({ allowCost }: { allowCost: boolean }) {
         <summary className="cursor-pointer font-medium">What goes in each column</summary>
         <dl className="mt-3 grid gap-2 text-zinc-600">
           <div><dt className="inline font-medium text-ink">type: </dt><dd className="inline">{MACHINE_TYPES.map((t) => t.label).join(", ")}. Blank means Snack.</dd></div>
-          <div><dt className="inline font-medium text-ink">status: </dt><dd className="inline">{MACHINE_STATUSES.filter((s) => s.value !== "installed").map((s) => s.label).join(", ")}. Blank means In storage. Machines become Installed when you place them at a location.</dd></div>
+          <div><dt className="inline font-medium text-ink">status: </dt><dd className="inline">Usually leave blank: In storage, or Installed if it has a site_name. Use Needs repair for a broken one, or Retired.</dd></div>
           <div><dt className="inline font-medium text-ink">purchase_date: </dt><dd className="inline">DD/MM/YYYY, for example 23/10/2026.</dd></div>
           <div><dt className="inline font-medium text-ink">purchase_cost: </dt><dd className="inline">{allowCost ? "Dollars, for example 4500 or 4,500.00." : "Left out for your role; only Administrators and Managers can set it."}</dd></div>
+          <div><dt className="inline font-medium text-ink">site_name: </dt><dd className="inline">Optional. The site the machine is at, exactly as it is under Locations. The machine is placed there and marked Installed. Leave blank to keep it In storage.</dd></div>
+          <div><dt className="inline font-medium text-ink">position: </dt><dd className="inline">Optional. Where on site, e.g. &ldquo;Level 4N kitchen&rdquo;. Printed on its QR sticker.</dd></div>
+          <div><dt className="inline font-medium text-ink">customer_name: </dt><dd className="inline">Only needed if two customers have sites with the same name.</dd></div>
+          <div><dt className="inline font-medium text-ink">installed_on: </dt><dd className="inline">Optional. When it went in, DD/MM/YYYY. Blank means today.</dd></div>
           <div><dt className="inline font-medium text-ink">machine number: </dt><dd className="inline">Not in the file. Each machine gets the next VM number automatically.</dd></div>
         </dl>
       </details>
@@ -170,18 +188,19 @@ export function ImportMachines({ allowCost }: { allowCost: boolean }) {
                   <th className="p-2 font-medium">Status</th>
                   <th className="p-2 font-medium">Make / model</th>
                   <th className="p-2 font-medium">Serial</th>
+                  <th className="p-2 font-medium">Site</th>
                   <th className="p-2 font-medium">Bought</th>
                   {allowCost && <th className="p-2 font-medium">Cost</th>}
                 </tr>
               </thead>
               <tbody className="divide-y divide-zinc-200">
                 {shown.map((r) => {
-                  const { row } = checkRow(r.raw, { allowCost });
+                  const { row, placement } = checkRow(r.raw, { allowCost, sites, today });
                   return (
                     <tr key={r.line} className={r.errors.length ? "bg-red-50" : undefined}>
                       <td className="p-2 align-top text-zinc-500">{r.line}</td>
                       {r.errors.length ? (
-                        <td colSpan={allowCost ? 6 : 5} className="p-2 text-red-900">
+                        <td colSpan={allowCost ? 7 : 6} className="p-2 text-red-900">
                           <ul className="list-disc pl-4">
                             {r.errors.map((e) => <li key={e}>{e}</li>)}
                           </ul>
@@ -192,6 +211,16 @@ export function ImportMachines({ allowCost }: { allowCost: boolean }) {
                           <td className="p-2">{label(MACHINE_STATUSES, row?.status)}</td>
                           <td className="p-2">{[row?.manufacturer, row?.model].filter(Boolean).join(" ")}</td>
                           <td className="p-2">{row?.serial_number}</td>
+                          <td className="p-2">
+                            {placement ? (
+                              <>
+                                {siteName.get(placement.location_id)}
+                                {placement.position && <span className="text-zinc-500">, {placement.position}</span>}
+                              </>
+                            ) : (
+                              <span className="text-zinc-500">In storage</span>
+                            )}
+                          </td>
                           <td className="p-2 whitespace-nowrap">{formatDate(row?.purchase_date ?? null)}</td>
                           {allowCost && (
                             <td className="p-2 whitespace-nowrap">
