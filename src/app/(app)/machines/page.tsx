@@ -10,15 +10,7 @@ import {
   isMachineStatus,
   type MachineStatus,
 } from "@/lib/machine-types";
-import { MachineStatusBadge } from "./machine-status-badge";
-
-// Whole-row colour so broken and working machines stand out at a glance.
-const rowTint: Record<MachineStatus, string> = {
-  needs_repair: "border-red-600 bg-red-50 hover:bg-red-100",
-  installed: "border-leaf bg-leaf-soft hover:bg-[#e2edc8]",
-  in_storage: "border-transparent hover:bg-brand-soft",
-  retired: "border-transparent bg-zinc-50 text-zinc-500 hover:bg-zinc-100",
-};
+import { MachineStatusBadge, machineRowTint } from "./machine-status-badge";
 
 export default function MachinesPage({ searchParams }: PageProps<"/machines">) {
   return (
@@ -122,7 +114,7 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
             <li key={m.id}>
               <Link
                 href={`/machines/${m.id}`}
-                className={`flex items-center gap-4 border-l-8 p-4 ${rowTint[m.status]}`}
+                className={`flex items-center gap-4 border-l-8 p-4 ${machineRowTint[m.status]}`}
               >
                 <span className="w-20 shrink-0 font-mono text-sm font-semibold">{m.machine_number}</span>
                 <div className="min-w-0 flex-1">

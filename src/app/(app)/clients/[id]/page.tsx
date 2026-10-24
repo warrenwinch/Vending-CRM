@@ -16,6 +16,9 @@ import { listPayments } from "@/lib/commission";
 import { openFaultCounts } from "@/lib/faults";
 import { PaymentList } from "../../commission/payment-list";
 import { NotesSection } from "../../notes/notes-section";
+import { listMachinesForCustomer } from "@/lib/placements";
+import { MACHINE_TYPES } from "@/lib/machine-types";
+import { MachineStatusBadge, machineRowTint } from "../../machines/machine-status-badge";
 
 export default function ClientPage({ params }: PageProps<"/clients/[id]">) {
   return (
@@ -30,11 +33,12 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
   const { id } = await params;
   if (!isUuid(id)) notFound();
 
-  const [client, locations, contacts, payments, { bySite }] = await Promise.all([
+  const [client, locations, contacts, payments, machines, { bySite, byMachine }] = await Promise.all([
     getClient(id),
     listLocations({ clientId: id }),
     listContacts({ clientId: id }),
     listPayments({ clientId: id }),
+    listMachinesForCustomer(id),
     openFaultCounts(),
   ]);
   if (!client) notFound();
@@ -108,6 +112,44 @@ async function ClientDetails({ params }: Pick<PageProps<"/clients/[id]">, "param
         openFaults={Object.fromEntries(bySite)}
         empty="No locations for this customer yet."
       />
+
+      <h2 className="section-title">Machines ({machines.length})</h2>
+      {machines.length === 0 ? (
+        <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-6 text-center text-zinc-500">
+          No machines at this customer&apos;s sites right now.
+        </p>
+      ) : (
+        <ul className="divide-y divide-zinc-200 overflow-hidden rounded-2xl border-2 border-zinc-200 bg-white">
+          {machines.map((m) => (
+            <li key={m.id}>
+              <Link
+                href={`/machines/${m.id}`}
+                className={`flex items-center gap-4 border-l-8 p-4 ${machineRowTint[m.status]}`}
+              >
+                <span className="w-20 shrink-0 font-mono text-sm font-semibold">{m.machine_number}</span>
+                <div className="min-w-0 flex-1">
+                  <p className="truncate font-bold">{[m.site_name, m.position].filter(Boolean).join(", ")}</p>
+                  <p className="truncate text-sm text-zinc-500">
+                    {[
+                      [m.manufacturer, m.model].filter(Boolean).join(" ") || null,
+                      MACHINE_TYPES.find((t) => t.value === m.type)?.label,
+                      `since ${formatDate(m.started_on)}`,
+                    ]
+                      .filter(Boolean)
+                      .join(" · ")}
+                  </p>
+                </div>
+                {byMachine.get(m.id) ? (
+                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-red-900">
+                    {byMachine.get(m.id)} open fault{byMachine.get(m.id) === 1 ? "" : "s"}
+                  </span>
+                ) : null}
+                <MachineStatusBadge status={m.status} />
+              </Link>
+            </li>
+          ))}
+        </ul>
+      )}
 
       <div className="flex items-center justify-between gap-4">
         <h2 className="section-title">Commission payments</h2>
