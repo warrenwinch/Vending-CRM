@@ -1,5 +1,6 @@
-// The link in the confirmation email lands here. It turns the one-time
-// code into a login, then sends the person on to set up their business.
+// The links in confirmation and password-reset emails land here. It turns
+// the one-time code into a login, then sends the person on: to set up
+// their business (or join one), or to choose a new password.
 import { NextResponse, type NextRequest } from "next/server";
 import type { EmailOtpType } from "@supabase/supabase-js";
 import { createClient } from "@/lib/supabase/server";
@@ -19,5 +20,7 @@ export async function GET(request: NextRequest) {
     ok = !(await supabase.auth.verifyOtp({ token_hash: tokenHash, type })).error;
   }
 
-  return NextResponse.redirect(new URL(ok ? "/setup" : "/login?error=confirm", origin));
+  // Only these two destinations are allowed, so the link can't be bent to send people elsewhere.
+  const next = searchParams.get("next") === "/reset-password" || type === "recovery" ? "/reset-password" : "/setup";
+  return NextResponse.redirect(new URL(ok ? next : "/login?error=confirm", origin));
 }

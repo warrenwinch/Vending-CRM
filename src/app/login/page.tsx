@@ -9,6 +9,11 @@ export default function LoginPage({ searchParams }: PageProps<"/login">) {
       <Suspense fallback={<LoginForm />}>
         <LoginWithNotice searchParams={searchParams} />
       </Suspense>
+      <p className="text-sm">
+        <Link href="/forgot-password" className="font-bold text-brand-deep underline">
+          Forgotten your password?
+        </Link>
+      </p>
       <p className="text-sm text-zinc-600">
         New here?{" "}
         <Link href="/signup" className="font-medium underline">

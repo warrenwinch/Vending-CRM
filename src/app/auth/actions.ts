@@ -38,7 +38,7 @@ export async function signUp(_prev: FormState, formData: FormData): Promise<Form
   // Supabase doesn't say outright that an address already has a confirmed
   // account (and sends no email); it returns a user with no identities.
   if (data.user && data.user.identities?.length === 0) {
-    return { error: `${email} already has an account. Please log in instead.` };
+    return { error: `${email} already has an account. Please log in, or use “Forgotten your password?” on the log-in page.` };
   }
 
   return {
@@ -86,6 +86,40 @@ export async function resendConfirmation(email: string): Promise<FormState> {
     return { error: `Couldn't send it: ${error.message}` };
   }
   return { message: `Sent. Check ${clean} (and the spam folder) for the confirmation link.` };
+}
+
+// Emails a link to choose a new password. Always says the same thing, so
+// nobody can use this page to find out which emails have accounts.
+export async function requestPasswordReset(_prev: FormState, formData: FormData): Promise<FormState> {
+  const email = text(formData, "email").toLowerCase();
+  if (!email) return { error: "Please enter your email address." };
+  const origin = (await headers()).get("origin") ?? "";
+  const supabase = await createClient();
+  const { error } = await supabase.auth.resetPasswordForEmail(email, {
+    redirectTo: `${origin}/auth/confirm?next=/reset-password`,
+  });
+  if (error && (error.status === 429 || /rate|seconds/i.test(error.message))) {
+    return { error: "A reset email was sent very recently. Please wait a minute, check spam, then try again." };
+  }
+  return {
+    message: `If ${email} has an account, we've emailed it a link to choose a new password. Open it on this device.`,
+  };
+}
+
+// Saves a new password for the person who followed the reset link.
+export async function setNewPassword(_prev: FormState, formData: FormData): Promise<FormState> {
+  const password = String(formData.get("password") ?? "");
+  const confirm = String(formData.get("confirm") ?? "");
+  if (password.length < 8) return { error: "Your password needs at least 8 characters." };
+  if (password !== confirm) return { error: "The two passwords don't match. Please type them again." };
+
+  const supabase = await createClient();
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return { error: "This reset link has expired. Please ask for a new one." };
+
+  const { error } = await supabase.auth.updateUser({ password });
+  if (error) return { error: `Couldn't save your new password: ${error.message}` };
+  redirect("/");
 }
 
 export async function logOut() {
