@@ -12,6 +12,7 @@ export type LocationType =
   | "construction"
   | "club"
   | "pub"
+  | "aged_care"
   | "other";
 export type CommissionType = "none" | "percentage" | "fixed_monthly";
 
@@ -53,6 +54,7 @@ export const LOCATION_TYPES: { value: LocationType; label: string }[] = [
   { value: "construction", label: "Construction" },
   { value: "club", label: "Club" },
   { value: "pub", label: "Pub" },
+  { value: "aged_care", label: "Aged care" },
   { value: "other", label: "Other" },
 ];
 
