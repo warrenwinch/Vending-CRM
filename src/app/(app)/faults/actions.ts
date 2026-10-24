@@ -7,6 +7,7 @@ import { getOpenPlacement } from "@/lib/placements";
 import { getFault } from "@/lib/faults";
 import { isFaultCategory, isFaultSeverity } from "@/lib/fault-types";
 import { isUuid } from "@/lib/ids";
+import { sendWeeklySummary } from "@/lib/weekly-summary";
 import type { FormState } from "@/components/form-ui";
 
 const MAX = 2000;
@@ -112,4 +113,14 @@ export async function deleteFault(faultId: string, machineId: string) {
   const supabase = await createClient();
   await supabase.from("machine_faults").delete().eq("id", faultId);
   redirect(isUuid(machineId) ? `/machines/${machineId}` : "/faults");
+}
+
+// Sends this week's summary straight away, using the Administrator's own login.
+export async function sendSummaryNow(): Promise<FormState> {
+  await requireRole(["administrator"]);
+  const supabase = await createClient();
+  const result = await sendWeeklySummary(supabase);
+  if (result.skipped) return { error: `Not sent: ${result.reason}.` };
+  if (!result.ok) return { error: `Not sent (${result.reason ?? "unknown reason"}).` };
+  return { message: "Summary sent. Check the inbox in SUMMARY_EMAIL (or ALERT_EMAIL)." };
 }

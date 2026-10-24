@@ -6,7 +6,8 @@ import { supabaseKey, supabaseUrl } from "./env";
 
 // Pages anyone can open without logging in.
 // "/m" is the page customers reach by scanning a machine's QR sticker.
-const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth/confirm", "/m"];
+// "/api/cron" is called by Vercel on a schedule and checks its own secret.
+const PUBLIC_PATHS = ["/login", "/signup", "/forgot-password", "/auth/confirm", "/m", "/api/cron"];
 
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });

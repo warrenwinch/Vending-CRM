@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState, useSyncExternalStore } from "react";
-import { deleteFault, markFixed, reportFault } from "./actions";
+import { deleteFault, markFixed, reportFault, sendSummaryNow } from "./actions";
 import {
   CheckboxField,
   FormMessage,
@@ -135,6 +135,20 @@ export function DeleteFaultButton({ faultId, machineId }: { faultId: string; mac
       <button type="submit" className="text-sm font-medium text-red-700 underline">
         Delete this fault record
       </button>
+    </form>
+  );
+}
+
+// For Administrators: email this week's summary now instead of waiting for Monday.
+export function SendSummaryNow() {
+  const [state, formAction, pending] = useActionState<FormState>(sendSummaryNow, {});
+  return (
+    <form action={formAction} className="flex flex-wrap items-center gap-3">
+      <button type="submit" disabled={pending} className="btn-small">
+        {pending ? "Sending…" : "Email weekly summary now"}
+      </button>
+      {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
+      {state.message && <span className="text-sm text-leaf-deep">{state.message}</span>}
     </form>
   );
 }

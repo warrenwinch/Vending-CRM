@@ -4,6 +4,7 @@ import { requireProfile } from "@/lib/auth";
 import { listFaults } from "@/lib/faults";
 import { categoryLabel, formatDuration, nowMs, timeToFix, type FaultCategory } from "@/lib/fault-types";
 import { FaultList } from "./fault-list";
+import { SendSummaryNow } from "./fault-forms";
 
 export default function FaultsPage({ searchParams }: PageProps<"/faults">) {
   return (
@@ -29,7 +30,7 @@ export default function FaultsPage({ searchParams }: PageProps<"/faults">) {
 const DAY = 24 * 60 * 60 * 1000;
 
 async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams">) {
-  await requireProfile();
+  const { profile } = await requireProfile();
   const { show } = await searchParams;
   const view = show === "fixed" ? "fixed" : show === "all" ? "all" : "open";
 
@@ -72,6 +73,7 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
           Most common in the last 90 days: {top.map(([c, n]) => `${categoryLabel(c)} (${n})`).join(", ")}.
         </p>
       )}
+      {profile.role === "administrator" && <SendSummaryNow />}
 
       <nav className="flex flex-wrap gap-1 text-sm" aria-label="Show">
         {[
