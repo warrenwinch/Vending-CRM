@@ -9,8 +9,11 @@ import { listFaults } from "@/lib/faults";
 import { FaultList } from "../../faults/fault-list";
 import { MACHINE_EDIT_ROLES, MACHINE_TYPES } from "@/lib/machine-types";
 import { isUuid } from "@/lib/ids";
-import { formatAud, formatDate } from "@/lib/au";
+import { formatAud, formatDate, todayInSydney } from "@/lib/au";
 import { MachineStatusBadge } from "../machine-status-badge";
+import { listDone, listPlans } from "@/lib/maintenance";
+import { PlanList } from "../../maintenance/plan-list";
+import { DoneList } from "../../maintenance/done-list";
 
 export default function MachinePage({ params }: PageProps<"/machines/[id]">) {
   return (
@@ -26,10 +29,12 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const [machine, history, allFaults] = await Promise.all([
+  const [machine, history, allFaults, plans, doneJobs] = await Promise.all([
     getMachine(id),
     getPlacementHistory(id),
     listFaults({ machineId: id }),
+    listPlans({ machineId: id }),
+    listDone({ machineId: id, limit: 5 }),
   ]);
   // Open faults first, then the 5 most recent fixed ones.
   const faults = [...allFaults.filter((f) => !f.fixed_at), ...allFaults.filter((f) => f.fixed_at).slice(0, 5)];
@@ -149,6 +154,24 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
           </Link>
         </div>
         <FaultList faults={faults} showMachine={false} empty="No faults recorded for this machine." />
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="section-title">Maintenance</h2>
+          {OFFICE_ROLES.includes(profile.role) && machine.status !== "retired" && (
+            <Link href={`/maintenance/new?machine=${machine.id}`} className="btn-secondary">
+              Add maintenance
+            </Link>
+          )}
+        </div>
+        <PlanList plans={plans} today={todayInSydney()} showMachine={false} empty="No regular maintenance for this machine." />
+        {doneJobs.length > 0 && (
+          <>
+            <h3 className="text-sm font-semibold text-zinc-500">Recently done</h3>
+            <DoneList jobs={doneJobs} showTask empty="" />
+          </>
+        )}
       </section>
 
       <section className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-2 ring-zinc-200 sm:flex-row sm:items-center sm:justify-between">

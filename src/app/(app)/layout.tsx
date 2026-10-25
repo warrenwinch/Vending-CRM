@@ -32,6 +32,7 @@ async function Menu() {
     { href: "/locations", label: "Locations" },
     { href: "/machines", label: "Machines" },
     { href: "/faults", label: "Faults" },
+    { href: "/maintenance", label: "Maintenance" },
   );
   if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/commission", label: "Commission" });
   if (profile.role === "administrator") items.push({ href: "/team", label: "Team" });
