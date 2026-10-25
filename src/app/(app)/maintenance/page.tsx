@@ -21,13 +21,20 @@ export default function MaintenancePage({ searchParams }: PageProps<"/maintenanc
 }
 
 async function Maintenance({ searchParams }: Pick<PageProps<"/maintenance">, "searchParams">) {
-  const { profile } = await requireProfile();
-  const { show, q } = await searchParams;
+  const { user, profile } = await requireProfile();
+  const { show, q, who: whoParam } = await searchParams;
   const view = show === "all" ? "all" : "due";
   const search = typeof q === "string" ? q.trim() : "";
+  // Whose jobs: everyone (""), "me", "none" (nobody assigned) or one person's id.
+  const who = typeof whoParam === "string" ? whoParam : "";
+  const whoId = who === "me" ? user.id : who;
 
   const today = todayInSydney();
-  const all = await listPlans();
+  const everyone = await listPlans();
+  const people = [...new Map(everyone.filter((p) => p.assigned_to).map((p) => [p.assigned_to!, p.assigned_name!])).entries()]
+    .filter(([id]) => id !== user.id)
+    .sort((a, b) => a[1].localeCompare(b[1]));
+  const all = everyone.filter((p) => !who || (who === "none" ? !p.assigned_to : p.assigned_to === whoId));
   const overdue = all.filter((p) => dueState(p.next_due, today) === "overdue").length;
   const soon = all.filter((p) => dueState(p.next_due, today) === "soon").length;
 
@@ -44,6 +51,7 @@ async function Maintenance({ searchParams }: Pick<PageProps<"/maintenance">, "se
     const qs = new URLSearchParams();
     if (v === "all") qs.set("show", "all");
     if (search) qs.set("q", search);
+    if (who) qs.set("who", who);
     return `/maintenance${qs.size ? `?${qs}` : ""}`;
   };
 
@@ -86,8 +94,18 @@ async function Maintenance({ searchParams }: Pick<PageProps<"/maintenance">, "se
             </Link>
           ))}
         </nav>
-        <form action="/maintenance" className="flex gap-2">
+        <form action="/maintenance" className="flex flex-wrap gap-2">
           {view === "all" && <input type="hidden" name="show" value="all" />}
+          <select name="who" defaultValue={who} aria-label="Whose jobs" className="input">
+            <option value="">Everyone</option>
+            <option value="me">Just mine</option>
+            {people.map(([id, name]) => (
+              <option key={id} value={id}>
+                {name}
+              </option>
+            ))}
+            <option value="none">Nobody assigned</option>
+          </select>
           <input
             type="search"
             name="q"
@@ -96,7 +114,7 @@ async function Maintenance({ searchParams }: Pick<PageProps<"/maintenance">, "se
             className="input min-w-0 flex-1"
           />
           <button type="submit" className="btn-secondary">
-            Search
+            Show
           </button>
         </form>
       </div>

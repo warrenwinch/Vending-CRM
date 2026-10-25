@@ -28,6 +28,7 @@ export async function saveLocation(
     status: get("status"),
     commission_type: get("commission_type"),
     commission_rate: get("commission_rate"),
+    assigned_to: get("assigned_to"),
   };
   const fail = (error: string): FormState => ({ error, values });
 
@@ -35,6 +36,7 @@ export async function saveLocation(
   if (!values.site_name) return fail("Please enter the site name.");
   if (!isLocationType(values.type)) return fail("Please choose the type of site.");
   if (!isLocationStatus(values.status)) return fail("Please choose a status.");
+  if (values.assigned_to && !isUuid(values.assigned_to)) return fail("Please choose who does this site's maintenance.");
   // "client" = use the client's default; otherwise the site's own deal.
   const followsClient = values.commission_type === "client";
   const ownType = followsClient ? "none" : values.commission_type;
@@ -52,6 +54,7 @@ export async function saveLocation(
     operating_hours: values.operating_hours || null,
     access_instructions: values.access_instructions || null,
     status: values.status,
+    assigned_to: values.assigned_to || null,
   };
 
   const supabase = await createClient();

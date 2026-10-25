@@ -18,6 +18,9 @@ export type Plan = {
   machine_status: MachineStatus;
   location_id: string | null;
   site_name: string | null; // with the position, e.g. "ABS House, Level 4N"
+  // Who does it: the site's Assigned Filler (nobody while in storage or unassigned).
+  assigned_to: string | null;
+  assigned_name: string | null;
 };
 
 export type DoneJob = {
@@ -47,9 +50,13 @@ export function dueState(nextDue: string, today: string): "overdue" | "soon" | "
 
 const PLAN_COLUMNS =
   "id, machine_id, task, every_count, every_unit, next_due, notes, " +
-  "machines(machine_number, status, machine_placements(location_id, position, ended_on, locations(site_name)))";
+  "machines(machine_number, status, machine_placements(location_id, position, ended_on, " +
+  "locations(site_name, assigned_to, assignee:profiles!locations_assigned_to_fkey(full_name))))";
 
-type PlanRow = Omit<Plan, "machine_number" | "machine_status" | "location_id" | "site_name"> & {
+type PlanRow = Omit<
+  Plan,
+  "machine_number" | "machine_status" | "location_id" | "site_name" | "assigned_to" | "assigned_name"
+> & {
   machines: {
     machine_number: string;
     status: MachineStatus;
@@ -57,7 +64,11 @@ type PlanRow = Omit<Plan, "machine_number" | "machine_status" | "location_id" | 
       location_id: string;
       position: string | null;
       ended_on: string | null;
-      locations: { site_name: string } | null;
+      locations: {
+        site_name: string;
+        assigned_to: string | null;
+        assignee: { full_name: string } | null;
+      } | null;
     }[];
   } | null;
 };
@@ -70,6 +81,8 @@ function toPlan({ machines, ...row }: PlanRow): Plan {
     machine_status: machines?.status ?? "in_storage",
     location_id: here?.location_id ?? null,
     site_name: here?.locations ? [here.locations.site_name, here.position].filter(Boolean).join(", ") : null,
+    assigned_to: here?.locations?.assigned_to ?? null,
+    assigned_name: here?.locations?.assigned_to ? (here.locations.assignee?.full_name ?? "Former team member") : null,
   };
 }
 

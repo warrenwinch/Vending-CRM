@@ -56,6 +56,7 @@ async function LocationDetails({ params }: Pick<PageProps<"/locations/[id]">, "p
     ["Operating hours", location.operating_hours],
     ["Foot traffic", location.foot_traffic],
     ["Type of site", labelOf(LOCATION_TYPES, location.type)],
+    ["Assigned Filler", location.assigned_name],
   ];
   if (isOffice) rows.push(["Commission", commissionText(location)]);
 

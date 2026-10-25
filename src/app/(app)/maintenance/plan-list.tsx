@@ -50,6 +50,9 @@ export function PlanList({
               <p className={`truncate ${showMachine ? "text-sm text-zinc-600" : "font-bold"}`}>
                 {p.task} <span className="font-normal text-zinc-500">· {describeEvery(p.every_count, p.every_unit).toLowerCase()}</span>
               </p>
+              {showMachine && (
+                <p className="truncate text-sm text-zinc-500">{p.assigned_name ?? "Nobody assigned"}</p>
+              )}
             </div>
             <DueBadge nextDue={p.next_due} today={today} />
           </Link>

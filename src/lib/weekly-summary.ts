@@ -93,10 +93,58 @@ export async function buildWeeklySummary(supabase: SupabaseClient, now = new Dat
     lines.push(["Repeat problems", worst.map((m) => `${label(m.row)}: ${m.n} faults`).join("\n")]);
   }
 
+  const overdue = await overdueMaintenance(supabase, sydneyDay(now));
+  if (overdue.length) {
+    const shown = overdue.slice(0, 15).map((j) => `${j.label}: ${j.task}, due ${formatDate(j.due)} (${j.who})`);
+    if (overdue.length > 15) shown.push(`…and ${overdue.length - 15} more`);
+    lines.push([`Maintenance overdue (${overdue.length})`, shown.join("\n")]);
+  } else {
+    lines.push(["Maintenance overdue", "None"]);
+  }
+
   return {
-    subject: `Weekly faults: ${opened.length} reported, ${fixed.length} fixed, ${open.length} still open`,
+    subject:
+      `Weekly faults: ${opened.length} reported, ${fixed.length} fixed, ${open.length} still open` +
+      (overdue.length ? `; ${overdue.length} maintenance overdue` : ""),
     lines,
   };
+}
+
+// Regular jobs past their due date (retired machines left out), oldest first.
+async function overdueMaintenance(supabase: SupabaseClient, today: string) {
+  const { data, error } = await supabase
+    .from("maintenance_plans")
+    .select(
+      "task, next_due, machines(machine_number, status, machine_placements(ended_on, locations(site_name, " +
+        "assignee:profiles!locations_assigned_to_fkey(full_name))))",
+    )
+    .lt("next_due", today)
+    .order("next_due")
+    .limit(500);
+  if (error) throw new Error(`Could not read maintenance: ${error.message}`);
+  type Plan = {
+    task: string;
+    next_due: string;
+    machines: {
+      machine_number: string;
+      status: string;
+      machine_placements: {
+        ended_on: string | null;
+        locations: { site_name: string; assignee: { full_name: string } | null } | null;
+      }[];
+    } | null;
+  };
+  return ((data ?? []) as unknown as Plan[])
+    .filter((p) => p.machines && p.machines.status !== "retired")
+    .map((p) => {
+      const site = p.machines!.machine_placements.find((pl) => pl.ended_on === null)?.locations;
+      return {
+        label: [p.machines!.machine_number, site?.site_name].filter(Boolean).join(" at "),
+        task: p.task,
+        due: p.next_due,
+        who: site?.assignee?.full_name ?? "nobody assigned",
+      };
+    });
 }
 
 export async function sendWeeklySummary(supabase: SupabaseClient): Promise<EmailResult> {

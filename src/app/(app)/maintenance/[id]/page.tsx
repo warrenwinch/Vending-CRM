@@ -67,6 +67,20 @@ async function PlanDetails({ params, searchParams }: Pick<PageProps<"/maintenanc
           <dt className="text-zinc-500">How often</dt>
           <dd className="sm:col-span-2">{describeEvery(plan.every_count, plan.every_unit)}, counted from when it was last done</dd>
         </div>
+        <div className="grid gap-1 p-4 sm:grid-cols-3 sm:gap-4">
+          <dt className="text-zinc-500">Assigned Filler</dt>
+          <dd className="sm:col-span-2">
+            {plan.assigned_name ?? <span className="text-zinc-400">Nobody yet</span>}
+            {plan.location_id && isOffice && (
+              <>
+                {" "}
+                <Link href={`/locations/${plan.location_id}/edit`} className="text-sm text-zinc-500 underline">
+                  change on the site
+                </Link>
+              </>
+            )}
+          </dd>
+        </div>
         {plan.notes && (
           <div className="grid gap-1 p-4 sm:grid-cols-3 sm:gap-4">
             <dt className="text-zinc-500">Notes</dt>

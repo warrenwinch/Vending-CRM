@@ -35,6 +35,9 @@ export type Location = {
   site_commission_rate: number | null;
   // Only filled in for Administrators and Managers (the database hides clients from others).
   client_name: string | null;
+  // The team member who does this site's maintenance, if any.
+  assigned_to: string | null;
+  assigned_name: string | null;
 };
 
 export const LOCATION_STATUSES: { value: LocationStatus; label: string }[] = [

@@ -20,11 +20,13 @@ type Option = { value: string; label: string; commission?: string };
 export function LocationForm({
   location,
   clients,
+  team,
   clientId,
   cancelHref,
 }: {
   location?: Location;
   clients: Option[];
+  team: Option[];
   clientId?: string;
   cancelHref: string;
 }) {
@@ -104,6 +106,12 @@ export function LocationForm({
           name="foot_traffic"
           placeholder="About 200 staff"
           defaultValue={value("foot_traffic", location?.foot_traffic)}
+        />
+        <SelectField
+          label="Assigned Filler"
+          name="assigned_to"
+          options={[{ value: "", label: "Nobody yet" }, ...team]}
+          defaultValue={value("assigned_to", location?.assigned_to)}
         />
       </fieldset>
 

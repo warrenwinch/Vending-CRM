@@ -10,6 +10,7 @@ import { formatAud } from "@/lib/au";
 // client's default); for everyone else they simply come back empty.
 const COLUMNS =
   "id, client_id, site_name, address, placement_notes, type, foot_traffic, operating_hours, access_instructions, status, " +
+  "assigned_to, assignee:profiles!locations_assigned_to_fkey(full_name), " +
   "clients(company_name, client_commissions(commission_type, commission_rate)), " +
   "location_commissions(commission_type, commission_rate, follows_client)";
 
@@ -25,12 +26,14 @@ type Row = Omit<
   | "commission_follows_client"
   | "site_commission_type"
   | "site_commission_rate"
+  | "assigned_name"
 > & {
+  assignee: { full_name: string } | null;
   clients: { company_name: string; client_commissions: Commission | Commission[] | null } | null;
   location_commissions: (Commission & { follows_client: boolean }) | (Commission & { follows_client: boolean })[] | null;
 };
 
-function toLocation({ clients, location_commissions, ...row }: Row): Location {
+function toLocation({ clients, location_commissions, assignee, ...row }: Row): Location {
   const site = one(location_commissions);
   const client = one(clients?.client_commissions);
   // No row yet means the site has never had its own deal: it follows the client.
@@ -44,6 +47,7 @@ function toLocation({ clients, location_commissions, ...row }: Row): Location {
     site_commission_type: site && !site.follows_client ? site.commission_type : "none",
     site_commission_rate: site && !site.follows_client ? rate(site.commission_rate) : null,
     client_name: clients?.company_name ?? null,
+    assigned_name: row.assigned_to ? (assignee?.full_name ?? "Former team member") : null,
   };
 }
 

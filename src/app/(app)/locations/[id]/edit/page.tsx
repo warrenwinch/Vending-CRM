@@ -2,6 +2,7 @@ import { Suspense } from "react";
 import { notFound } from "next/navigation";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getLocation, listClientOptions } from "@/lib/locations";
+import { listAssigneeOptions } from "@/lib/team";
 import { isUuid } from "@/lib/ids";
 import { LocationForm } from "../../location-form";
 import { DeleteLocation } from "./delete-location";
@@ -25,11 +26,14 @@ async function EditLocation({ params }: Pick<PageProps<"/locations/[id]/edit">, 
   const location = await getLocation(id);
   if (!location) notFound();
   // Keep this site's own customer in the list even if it's archived.
-  const clients = await listClientOptions({ keep: location.client_id });
+  const [clients, team] = await Promise.all([
+    listClientOptions({ keep: location.client_id }),
+    listAssigneeOptions({ keep: location.assigned_to }),
+  ]);
 
   return (
     <>
-      <LocationForm location={location} clients={clients} cancelHref={`/locations/${id}`} />
+      <LocationForm location={location} clients={clients} team={team} cancelHref={`/locations/${id}`} />
       <DeleteLocation locationId={location.id} siteName={location.site_name} />
     </>
   );

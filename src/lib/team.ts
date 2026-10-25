@@ -3,6 +3,7 @@
 import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Role } from "@/lib/auth-types";
+import { roleLabels } from "@/lib/auth";
 
 export type Member = {
   id: string;
@@ -31,6 +32,15 @@ export async function listMembers() {
     .order("full_name");
   if (error) throw new Error(`Could not load your team: ${error.message}`);
   return data as Member[];
+}
+
+// People a site's maintenance can be given to: active members, plus `keep`
+// (whoever has it now) so a saved choice never silently disappears.
+export async function listAssigneeOptions({ keep }: { keep?: string | null } = {}) {
+  const members = await listMembers();
+  return members
+    .filter((m) => m.active || m.id === keep)
+    .map((m) => ({ value: m.id, label: `${m.full_name} (${roleLabels[m.role]})` }));
 }
 
 // Invitations not yet accepted or cancelled, including expired ones so they can be re-sent.

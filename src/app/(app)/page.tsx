@@ -4,6 +4,9 @@ import { requireProfile, roleLabels, OFFICE_ROLES } from "@/lib/auth";
 import { createClient } from "@/lib/supabase/server";
 import { listFaults } from "@/lib/faults";
 import { FaultList } from "./faults/fault-list";
+import { dueState, listPlans } from "@/lib/maintenance";
+import { todayInSydney } from "@/lib/au";
+import { PlanList } from "./maintenance/plan-list";
 
 export default function Home() {
   return (
@@ -14,18 +17,24 @@ export default function Home() {
 }
 
 async function Dashboard() {
-  const { profile } = await requireProfile();
+  const { user, profile } = await requireProfile();
   const isOffice = OFFICE_ROLES.includes(profile.role);
 
   // Counts only (head: true fetches no rows).
   const supabase = await createClient();
   const howMany = { count: "exact", head: true } as const;
-  const [openFaultList, machines, locations] = await Promise.all([
+  const [openFaultList, machines, locations, plans] = await Promise.all([
     listFaults({ open: true }),
     supabase.from("machines").select("id", howMany).eq("status", "installed"),
     supabase.from("locations").select("id", howMany).eq("status", "active"),
+    listPlans(),
   ]);
   const openFaults = openFaultList.length;
+
+  // Maintenance: everyone's overdue count, and this person's own jobs due within a week.
+  const today = todayInSydney();
+  const overdueJobs = plans.filter((p) => dueState(p.next_due, today) === "overdue").length;
+  const myJobs = plans.filter((p) => p.assigned_to === user.id && dueState(p.next_due, today) !== "later");
   const installed = machines.count ?? 0;
   const sites = locations.count ?? 0;
 
@@ -35,6 +44,12 @@ async function Dashboard() {
       title: "Faults",
       detail: openFaults ? `${openFaults} open` : "None open",
       tone: openFaults ? "alert" : "plain",
+    },
+    {
+      href: "/maintenance",
+      title: "Maintenance",
+      detail: overdueJobs ? `${overdueJobs} overdue` : "Nothing overdue",
+      tone: overdueJobs ? "alert" : "plain",
     },
     { href: "/machines", title: "Machines", detail: `${installed} installed`, tone: "brand" },
     { href: "/locations", title: "Locations", detail: `${sites} active sites`, tone: "plain" },
@@ -72,6 +87,19 @@ async function Dashboard() {
           </li>
         ))}
       </ul>
+
+      {myJobs.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="section-title">My maintenance</h2>
+            <Link href="/maintenance?who=me&show=all" className="btn-small">
+              See all mine
+            </Link>
+          </div>
+          <PlanList plans={myJobs} today={today} showMachine empty="" />
+          <p className="text-sm text-zinc-500">Overdue and due in the next week.</p>
+        </section>
+      )}
 
       {openFaults > 0 && (
         <section className="flex flex-col gap-3">

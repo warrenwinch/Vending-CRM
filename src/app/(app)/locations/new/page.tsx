@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { listClientOptions } from "@/lib/locations";
+import { listAssigneeOptions } from "@/lib/team";
 import { isUuid } from "@/lib/ids";
 import { LocationForm } from "../location-form";
 
@@ -20,7 +21,7 @@ async function NewLocation({ searchParams }: Pick<PageProps<"/locations/new">, "
   await requireRole(OFFICE_ROLES);
   const { client } = await searchParams;
   const clientId = isUuid(client) ? client : undefined;
-  const clients = await listClientOptions();
+  const [clients, team] = await Promise.all([listClientOptions(), listAssigneeOptions()]);
 
   if (clients.length === 0) {
     return (
@@ -37,6 +38,7 @@ async function NewLocation({ searchParams }: Pick<PageProps<"/locations/new">, "
   return (
     <LocationForm
       clients={clients}
+      team={team}
       clientId={clientId}
       cancelHref={clientId ? `/clients/${clientId}` : "/locations"}
     />
