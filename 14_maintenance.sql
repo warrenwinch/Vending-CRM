@@ -69,7 +69,7 @@ declare
   plan  maintenance_plans;
   loc   uuid;
   today date := (now() at time zone 'Australia/Sydney')::date;
-  next  date;
+  next_on date;
 begin
   if public.current_user_role() is null then raise exception 'Please log in again.'; end if;
 
@@ -88,11 +88,11 @@ begin
   insert into maintenance_done (organization_id, plan_id, machine_id, location_id, task, due_on, done_on, done_by, notes)
   values (plan.organization_id, plan.id, plan.machine_id, loc, plan.task, plan.next_due, p_done_on, auth.uid(), p_notes);
 
-  next := (p_done_on + case plan.every_unit
+  next_on := (p_done_on + case plan.every_unit
     when 'weeks' then make_interval(weeks => plan.every_count)
     else make_interval(months => plan.every_count) end)::date;
-  update maintenance_plans set next_due = next where id = plan.id;
-  return next;
+  update maintenance_plans set next_due = next_on where id = plan.id;
+  return next_on;
 end $$;
 
 revoke all on function public.mark_maintenance_done(uuid, date, text) from public;
