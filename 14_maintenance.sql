@@ -10,15 +10,13 @@
 -- all-or-nothing database step that records it and sets the next due date.
 -- =====================================================================
 
-create type maintenance_unit as enum ('weeks', 'months');
-
 create table maintenance_plans (
   id                uuid primary key default gen_random_uuid(),
   organization_id   uuid not null default public.current_org_id() references organizations(id) on delete cascade,
   machine_id        uuid not null,
   task              text not null check (length(trim(task)) between 2 and 120),
   every_count       integer not null check (every_count between 1 and 104),
-  every_unit        maintenance_unit not null default 'weeks',
+  every_unit        text not null default 'weeks' check (every_unit in ('weeks', 'months')),
   next_due          date not null,
   notes             text check (notes is null or length(notes) <= 1000),
   created_at        timestamptz not null default now(),
