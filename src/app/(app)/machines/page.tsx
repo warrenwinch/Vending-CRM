@@ -114,30 +114,44 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
             <li key={m.id}>
               <Link
                 href={`/machines/${m.id}`}
-                className={`flex items-center gap-4 border-l-8 p-4 ${machineRowTint[m.status]}`}
+                className={`flex items-start gap-3 border-l-8 p-4 ${machineRowTint[m.status]}`}
               >
-                <span className="w-20 shrink-0 font-mono text-sm font-semibold">{m.machine_number}</span>
+                {/* Nothing is cut off, so on a phone several machines at one
+                    site can be told apart by number, position and type. */}
                 <div className="min-w-0 flex-1">
-                  {/* Where it is comes first: that's what people look for on the road. */}
-                  <p className={`truncate ${m.site_name ? "font-bold" : "font-medium text-zinc-500"}`}>
-                    {m.site_name ?? "Not at a location"}
+                  <p className={`break-words ${m.site ? "font-bold" : "font-medium text-zinc-500"}`}>
+                    {m.site ?? "Not at a location"}
                   </p>
-                  <p className="truncate text-sm text-zinc-500">
-                    {[
-                      [m.manufacturer, m.model].filter(Boolean).join(" ") || null,
-                      MACHINE_TYPES.find((t) => t.value === m.type)?.label,
-                      m.serial_number && `S/N ${m.serial_number}`,
-                    ]
+                  <p className="break-words">
+                    <span className="font-mono font-semibold">{m.machine_number}</span>
+                    {[m.position, MACHINE_TYPES.find((t) => t.value === m.type)?.label]
                       .filter(Boolean)
-                      .join(" · ")}
+                      .map((part) => (
+                        <span key={part} className="font-semibold">
+                          {" · "}
+                          {part}
+                        </span>
+                      ))}
                   </p>
+                  {(m.manufacturer || m.model || m.serial_number) && (
+                    <p className="break-words text-sm text-zinc-500">
+                      {[
+                        [m.manufacturer, m.model].filter(Boolean).join(" ") || null,
+                        m.serial_number && `S/N ${m.serial_number}`,
+                      ]
+                        .filter(Boolean)
+                        .join(" · ")}
+                    </p>
+                  )}
                 </div>
-                {byMachine.get(m.id) ? (
-                  <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-red-900">
-                    {byMachine.get(m.id)} open fault{byMachine.get(m.id) === 1 ? "" : "s"}
-                  </span>
-                ) : null}
-                <MachineStatusBadge status={m.status} />
+                <div className="flex shrink-0 flex-col items-end gap-1">
+                  <MachineStatusBadge status={m.status} />
+                  {byMachine.get(m.id) ? (
+                    <span className="rounded-full bg-red-100 px-2.5 py-0.5 text-xs font-bold whitespace-nowrap text-red-900">
+                      {byMachine.get(m.id)} open fault{byMachine.get(m.id) === 1 ? "" : "s"}
+                    </span>
+                  ) : null}
+                </div>
               </Link>
             </li>
           ))}

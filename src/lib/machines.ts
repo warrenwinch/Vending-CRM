@@ -71,6 +71,9 @@ export async function listMachines({ status, search }: { status?: MachineStatus;
       ...toMachine(row),
       // "ABS House, Level 4N"
       site_name: site ? [site, here.position].filter(Boolean).join(", ") : null,
+      // The same, kept apart so lists can show the position on its own line.
+      site: site ?? null,
+      position: site ? here.position : null,
     };
   });
 }
