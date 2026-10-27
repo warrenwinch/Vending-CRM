@@ -1,25 +1,41 @@
 // The sales section on Home (Administrators and Managers only): the latest
-// imported month against the one before, the trend, best and worst
+// imported month against the same month last year, best and worst
 // machines, and the biggest customers.
 import Link from "next/link";
-import { formatAud } from "@/lib/au";
-import { monthlyTotals, salesForMonth, type MachineMonthSale } from "@/lib/sales";
+import { formatAud, todayInSydney } from "@/lib/au";
+import { dailyTotals, latestDailyDay, monthlyTotals, salesForMonth, type MachineMonthSale } from "@/lib/sales";
 import { SALES_SOURCES } from "@/lib/sales-import";
-import { SalesTrend } from "./sales-trend";
 import { DailySummary } from "./daily-summary";
 
 const monthName = (month: string) =>
   new Date(`${month}T00:00:00`).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
 
-function Change({ now, before }: { now: number; before: number | undefined }) {
+function Change({ now, before }: { now: number; before: number }) {
   if (!before) return null;
   const pct = ((now - before) / before) * 100;
   const up = pct >= 0;
   return (
     <span className={`text-sm font-bold ${up ? "text-leaf-deep" : "text-red-700"}`}>
-      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% on last month
+      {up ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}% on last year
     </span>
   );
+}
+
+// The same month last year, from the daily totals. While the month is still
+// going, only up to the latest day imported, so like is compared with like.
+async function sameMonthLastYear(month: string) {
+  const [y, m] = month.split("-").map(Number);
+  const daysInMonth = new Date(Date.UTC(y, m, 0)).getUTCDate();
+  let toDay = daysInMonth;
+  if (todayInSydney() <= `${month.slice(0, 8)}${String(daysInMonth).padStart(2, "0")}`) {
+    const latest = await latestDailyDay();
+    toDay = latest?.startsWith(month.slice(0, 8)) ? Number(latest.slice(8)) : Math.max(1, Number(todayInSydney().slice(8)) - 1);
+  }
+  const lyMonth = `${y - 1}-${String(m).padStart(2, "0")}`;
+  const lyDays = new Date(Date.UTC(y - 1, m, 0)).getUTCDate();
+  const byDay = await dailyTotals(`${lyMonth}-01`, `${lyMonth}-${String(Math.min(toDay, lyDays)).padStart(2, "0")}`);
+  const total = Math.round([...byDay.values()].reduce((t, v) => t + v, 0) * 100) / 100;
+  return { total, label: `${monthName(`${lyMonth}-01`)}${toDay < daysInMonth ? ` to day ${toDay}` : ""}` };
 }
 
 function MachineList({ title, rows }: { title: string; rows: MachineMonthSale[] }) {
@@ -63,8 +79,7 @@ export async function SalesSummary() {
   }
 
   const latest = months[months.length - 1];
-  const previous = months[months.length - 2];
-  const machines = await salesForMonth(latest.month);
+  const [machines, lastYear] = await Promise.all([salesForMonth(latest.month), sameMonthLastYear(latest.month)]);
   const matched = machines.filter((m) => m.machine_id);
   const top = matched.slice(0, 5);
   const bottom = matched.length > 5 ? [...matched].reverse().slice(0, 5) : [];
@@ -89,7 +104,7 @@ export async function SalesSummary() {
       <div className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
           <span className="font-display text-4xl font-extrabold">{formatAud(latest.total)}</span>
-          <Change now={latest.total} before={previous?.total} />
+          <Change now={latest.total} before={lastYear.total} />
         </p>
         <ul className="flex flex-wrap gap-x-6 gap-y-1 text-sm text-zinc-600">
           {SALES_SOURCES.filter((s) => latest.bySource[s.value] !== undefined).map((s) => (
@@ -98,14 +113,12 @@ export async function SalesSummary() {
             </li>
           ))}
         </ul>
-        {previous && (
+        {lastYear.total > 0 && (
           <p className="text-sm text-zinc-500">
-            {monthName(previous.month)}: {formatAud(previous.total)}
+            {lastYear.label}: {formatAud(lastYear.total)}
           </p>
         )}
       </div>
-
-      {months.length > 1 && <SalesTrend months={months} />}
 
       <div className="grid gap-3 md:grid-cols-2">
         {top.length > 0 && <MachineList title="Top 5 machines" rows={top} />}
