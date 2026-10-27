@@ -34,7 +34,9 @@ async function Menu() {
     { href: "/faults", label: "Faults" },
     { href: "/maintenance", label: "Maintenance" },
   );
-  if (OFFICE_ROLES.includes(profile.role)) items.push({ href: "/commission", label: "Commission" });
+  if (OFFICE_ROLES.includes(profile.role)) {
+    items.push({ href: "/sales", label: "Sales" }, { href: "/commission", label: "Commission" });
+  }
   if (profile.role === "administrator") items.push({ href: "/team", label: "Team" });
 
   return (
