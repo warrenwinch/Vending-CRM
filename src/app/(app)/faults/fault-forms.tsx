@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useActionState, useState, useSyncExternalStore } from "react";
-import { deleteFault, markFixed, reportFault, sendSummaryNow } from "./actions";
+import { assignFault, deleteFault, markFixed, reportFault, sendSummaryNow } from "./actions";
 import {
   CheckboxField,
   FormMessage,
@@ -149,6 +149,37 @@ export function SendSummaryNow() {
       </button>
       {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
       {state.message && <span className="text-sm text-leaf-deep">{state.message}</span>}
+    </form>
+  );
+}
+
+// Who the repair is given to (Administrators, Managers and Warehouse).
+export function AssignFaultForm({
+  faultId,
+  assignedTo,
+  team,
+}: {
+  faultId: string;
+  assignedTo: string | null;
+  team: { value: string; label: string }[];
+}) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(assignFault.bind(null, faultId), {});
+  return (
+    <form action={formAction} className="flex flex-col gap-2">
+      <div className="flex flex-wrap items-end gap-2">
+        <div className="min-w-0 flex-1">
+          <SelectField
+            label="Assigned to"
+            name="assigned_to"
+            options={[{ value: "", label: "Nobody yet" }, ...team]}
+            defaultValue={state.values?.assigned_to ?? assignedTo ?? ""}
+          />
+        </div>
+        <button type="submit" disabled={pending} className="btn-secondary">
+          {pending ? "Saving…" : "Save"}
+        </button>
+      </div>
+      <FormMessage state={state} />
     </form>
   );
 }

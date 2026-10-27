@@ -3,26 +3,29 @@ import "server-only";
 import { createClient } from "@/lib/supabase/server";
 import type { Fault } from "@/lib/fault-types";
 
-// Two links to people (who reported, who fixed), so each is named.
+// Three links to people (who reported, who fixed, who it's assigned to), so each is named.
 const COLUMNS =
-  "id, machine_id, location_id, category, severity, description, reported_by, reported_by_public, reporter_contact, reported_at, fixed_by, fixed_at, fix_notes, " +
+  "id, machine_id, location_id, category, severity, description, reported_by, reported_by_public, reporter_contact, reported_at, fixed_by, fixed_at, fix_notes, assigned_to, " +
   "machines(machine_number), locations(site_name), " +
-  "reporter:profiles!machine_faults_reported_by_fkey(full_name), fixer:profiles!machine_faults_fixed_by_fkey(full_name)";
+  "reporter:profiles!machine_faults_reported_by_fkey(full_name), fixer:profiles!machine_faults_fixed_by_fkey(full_name), " +
+  "assignee:profiles!machine_faults_assigned_to_fkey(full_name)";
 
-type Row = Omit<Fault, "machine_number" | "site_name" | "reporter_name" | "fixer_name"> & {
+type Row = Omit<Fault, "machine_number" | "site_name" | "reporter_name" | "fixer_name" | "assigned_name"> & {
   machines: { machine_number: string } | null;
   locations: { site_name: string } | null;
   reporter: { full_name: string } | null;
   fixer: { full_name: string } | null;
+  assignee: { full_name: string } | null;
 };
 
-const toFault = ({ machines, locations, reporter, fixer, ...row }: Row): Fault => ({
+const toFault = ({ machines, locations, reporter, fixer, assignee, ...row }: Row): Fault => ({
   ...row,
   machine_number: machines?.machine_number ?? "Unknown machine",
   site_name: locations?.site_name ?? null,
   // Customers who scanned a QR sticker have no account, just optional contact details.
   reporter_name: row.reported_by_public ? "Member of the public" : (reporter?.full_name ?? "Former team member"),
   fixer_name: row.fixed_by ? (fixer?.full_name ?? "Former team member") : null,
+  assigned_name: row.assigned_to ? (assignee?.full_name ?? "Former team member") : null,
 });
 
 // Sydney calendar date of a moment, as placements store dates ("2026-10-23").

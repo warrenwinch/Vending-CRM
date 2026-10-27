@@ -30,9 +30,12 @@ export default function FaultsPage({ searchParams }: PageProps<"/faults">) {
 const DAY = 24 * 60 * 60 * 1000;
 
 async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams">) {
-  const { profile } = await requireProfile();
-  const { show } = await searchParams;
+  const { user, profile } = await requireProfile();
+  const { show, who: whoParam } = await searchParams;
   const view = show === "fixed" ? "fixed" : show === "all" ? "all" : "open";
+  // Whose repairs: everyone (""), "me", "none" (nobody assigned) or one person's id.
+  const who = typeof whoParam === "string" ? whoParam : "";
+  const whoId = who === "me" ? user.id : who;
 
   const all = await listFaults();
   const open = all.filter((f) => !f.fixed_at);
@@ -51,7 +54,18 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
   }
   const top = [...counts.entries()].sort((a, b) => b[1] - a[1]).slice(0, 3);
 
-  const shown = view === "open" ? open : view === "fixed" ? all.filter((f) => f.fixed_at) : all;
+  const people = [...new Map(open.filter((f) => f.assigned_to).map((f) => [f.assigned_to!, f.assigned_name!])).entries()]
+    .filter(([id]) => id !== user.id)
+    .sort((a, b) => a[1].localeCompare(b[1]));
+  const shown = (view === "open" ? open : view === "fixed" ? all.filter((f) => f.fixed_at) : all).filter(
+    (f) => !who || (who === "none" ? !f.assigned_to : f.assigned_to === whoId),
+  );
+  const href = (v: string) => {
+    const qs = new URLSearchParams();
+    if (v !== "open") qs.set("show", v);
+    if (who) qs.set("who", who);
+    return `/faults${qs.size ? `?${qs}` : ""}`;
+  };
 
   return (
     <>
@@ -75,6 +89,7 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
       )}
       {profile.role === "administrator" && <SendSummaryNow />}
 
+      <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
       <nav className="flex flex-wrap gap-1 text-sm" aria-label="Show">
         {[
           ["open", `Open (${open.length})`],
@@ -83,7 +98,7 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
         ].map(([value, label]) => (
           <Link
             key={value}
-            href={value === "open" ? "/faults" : `/faults?show=${value}`}
+            href={href(value)}
             className={`rounded-full px-4 py-2 font-bold ${
               view === value
                 ? "chip-active"
@@ -94,6 +109,23 @@ async function Faults({ searchParams }: Pick<PageProps<"/faults">, "searchParams
           </Link>
         ))}
       </nav>
+      <form action="/faults" className="flex gap-2">
+        {view !== "open" && <input type="hidden" name="show" value={view} />}
+        <select name="who" defaultValue={who} aria-label="Whose repairs" className="input">
+          <option value="">Everyone</option>
+          <option value="me">Just mine</option>
+          {people.map(([id, name]) => (
+            <option key={id} value={id}>
+              {name}
+            </option>
+          ))}
+          <option value="none">Nobody assigned</option>
+        </select>
+        <button type="submit" className="btn-secondary">
+          Show
+        </button>
+      </form>
+      </div>
 
       <FaultList
         faults={shown}

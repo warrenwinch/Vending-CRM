@@ -2,6 +2,8 @@
 
 import { redirect } from "next/navigation";
 import { after } from "next/server";
+import { revalidatePath } from "next/cache";
+import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
 import { createClient } from "@/lib/supabase/server";
 import { requireProfile, requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { getOpenPlacement, placeName } from "@/lib/placements";
@@ -136,6 +138,25 @@ export async function markFixed(faultId: string, _prev: FormState, formData: For
   if (!data.length) return fail("Someone else has just marked this fault fixed. Reload the page to see it.");
 
   redirect(`/faults/${faultId}`);
+}
+
+// Gives an open repair to a team member, or nobody (office and Warehouse).
+export async function assignFault(faultId: string, _prev: FormState, formData: FormData): Promise<FormState> {
+  await requireRole(MACHINE_EDIT_ROLES);
+  const values = { assigned_to: String(formData.get("assigned_to") ?? "") };
+  if (!isUuid(faultId)) return { error: "This fault wasn't found.", values };
+  if (values.assigned_to && !isUuid(values.assigned_to)) return { error: "Please choose a team member.", values };
+
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("machine_faults")
+    .update({ assigned_to: values.assigned_to || null })
+    .eq("id", faultId)
+    .select("id");
+  if (error) return { error: `Could not save: ${error.message}`, values };
+  if (!data.length) return { error: "This fault wasn't found.", values };
+  revalidatePath(`/faults/${faultId}`);
+  return { message: values.assigned_to ? "Assigned." : "Nobody is assigned now.", values };
 }
 
 // For faults logged by mistake (office only).

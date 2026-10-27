@@ -35,6 +35,8 @@ async function Dashboard() {
   const today = todayInSydney();
   const overdueJobs = plans.filter((p) => dueState(p.next_due, today) === "overdue").length;
   const myJobs = plans.filter((p) => p.assigned_to === user.id && dueState(p.next_due, today) !== "later");
+  // Open repairs given to this person, waiting longest first.
+  const myRepairs = openFaultList.filter((f) => f.assigned_to === user.id).reverse();
   const installed = machines.count ?? 0;
   const sites = locations.count ?? 0;
 
@@ -87,6 +89,19 @@ async function Dashboard() {
           </li>
         ))}
       </ul>
+
+      {myRepairs.length > 0 && (
+        <section className="flex flex-col gap-3">
+          <div className="flex items-center justify-between gap-4">
+            <h2 className="section-title">My repairs</h2>
+            <Link href="/faults?who=me" className="btn-small">
+              See all mine
+            </Link>
+          </div>
+          <FaultList faults={myRepairs.slice(0, 10)} showMachine empty="" />
+          {myRepairs.length > 10 && <p className="text-sm text-zinc-500">Showing the 10 waiting longest.</p>}
+        </section>
+      )}
 
       {myJobs.length > 0 && (
         <section className="flex flex-col gap-3">

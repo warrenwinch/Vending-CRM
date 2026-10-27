@@ -47,7 +47,10 @@ export function FaultList({ faults, showMachine, empty }: { faults: Fault[]; sho
               </div>
               <p className="truncate text-sm text-zinc-600">{f.description}</p>
               <p className="text-xs text-zinc-500">
-                {[`Found ${formatDateTime(f.reported_at)} by ${f.reporter_name}`]
+                {[
+                  `Found ${formatDateTime(f.reported_at)} by ${f.reporter_name}`,
+                  !f.fixed_at && (f.assigned_name ? `Assigned to ${f.assigned_name}` : "Not assigned"),
+                ]
                   .filter(Boolean)
                   .join(" · ")}
               </p>

@@ -5,7 +5,9 @@ import { requireProfile, OFFICE_ROLES } from "@/lib/auth";
 import { getFault } from "@/lib/faults";
 import { categoryLabel, formatDateTime, formatDuration, nowMs, timeToFix, FAULT_SEVERITIES } from "@/lib/fault-types";
 import { isUuid } from "@/lib/ids";
-import { DeleteFaultButton, MarkFixedForm } from "../fault-forms";
+import { AssignFaultForm, DeleteFaultButton, MarkFixedForm } from "../fault-forms";
+import { MACHINE_EDIT_ROLES } from "@/lib/machine-types";
+import { listAssigneeOptions } from "@/lib/team";
 
 export default function FaultPage({ params }: PageProps<"/faults/[id]">) {
   return (
@@ -17,10 +19,12 @@ export default function FaultPage({ params }: PageProps<"/faults/[id]">) {
 
 async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params">) {
   const { profile } = await requireProfile();
+  const canAssign = MACHINE_EDIT_ROLES.includes(profile.role);
   const { id } = await params;
   if (!isUuid(id)) notFound();
   const fault = await getFault(id);
   if (!fault) notFound();
+  const team = canAssign && !fault.fixed_at ? await listAssigneeOptions({ keep: fault.assigned_to }) : [];
 
   const fixedIn = timeToFix(fault);
   const rows: [string, React.ReactNode][] = [
@@ -46,6 +50,7 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
     if (fault.fix_notes) rows.push(["What was done", fault.fix_notes]);
   } else {
     rows.push(["Open for", formatDuration(nowMs() - new Date(fault.reported_at).getTime())]);
+    if (!canAssign) rows.push(["Assigned to", fault.assigned_name ?? "Nobody yet"]);
   }
 
   return (
@@ -78,6 +83,11 @@ async function FaultDetails({ params }: Pick<PageProps<"/faults/[id]">, "params"
         ))}
       </dl>
 
+      {!fault.fixed_at && canAssign && (
+        <div className="rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
+          <AssignFaultForm faultId={fault.id} assignedTo={fault.assigned_to} team={team} />
+        </div>
+      )}
       {!fault.fixed_at && <MarkFixedForm faultId={fault.id} />}
       {OFFICE_ROLES.includes(profile.role) && <DeleteFaultButton faultId={fault.id} machineId={fault.machine_id} />}
     </>

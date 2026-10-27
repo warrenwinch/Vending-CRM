@@ -51,6 +51,9 @@ export type Fault = {
   fixer_name: string | null;
   fixed_at: string | null;
   fix_notes: string | null;
+  // Who the repair is given to, if anyone.
+  assigned_to: string | null;
+  assigned_name: string | null;
 };
 
 // 135 minutes -> "2 h 15 min"; 3 days 4 hours -> "3 days 4 h".
