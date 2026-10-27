@@ -1,11 +1,12 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
-import { listIgnored, listImportedMonths, listUnmatched } from "@/lib/sales";
+import { listIgnored, listImportedDays, listImportedMonths, listUnmatched } from "@/lib/sales";
 import { listMachines } from "@/lib/machines";
-import { sourceLabel } from "@/lib/sales-import";
-import { formatAud, lastMonthInSydney } from "@/lib/au";
+import { addDays, sourceLabel } from "@/lib/sales-import";
+import { formatAud, formatDate, lastMonthInSydney, todayInSydney } from "@/lib/au";
 import { ImportSales } from "./import-sales";
+import { ImportDaily } from "./import-daily";
 import { linkSale, unignoreSale } from "./actions";
 
 export default function SalesPage() {
@@ -29,12 +30,14 @@ const monthLabel = (month: string) =>
 
 async function Sales() {
   await requireRole(OFFICE_ROLES);
-  const [months, unmatched, ignored, machines] = await Promise.all([
+  const [months, unmatched, ignored, machines, days] = await Promise.all([
     listImportedMonths(),
     listUnmatched(),
     listIgnored(),
     listMachines({}),
+    listImportedDays(),
   ]);
+  const yesterday = addDays(todayInSydney(), -1);
   const machineOptions = [...machines]
     .sort((a, b) => a.machine_number.localeCompare(b.machine_number, undefined, { numeric: true }))
     .map((m) => ({
@@ -45,7 +48,26 @@ async function Sales() {
   return (
     <>
       <section className="flex flex-col gap-3">
-        <h2 className="section-title">Import</h2>
+        <h2 className="section-title">Each morning: yesterday</h2>
+        <p className="text-sm text-zinc-600">
+          For Yesterday, Week to date and the month-to-date chart on Home.
+        </p>
+        <ImportDaily yesterday={yesterday} />
+        {days.length > 0 && (
+          <p className="text-sm text-zinc-600">
+            Latest days imported:{" "}
+            {[...new Map(days.map((d) => [d.day, 0])).keys()].slice(0, 7).map((d, i) => (
+              <span key={d}>
+                {i > 0 && ", "}
+                {formatDate(d)} ({days.filter((x) => x.day === d).length}/3 systems)
+              </span>
+            ))}
+          </p>
+        )}
+      </section>
+
+      <section className="flex flex-col gap-3">
+        <h2 className="section-title">Each month: last month by machine</h2>
         <ImportSales lastMonth={lastMonthInSydney()[0]} />
       </section>
 

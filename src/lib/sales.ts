@@ -265,3 +265,40 @@ export async function machineSalesHistory(machineId: string) {
   }
   return [...byMonth.values()];
 }
+
+// Daily totals (all systems added together) from `from` to `to`, by day.
+export async function dailyTotals(from: string, to: string) {
+  const supabase = await createClient();
+  const rows = await allRows<{ day: string; amount: number | string; units: number }>((f, t) =>
+    supabase
+      .from("daily_sales")
+      .select("day, amount, units, source")
+      .gte("day", from)
+      .lte("day", to)
+      .order("day")
+      .order("source")
+      .range(f, t),
+  );
+  const byDay = new Map<string, number>();
+  for (const r of rows) byDay.set(r.day, Math.round(((byDay.get(r.day) ?? 0) + Number(r.amount)) * 100) / 100);
+  return byDay;
+}
+
+// The most recent day with daily sales imported, if any.
+export async function latestDailyDay(): Promise<string | null> {
+  const supabase = await createClient();
+  const { data } = await supabase.from("daily_sales").select("day").order("day", { ascending: false }).limit(1).maybeSingle();
+  return (data?.day as string | undefined) ?? null;
+}
+
+// Days imported per system, newest first (for the Sales page).
+export async function listImportedDays(limit = 14) {
+  const supabase = await createClient();
+  const { data, error } = await supabase
+    .from("daily_sales")
+    .select("day, source, amount")
+    .order("day", { ascending: false })
+    .limit(limit * 3);
+  if (error) throw new Error(`Could not load daily sales: ${error.message}`);
+  return data as { day: string; source: SalesSource; amount: number | string }[];
+}

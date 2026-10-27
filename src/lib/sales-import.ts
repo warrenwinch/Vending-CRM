@@ -55,6 +55,7 @@ export type ParsedSales = {
   rows: SaleRow[];
   total: number;
   month: string | null; // "2026-09-01" when the file says which month (Nayax does)
+  day: string | null; // "2026-10-26": the first day the file covers, when it says (Nayax does)
 };
 
 // Finds which report this is, reads every machine's line, and adds up any
@@ -85,9 +86,13 @@ export function parseSalesFile(table: string[][]): ParsedSales {
 
   // Nayax says which dates it covers in its title: "Searched Date Range: 1/9/2026 …".
   let month: string | null = null;
+  let day: string | null = null;
   const title = table.slice(0, headerAt).flat().join(" ");
   const range = /Date Range:\s*(\d{1,2})\/(\d{1,2})\/(\d{4})/.exec(title);
-  if (range) month = `${range[3]}-${range[2].padStart(2, "0")}-01`;
+  if (range) {
+    month = `${range[3]}-${range[2].padStart(2, "0")}-01`;
+    day = `${range[3]}-${range[2].padStart(2, "0")}-${range[1].padStart(2, "0")}`;
+  }
 
   const byId = new Map<string, SaleRow>();
   for (const [i, row] of table.slice(headerAt + 1).entries()) {
@@ -135,7 +140,35 @@ export function parseSalesFile(table: string[][]): ParsedSales {
   const rows = [...byId.values()];
   if (rows.length === 0) throw new Error("This report has no machines with sales in it.");
   const total = Math.round(rows.reduce((t, r) => t + r.amount, 0) * 100) / 100;
-  return { source, rows, total, month };
+  return { source, rows, total, month, day };
+}
+
+// "2026-10-27" plus a number of days (negative goes back), as a date string.
+export function addDays(day: string, n: number) {
+  const d = new Date(`${day}T00:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+export type DailyTotal ={ source: SalesSource; day: string; units: number; amount: number };
+
+// A history file of daily totals: day, source, units, amount (one row per
+// system per day). Days can be DD/MM/YYYY or YYYY-MM-DD.
+export function parseDailyHistory(rows: Record<string, string>[]): DailyTotal[] {
+  const out: DailyTotal[] = [];
+  rows.forEach((r, i) => {
+    const get = (k: string) => (r[k] ?? "").trim();
+    const rawDay = get("day") || get("date");
+    const au = /^(\d{1,2})\/(\d{1,2})\/(\d{4})$/.exec(rawDay);
+    const day = au ? `${au[3]}-${au[2].padStart(2, "0")}-${au[1].padStart(2, "0")}` : rawDay;
+    const source = get("source");
+    const amount = money(get("amount"));
+    if (!/^\d{4}-\d{2}-\d{2}$/.test(day)) throw new Error(`Row ${i + 2}: “${rawDay}” isn't a date.`);
+    if (!isSalesSource(source)) throw new Error(`Row ${i + 2}: “${source}” should be seed_vending, seed_market or nayax.`);
+    if (amount === null || Number.isNaN(amount)) throw new Error(`Row ${i + 2}: the amount can't be read.`);
+    out.push({ source, day, units: Number(get("units").replace(/,/g, "")) || 0, amount });
+  });
+  return out;
 }
 
 // Ways a sales ID might match a CRM machine: the imported serial number,

@@ -6,6 +6,7 @@ import { formatAud } from "@/lib/au";
 import { monthlyTotals, salesForMonth, type MachineMonthSale } from "@/lib/sales";
 import { SALES_SOURCES } from "@/lib/sales-import";
 import { SalesTrend } from "./sales-trend";
+import { DailySummary } from "./daily-summary";
 
 const monthName = (month: string) =>
   new Date(`${month}T00:00:00`).toLocaleDateString("en-AU", { month: "long", year: "numeric" });
@@ -49,6 +50,7 @@ export async function SalesSummary() {
     return (
       <section className="flex flex-col gap-3">
         <h2 className="section-title">Sales</h2>
+        <DailySummary />
         <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-6 text-center text-zinc-500">
           No sales imported yet.{" "}
           <Link href="/sales" className="font-medium underline">
@@ -76,11 +78,13 @@ export async function SalesSummary() {
   return (
     <section className="flex flex-col gap-3">
       <div className="flex items-center justify-between gap-4">
-        <h2 className="section-title">Sales: {monthName(latest.month)}</h2>
+        <h2 className="section-title">Sales</h2>
         <Link href="/sales" className="btn-small">
           Import
         </Link>
       </div>
+      <DailySummary />
+      <h3 className="mt-2 text-lg font-extrabold">By machine: {monthName(latest.month)}</h3>
 
       <div className="flex flex-col gap-2 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
         <p className="flex flex-wrap items-baseline gap-x-3 gap-y-1">
