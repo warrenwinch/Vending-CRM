@@ -7,6 +7,7 @@ import { FaultList } from "./faults/fault-list";
 import { dueState, listPlans } from "@/lib/maintenance";
 import { todayInSydney } from "@/lib/au";
 import { PlanList } from "./maintenance/plan-list";
+import { SalesSummary } from "./sales/sales-summary";
 
 export default function Home() {
   return (
@@ -89,6 +90,12 @@ async function Dashboard() {
           </li>
         ))}
       </ul>
+
+      {isOffice && (
+        <Suspense fallback={<p className="text-sm text-zinc-500">Loading sales…</p>}>
+          <SalesSummary />
+        </Suspense>
+      )}
 
       {myRepairs.length > 0 && (
         <section className="flex flex-col gap-3">

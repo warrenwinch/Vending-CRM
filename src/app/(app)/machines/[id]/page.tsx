@@ -16,6 +16,7 @@ import { PlanList } from "../../maintenance/plan-list";
 import { DoneList } from "../../maintenance/done-list";
 import { listMachineTags, listTags } from "@/lib/tags";
 import { MachineTags } from "../tag-forms";
+import { machineSalesHistory } from "@/lib/sales";
 
 export default function MachinePage({ params }: PageProps<"/machines/[id]">) {
   return (
@@ -31,7 +32,8 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const [machine, history, allFaults, plans, doneJobs, tags, allTags] = await Promise.all([
+  const isOffice = OFFICE_ROLES.includes(profile.role);
+  const [machine, history, allFaults, plans, doneJobs, tags, allTags, sales] = await Promise.all([
     getMachine(id),
     getPlacementHistory(id),
     listFaults({ machineId: id }),
@@ -39,6 +41,8 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
     listDone({ machineId: id, limit: 5 }),
     listMachineTags(id),
     listTags(),
+    // Sales are for Administrators and Managers only.
+    isOffice ? machineSalesHistory(id) : Promise.resolve([]),
   ]);
   // Open faults first, then the 5 most recent fixed ones.
   const faults = [...allFaults.filter((f) => !f.fixed_at), ...allFaults.filter((f) => f.fixed_at).slice(0, 5)];
@@ -156,6 +160,42 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
           </>
         )}
       </section>
+
+      {isOffice && (
+        <section className="flex flex-col gap-3">
+          <h2 className="section-title">Sales</h2>
+          {sales.length === 0 ? (
+            <p className="text-sm text-zinc-500">
+              No sales imported for this machine yet. If it appears under{" "}
+              <Link href="/sales" className="underline">
+                Sales → Needs matching
+              </Link>
+              , match it there.
+            </p>
+          ) : (
+            <table className="w-full rounded-2xl bg-white text-sm ring-2 ring-zinc-200">
+              <thead className="text-left text-zinc-500">
+                <tr>
+                  <th className="p-3">Month</th>
+                  <th className="p-3 text-right">Units</th>
+                  <th className="p-3 text-right">Sales</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-zinc-200">
+                {sales.slice(0, 12).map((s) => (
+                  <tr key={s.month}>
+                    <td className="p-3">
+                      {new Date(`${s.month}T00:00:00`).toLocaleDateString("en-AU", { month: "long", year: "numeric" })}
+                    </td>
+                    <td className="p-3 text-right">{s.units.toLocaleString("en-AU")}</td>
+                    <td className="p-3 text-right font-bold">{formatAud(s.amount)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          )}
+        </section>
+      )}
 
       <section className="flex flex-col gap-3">
         <div className="flex items-center justify-between gap-4">
