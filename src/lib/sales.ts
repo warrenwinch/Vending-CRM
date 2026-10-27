@@ -190,28 +190,35 @@ export async function salesForMonth(month: string): Promise<MachineMonthSale[]> 
   const rows = data as unknown as Row[];
 
   // Where each machine was that month: the latest placement overlapping it.
+  // Machines imported without an "installed on" date only have placements
+  // from the import day, so for earlier months use the first site on record.
   const ids = [...new Set(rows.map((r) => r.machine_id).filter((id): id is string => Boolean(id)))];
-  const where = new Map<string, { site: string; customer: string; started: string }>();
+  const where = new Map<string, { site: string; customer: string }>();
   if (ids.length) {
     const { data: places } = await supabase
       .from("machine_placements")
       .select("machine_id, position, started_on, ended_on, locations(site_name, clients(company_name))")
       .in("machine_id", ids)
-      .lte("started_on", monthEnd(month))
-      .or(`ended_on.is.null,ended_on.gte.${month}`);
+      .order("started_on");
     type Place = {
       machine_id: string;
       position: string | null;
       started_on: string;
+      ended_on: string | null;
       locations: { site_name: string; clients: { company_name: string } | null } | null;
     };
+    const end = monthEnd(month);
+    const byMachine = new Map<string, Place[]>();
     for (const p of (places ?? []) as unknown as Place[]) {
-      const seen = where.get(p.machine_id);
-      if (seen && seen.started >= p.started_on) continue;
-      where.set(p.machine_id, {
+      byMachine.set(p.machine_id, [...(byMachine.get(p.machine_id) ?? []), p]);
+    }
+    for (const [id, list] of byMachine) {
+      const during = list.filter((p) => p.started_on <= end && (p.ended_on === null || p.ended_on >= month)).at(-1);
+      const p = during ?? list.find((x) => x.started_on > end);
+      if (!p) continue;
+      where.set(id, {
         site: [p.locations?.site_name, p.position].filter(Boolean).join(", "),
         customer: p.locations?.clients?.company_name ?? "Unknown customer",
-        started: p.started_on,
       });
     }
   }
