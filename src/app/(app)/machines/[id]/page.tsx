@@ -14,6 +14,8 @@ import { MachineStatusBadge } from "../machine-status-badge";
 import { listDone, listPlans } from "@/lib/maintenance";
 import { PlanList } from "../../maintenance/plan-list";
 import { DoneList } from "../../maintenance/done-list";
+import { listMachineTags, listTags } from "@/lib/tags";
+import { MachineTags } from "../tag-forms";
 
 export default function MachinePage({ params }: PageProps<"/machines/[id]">) {
   return (
@@ -29,12 +31,14 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
 
   const { id } = await params;
   if (!isUuid(id)) notFound();
-  const [machine, history, allFaults, plans, doneJobs] = await Promise.all([
+  const [machine, history, allFaults, plans, doneJobs, tags, allTags] = await Promise.all([
     getMachine(id),
     getPlacementHistory(id),
     listFaults({ machineId: id }),
     listPlans({ machineId: id }),
     listDone({ machineId: id, limit: 5 }),
+    listMachineTags(id),
+    listTags(),
   ]);
   // Open faults first, then the 5 most recent fixed ones.
   const faults = [...allFaults.filter((f) => !f.fixed_at), ...allFaults.filter((f) => f.fixed_at).slice(0, 5)];
@@ -84,6 +88,16 @@ async function MachineDetails({ params }: Pick<PageProps<"/machines/[id]">, "par
           </div>
         ))}
       </dl>
+
+      <section className="flex flex-col gap-3">
+        <div className="flex items-center justify-between gap-4">
+          <h2 className="section-title">Tags</h2>
+          <Link href="/machines/tags" className="text-sm font-medium text-zinc-500 underline">
+            All tags
+          </Link>
+        </div>
+        <MachineTags machineId={machine.id} tags={tags} allTags={allTags} />
+      </section>
 
       <section className="flex flex-col gap-3">
         <h2 className="section-title">Location</h2>

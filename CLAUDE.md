@@ -14,7 +14,7 @@ test each step before moving on.
 
 ## Rules
 1. The database schema is in `01_schema.sql`, plus later changes in numbered files
-   (`02_placement_position.sql`, `03_team_invitations.sql`, `04_private_costs.sql`, `05_machine_faults.sql`, `06_customer_fault_reports.sql`, `07_qr_page_position.sql`, `08_auto_needs_repair.sql`, `09_client_commission.sql`, `10_archive_customers.sql`, `11_construction_site_type.sql`, `12_atomic_machine_moves.sql`, `13_website_leads.sql`, `14_maintenance.sql`, `15_site_filler.sql`, ...), all run in Supabase in order.
+   (`02_placement_position.sql`, `03_team_invitations.sql`, `04_private_costs.sql`, `05_machine_faults.sql`, `06_customer_fault_reports.sql`, `07_qr_page_position.sql`, `08_auto_needs_repair.sql`, `09_client_commission.sql`, `10_archive_customers.sql`, `11_construction_site_type.sql`, `12_atomic_machine_moves.sql`, `13_website_leads.sql`, `14_maintenance.sql`, `15_site_filler.sql`, `16_machine_tags.sql`, ...), all run in Supabase in order.
    Do not change table structure unless I ask. If you think it needs changing, explain why first.
 2. Security is enforced by Row Level Security in the database. Never use the Supabase
    "service role" key in browser code. Never bypass RLS.

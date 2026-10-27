@@ -11,6 +11,9 @@ import {
   type MachineStatus,
 } from "@/lib/machine-types";
 import { MachineStatusBadge, machineRowTint } from "./machine-status-badge";
+import { listTags } from "@/lib/tags";
+import { tagChipClass } from "@/lib/tag-types";
+import { isUuid } from "@/lib/ids";
 
 export default function MachinesPage({ searchParams }: PageProps<"/machines">) {
   return (
@@ -34,15 +37,24 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
   const params = await searchParams;
   const status = isMachineStatus(params.status) ? params.status : undefined;
   const search = typeof params.q === "string" ? params.q.trim() : "";
-  const [machines, { byMachine }] = await Promise.all([listMachines({ status, search }), openFaultCounts()]);
+  // ?tag=…&tag=… : machines with every tag chosen.
+  const tagIds = [params.tag].flat().filter((t): t is string => typeof t === "string" && isUuid(t));
+  const [machines, { byMachine }, allTags] = await Promise.all([
+    listMachines({ status, search, tagIds }),
+    openFaultCounts(),
+    listTags(),
+  ]);
 
-  const filterHref = (s?: MachineStatus) => {
+  const filterHref = (s: MachineStatus | undefined, tags: string[] = tagIds) => {
     const qs = new URLSearchParams();
     if (s) qs.set("status", s);
     if (search) qs.set("q", search);
+    tags.forEach((t) => qs.append("tag", t));
     const str = qs.toString();
     return str ? `/machines?${str}` : "/machines";
   };
+  const toggleTag = (id: string) =>
+    filterHref(status, tagIds.includes(id) ? tagIds.filter((t) => t !== id) : [...tagIds, id]);
 
   return (
     <>
@@ -87,11 +99,14 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
         </nav>
         <form action="/machines" className="flex gap-2">
           {status && <input type="hidden" name="status" value={status} />}
+          {tagIds.map((t) => (
+            <input key={t} type="hidden" name="tag" value={t} />
+          ))}
           <input
             type="search"
             name="q"
             defaultValue={search}
-            placeholder="Site, number, serial, make or model"
+            placeholder="Site, number, tag, serial or model"
             className="input w-full sm:w-64"
           />
           <button type="submit" className="btn-secondary">
@@ -100,9 +115,36 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
         </form>
       </div>
 
+      <nav className="flex flex-wrap items-center gap-2 text-sm" aria-label="Filter by tag">
+          <span className="font-bold text-zinc-600">Tags:</span>
+          {allTags.length === 0 && <span className="text-zinc-500">none yet</span>}
+          {allTags.map((t) => {
+            const on = tagIds.includes(t.id);
+            return (
+              <Link
+                key={t.id}
+                href={toggleTag(t.id)}
+                aria-pressed={on}
+                className={`rounded-full px-3 py-1.5 font-bold ${tagChipClass(t.colour)} ${on ? "ring-2 ring-ink" : "opacity-80 hover:opacity-100"}`}
+              >
+                {on && "✓ "}
+                {t.name}
+              </Link>
+            );
+          })}
+          {tagIds.length > 0 && (
+            <Link href={filterHref(status, [])} className="font-medium underline">
+              Clear tags
+            </Link>
+          )}
+          <Link href="/machines/tags" className="ml-auto font-medium text-zinc-500 underline">
+            Manage tags
+          </Link>
+        </nav>
+
       {machines.length === 0 ? (
         <p className="rounded-2xl border-2 border-dashed border-zinc-300 bg-white p-8 text-center text-zinc-500">
-          {search || status
+          {search || status || tagIds.length
             ? "No machines match."
             : canEdit
               ? "No machines yet. Click “Add machine” to add your first one."
@@ -133,6 +175,15 @@ async function Machines({ searchParams }: Pick<PageProps<"/machines">, "searchPa
                         </span>
                       ))}
                   </p>
+                  {m.tags.length > 0 && (
+                    <p className="mt-1 flex flex-wrap gap-1">
+                      {m.tags.map((t) => (
+                        <span key={t.id} className={`rounded-full px-2 py-0.5 text-xs font-bold ${tagChipClass(t.colour)}`}>
+                          {t.name}
+                        </span>
+                      ))}
+                    </p>
+                  )}
                   {(m.manufacturer || m.model || m.serial_number) && (
                     <p className="break-words text-sm text-zinc-500">
                       {[
