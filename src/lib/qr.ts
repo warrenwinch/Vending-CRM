@@ -9,8 +9,8 @@ export const SITE_URL = (process.env.SITE_URL ?? "https://crm.watwinvending.com.
 export const reportUrl = (publicToken: string) => `${SITE_URL}/m/${publicToken}`;
 
 // A crisp, printable SVG. "M" error correction still scans if a sticker gets scratched.
-export function qrSvg(text: string) {
-  return QRCode.toString(text, { type: "svg", errorCorrectionLevel: "M", margin: 1, color: { dark: "#2f2e2c", light: "#ffffff" } });
+export function qrSvg(text: string, dark = "#2f2e2c") {
+  return QRCode.toString(text, { type: "svg", errorCorrectionLevel: "M", margin: 1, color: { dark, light: "#ffffff" } });
 }
 
 // The number printed on stickers and offered on the customer page.

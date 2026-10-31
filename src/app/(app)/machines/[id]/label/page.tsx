@@ -6,23 +6,30 @@ import { getMachine } from "@/lib/machines";
 import { getOpenPlacement, placeName } from "@/lib/placements";
 import { isUuid } from "@/lib/ids";
 import { reportUrl } from "@/lib/qr";
-import { MachineLabel } from "../../machine-label";
+import { DymoLabel, DymoPageSize, DymoPrintSteps, MachineLabel } from "../../machine-label";
+import { LabelSizeSwitch } from "../../label-size-switch";
 import { PrintButton } from "../../print-button";
 
-export default function MachineLabelPage({ params }: PageProps<"/machines/[id]/label">) {
+export default function MachineLabelPage({ params, searchParams }: PageProps<"/machines/[id]/label">) {
   return (
     <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
-      <Label params={params} />
+      <Label params={params} searchParams={searchParams} />
     </Suspense>
   );
 }
 
-async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params">) {
+async function Label({ params, searchParams }: PageProps<"/machines/[id]/label">) {
   await requireProfile();
-  const { id } = await params;
+  const [{ id }, { size }] = await Promise.all([params, searchParams]);
   if (!isUuid(id)) notFound();
   const [machine, placement] = await Promise.all([getMachine(id), getOpenPlacement(id)]);
   if (!machine) notFound();
+  const dymo = size === "dymo";
+  const label = {
+    machineNumber: machine.machine_number,
+    place: placement ? placeName(placement) : null,
+    publicToken: machine.public_token,
+  };
 
   return (
     <>
@@ -34,6 +41,8 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
         <p className="text-zinc-600">
           Stick this on the front of the machine. Anyone can scan it to report a problem (it goes straight into Faults) or call the number. It shows where the machine is now, so print a new one if you move it.
         </p>
+        <LabelSizeSwitch path={`/machines/${id}/label`} dymo={dymo} />
+        {dymo && <DymoPrintSteps />}
         <div className="flex flex-wrap gap-3">
           <PrintButton label="Print sticker" />
           <a href={reportUrl(machine.public_token)} target="_blank" className="btn-secondary">
@@ -41,11 +50,14 @@ async function Label({ params }: Pick<PageProps<"/machines/[id]/label">, "params
           </a>
         </div>
       </div>
-      <MachineLabel
-        machineNumber={machine.machine_number}
-        place={placement ? placeName(placement) : null}
-        publicToken={machine.public_token}
-      />
+      {dymo ? (
+        <>
+          <DymoPageSize />
+          <DymoLabel {...label} />
+        </>
+      ) : (
+        <MachineLabel {...label} />
+      )}
     </>
   );
 }
