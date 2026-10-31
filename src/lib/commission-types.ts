@@ -26,7 +26,7 @@ export type PaymentSummary = {
 
 export type PaymentLine = {
   id: string;
-  location_id: string;
+  location_id: string | null; // empty for the whole customer (imported from Seed)
   site_name: string;
   period_start: string;
   period_end: string;

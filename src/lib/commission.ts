@@ -38,7 +38,7 @@ function toPayment(row: PaymentRow): Payment {
       sales_amount: num(l.sales_amount),
       rate_applied: num(l.rate_applied),
       commission_amount: Number(l.commission_amount),
-      site_name: locations?.site_name ?? "Unknown site",
+      site_name: l.location_id ? (locations?.site_name ?? "Unknown site") : "Whole customer",
     }))
     .sort((a, b) => a.site_name.localeCompare(b.site_name));
   return {

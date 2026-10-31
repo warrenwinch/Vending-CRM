@@ -2,7 +2,6 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { listClients } from "@/lib/clients";
-import { listLocations } from "@/lib/locations";
 import { createClient } from "@/lib/supabase/server";
 import { ImportCommission } from "./import-commission";
 
@@ -25,9 +24,8 @@ export default function ImportCommissionPage() {
 async function Importer() {
   await requireRole(OFFICE_ROLES);
   const supabase = await createClient();
-  const [clients, sites, { data: lines, error }] = await Promise.all([
+  const [clients, { data: lines, error }] = await Promise.all([
     listClients({}),
-    listLocations({}),
     supabase.from("commission_payment_lines").select("period_start, period_end, commission_payments!inner(client_id)"),
   ]);
   if (error) throw new Error(`Could not load commission payments: ${error.message}`);
@@ -40,7 +38,6 @@ async function Importer() {
   return (
     <ImportCommission
       clients={clients.map((c) => ({ id: c.id, name: c.company_name }))}
-      sites={sites.map((s) => ({ id: s.id, client_id: s.client_id, name: s.site_name, lost: s.status === "lost" }))}
       recorded={recorded}
     />
   );

@@ -58,9 +58,13 @@ async function PaymentDetails({ params }: Pick<PageProps<"/commission/[id]">, "p
             {payment.lines.map((l) => (
               <tr key={l.id}>
                 <td className="p-3">
-                  <Link href={`/locations/${l.location_id}`} className="font-medium underline">
-                    {l.site_name}
-                  </Link>
+                  {l.location_id ? (
+                    <Link href={`/locations/${l.location_id}`} className="font-medium underline">
+                      {l.site_name}
+                    </Link>
+                  ) : (
+                    <span className="font-medium">{l.site_name}</span>
+                  )}
                 </td>
                 <td className="whitespace-nowrap p-3">
                   {formatDate(l.period_start)} – {formatDate(l.period_end)}
