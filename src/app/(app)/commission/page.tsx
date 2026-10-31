@@ -10,12 +10,14 @@ export default function CommissionPage() {
     <>
       <div className="flex items-center justify-between gap-4">
         <h1 className="page-title">Commission payments</h1>
-        <Link
-          href="/commission/new"
-          className="btn-primary"
-        >
-          Record payment
-        </Link>
+        <div className="flex flex-wrap justify-end gap-2">
+          <Link href="/commission/import" className="btn-secondary">
+            Import from Seed
+          </Link>
+          <Link href="/commission/new" className="btn-primary">
+            Record payment
+          </Link>
+        </div>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading payments…</p>}>
         <Payments />
