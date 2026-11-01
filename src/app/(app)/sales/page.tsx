@@ -1,12 +1,13 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
-import { listIgnored, listImportedDays, listImportedMonths, listUnmatched } from "@/lib/sales";
+import { listIgnored, listImportedDays, listImportedMonths, listMatched, listUnmatched } from "@/lib/sales";
 import { listMachines } from "@/lib/machines";
 import { addDays, sourceLabel } from "@/lib/sales-import";
 import { formatAud, formatDate, lastMonthInSydney, todayInSydney } from "@/lib/au";
 import { ImportSales } from "./import-sales";
 import { ImportDaily } from "./import-daily";
+import { MatchedList } from "./matched-list";
 import { linkSale, unignoreSale } from "./actions";
 
 export default function SalesPage() {
@@ -30,9 +31,10 @@ const monthLabel = (month: string) =>
 
 async function Sales() {
   await requireRole(OFFICE_ROLES);
-  const [months, unmatched, ignored, machines, days] = await Promise.all([
+  const [months, unmatched, matched, ignored, machines, days] = await Promise.all([
     listImportedMonths(),
     listUnmatched(),
+    listMatched(),
     listIgnored(),
     listMachines({}),
     listImportedDays(),
@@ -115,6 +117,7 @@ async function Sales() {
             </ul>
           </>
         )}
+        {matched.length > 0 && <MatchedList matched={matched} machines={machineOptions} />}
         {ignored.length > 0 && (
           <details className="text-sm text-zinc-600">
             <summary className="cursor-pointer font-bold">Not tracked ({ignored.length})</summary>

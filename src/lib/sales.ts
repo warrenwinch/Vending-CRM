@@ -125,6 +125,37 @@ export async function listUnmatched(): Promise<Unmatched[]> {
   return [...groups.values()].sort((a, b) => b.total - a.total);
 }
 
+export type Matched = {
+  source: SalesSource;
+  external_id: string;
+  external_name: string | null;
+  machine_id: string;
+  total: number;
+};
+
+// IDs already tied to a machine, so a wrong match can be changed.
+export async function listMatched(): Promise<Matched[]> {
+  const supabase = await createClient();
+  type Row = { source: SalesSource; external_id: string; external_name: string | null; machine_id: string; amount: number | string };
+  const sales = await allRows<Row>((from, to) =>
+    supabase
+      .from("machine_sales")
+      .select("source, external_id, external_name, machine_id, amount")
+      .not("machine_id", "is", null)
+      .order("month", { ascending: false })
+      .order("id")
+      .range(from, to),
+  );
+  const groups = new Map<string, Matched>();
+  for (const r of sales) {
+    const key = `${r.source}|${r.external_id}`;
+    const g = groups.get(key) ?? { source: r.source, external_id: r.external_id, external_name: r.external_name, machine_id: r.machine_id, total: 0 };
+    g.total = Math.round((g.total + Number(r.amount)) * 100) / 100;
+    groups.set(key, g);
+  }
+  return [...groups.values()].sort((a, b) => a.external_id.localeCompare(b.external_id, undefined, { numeric: true }));
+}
+
 // IDs marked "don't track", so they can be matched after all.
 export async function listIgnored() {
   const supabase = await createClient();
