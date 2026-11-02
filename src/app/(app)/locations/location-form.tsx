@@ -49,7 +49,7 @@ export function LocationForm({
     !location || location.commission_follows_client ? "client" : location.site_commission_type;
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <SelectField
         label="Customer"
         name="client_id"

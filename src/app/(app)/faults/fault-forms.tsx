@@ -64,16 +64,22 @@ export function ReportFaultForm({ machineId }: { machineId: string }) {
   const v = state.values;
   const [alreadyFixed, setAlreadyFixed] = useState(v?.already_fixed === "on");
 
+  // After a failed save React resets the form, and drop-downs and tick boxes go
+  // back to how they first drew. The key redraws them with what was picked. It's
+  // on each one, not the form, so the times picked below aren't redrawn too.
+  const redraw = JSON.stringify(v);
+
   return (
     <form action={formAction} className="flex max-w-lg flex-col gap-4">
       <SelectField
+        key={`category-${redraw}`}
         label="What's wrong"
         name="category"
         options={[{ value: "", label: "Choose…" }, ...FAULT_CATEGORIES]}
         defaultValue={v?.category ?? ""}
         required
       />
-      <SelectField label="How bad" name="severity" options={FAULT_SEVERITIES} defaultValue={v?.severity ?? "partly_working"} />
+      <SelectField key={`severity-${redraw}`} label="How bad" name="severity" options={FAULT_SEVERITIES} defaultValue={v?.severity ?? "partly_working"} />
       <TextAreaField
         label="Describe the fault"
         name="description"
@@ -85,6 +91,7 @@ export function ReportFaultForm({ machineId }: { machineId: string }) {
       <WhenField label="When you found it" name="found_at" />
 
       <CheckboxField
+        key={`already-fixed-${redraw}`}
         label="I've already fixed it"
         name="already_fixed"
         checked={alreadyFixed}
@@ -165,7 +172,7 @@ export function AssignFaultForm({
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(assignFault.bind(null, faultId), {});
   return (
-    <form action={formAction} className="flex flex-col gap-2">
+    <form key={state.values?.assigned_to ?? assignedTo ?? ""} action={formAction} className="flex flex-col gap-2">
       <div className="flex flex-wrap items-end gap-2">
         <div className="min-w-0 flex-1">
           <SelectField

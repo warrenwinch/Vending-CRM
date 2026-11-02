@@ -24,6 +24,7 @@ export async function recordPayment(clientId: string, _prev: FormState, formData
     method: get("method"),
     reference: get("reference"),
     notes: get("notes"),
+    lines: get("lines"),
   };
   const fail = (error: string): FormState => ({ error, values });
 

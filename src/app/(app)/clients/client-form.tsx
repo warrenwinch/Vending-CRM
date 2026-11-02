@@ -27,7 +27,7 @@ export function ClientForm({ client }: { client?: Client }) {
   const value = (name: keyof Client, saved: string | null | undefined) => v?.[name] ?? saved ?? "";
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <Field
         label="Company name"
         name="company_name"

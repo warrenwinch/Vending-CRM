@@ -19,7 +19,7 @@ export function CustomerReportForm({ token }: { token: string }) {
   }
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex flex-col gap-4">
       <SelectField
         label="What's wrong?"
         name="category"

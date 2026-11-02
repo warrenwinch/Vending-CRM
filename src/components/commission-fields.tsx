@@ -31,7 +31,7 @@ export function CommissionFields({
         label="Commission"
         name="commission_type"
         options={options}
-        value={choice}
+        defaultValue={type}
         onChange={(e) => setChoice(e.target.value as CommissionType | "client")}
       />
       {(choice === "percentage" || choice === "fixed_monthly") && (

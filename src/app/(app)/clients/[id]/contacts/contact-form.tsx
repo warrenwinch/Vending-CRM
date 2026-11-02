@@ -38,7 +38,7 @@ export function ContactForm({
 
   return (
     <div className="flex max-w-lg flex-col gap-6">
-      <form action={formAction} className="flex flex-col gap-4">
+      <form key={JSON.stringify(v)} action={formAction} className="flex flex-col gap-4">
         <Field label="Name" name="full_name" autoComplete="off" defaultValue={value("full_name", contact?.full_name)} required />
         <Field
           label="Role (optional)"

@@ -29,7 +29,7 @@ export function MachineForm({
   const statuses = MACHINE_STATUSES.filter((s) => s.value !== "installed");
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       {machine && (
         <p className="text-sm text-zinc-500">
           Machine number <span className="font-semibold text-ink">{machine.machine_number}</span>{" "}

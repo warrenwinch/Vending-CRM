@@ -12,7 +12,7 @@ export function InviteForm() {
   const v = state.values;
 
   return (
-    <form action={formAction} className="flex flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex flex-col gap-4">
       <div className="grid gap-4 sm:grid-cols-2">
         <Field label="Their name (optional)" name="full_name" autoComplete="off" defaultValue={v?.full_name ?? ""} />
         <Field label="Their email" name="email" type="email" autoComplete="off" defaultValue={v?.email ?? ""} required />
@@ -53,7 +53,7 @@ export function MemberForm({
   }
 
   return (
-    <form action={formAction} onChange={() => setDirty(true)} onSubmit={() => setDirty(false)} className="flex flex-wrap items-center gap-3">
+    <form key={`${role}-${active}`} action={formAction} onChange={() => setDirty(true)} onSubmit={() => setDirty(false)} className="flex flex-wrap items-center gap-3">
       <select
         name="role"
         defaultValue={role}

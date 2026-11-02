@@ -98,7 +98,7 @@ export function PaymentForm({
   const v = state.values;
 
   return (
-    <form action={formAction} className="flex flex-col gap-6">
+    <form key={JSON.stringify(v)} action={formAction} className="flex flex-col gap-6">
       <input type="hidden" name="lines" value={payload} />
 
       <section className="flex flex-col gap-3">

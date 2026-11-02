@@ -73,7 +73,7 @@ export function NewTagForm() {
   const [state, formAction, pending] = useActionState<FormState, FormData>(createTag, {});
   const v = state.values;
   return (
-    <form action={formAction} className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
+    <form key={JSON.stringify(v)} action={formAction} className="flex flex-col gap-3 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
       <div className="flex flex-wrap items-center gap-2">
         <input
           name="name"
@@ -106,7 +106,7 @@ export function EditTagForm({ tag }: { tag: Tag }) {
   const v = state.values;
   return (
     <div className="flex flex-col gap-2">
-      <form action={formAction} className="flex flex-wrap items-center gap-2">
+      <form key={JSON.stringify(v)} action={formAction} className="flex flex-wrap items-center gap-2">
         <input
           name="name"
           maxLength={40}

@@ -107,7 +107,7 @@ export function AddPlansForm({
     });
 
   return (
-    <form action={formAction} className="flex max-w-2xl flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-2xl flex-col gap-4">
       <PlanFields v={v} today={today} suggestions={suggestions} dueLabel="First due" />
 
       <fieldset className="flex flex-col gap-3">
@@ -183,7 +183,7 @@ export function EditPlanForm({
 }) {
   const [state, formAction, pending] = useActionState<FormState, FormData>(updatePlan.bind(null, planId), {});
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(state.values)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <PlanFields v={state.values ?? initial} today={today} suggestions={suggestions} dueLabel="Next due" />
       <FormMessage state={state} />
       <div className="flex flex-col gap-3 sm:flex-row sm:items-center">

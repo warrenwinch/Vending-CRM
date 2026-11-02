@@ -27,7 +27,7 @@ export function PlaceForm({
   const v = state.values;
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <SelectField
         label={moving ? "Move to" : "Place at"}
         name="location_id"
@@ -70,7 +70,7 @@ export function TakeOutForm({ machineId, today, since }: { machineId: string; to
   const v = state.values;
 
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <SelectField
         label="What happens to it"
         name="status"
