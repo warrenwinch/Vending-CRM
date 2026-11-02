@@ -6,6 +6,7 @@ import { listDoneTasks, listOpenTasks } from "@/lib/tasks";
 import { listMembers } from "@/lib/team";
 import { isOnBoard, isTaskCategory, TASK_CATEGORIES, TASK_EDIT_ROLES, type Task } from "@/lib/task-types";
 import { TaskCard } from "./task-card";
+import { ScrollToColumn } from "./task-forms";
 
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
   return (
@@ -107,9 +108,11 @@ async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">
 
       {view === "board" && (
         <div className="-mx-4 flex snap-x items-start gap-3 overflow-x-auto px-4 pb-2">
+          <ScrollToColumn />
           {columns.map((c) => (
             <section
               key={c.id}
+              id={c.id}
               aria-label={c.name}
               className="flex w-[85vw] max-w-xs shrink-0 snap-start flex-col gap-2 rounded-2xl bg-zinc-100 p-3"
             >

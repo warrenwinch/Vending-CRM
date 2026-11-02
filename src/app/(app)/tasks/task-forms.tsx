@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState } from "react";
+import { useActionState, useEffect } from "react";
 import { assignTask, createTask, deleteTask, toggleTaskDone, updateTask } from "./actions";
 import { Field, FormMessage, SelectField, SubmitButton, TextAreaField, type FormState } from "@/components/form-ui";
 import { TASK_CATEGORIES, TASK_PRIORITIES, TASK_REPEATS } from "@/lib/task-types";
@@ -104,6 +104,15 @@ export function TaskDoneButton({ taskId, done, big }: { taskId: string; done: bo
       {big && state.message && <span aria-live="polite" className="text-sm text-leaf-deep">{state.message}</span>}
     </form>
   );
+}
+
+// Coming from a person's button on Home: slides the board across to their column.
+export function ScrollToColumn() {
+  useEffect(() => {
+    const id = decodeURIComponent(window.location.hash.slice(1));
+    if (id) document.getElementById(id)?.scrollIntoView({ inline: "start", block: "nearest" });
+  }, []);
+  return null;
 }
 
 // Moves a task to another person's column as soon as a name is picked.

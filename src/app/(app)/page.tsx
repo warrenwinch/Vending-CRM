@@ -6,8 +6,14 @@ import { listFaults } from "@/lib/faults";
 import { FaultList } from "./faults/fault-list";
 import { dueState, listPlans } from "@/lib/maintenance";
 import { todayInSydney } from "@/lib/au";
+import { listOpenTasks } from "@/lib/tasks";
+import { listMembers } from "@/lib/team";
+import { TASK_EDIT_ROLES } from "@/lib/task-types";
 import { PlanList } from "./maintenance/plan-list";
 import { SalesSummary } from "./sales/sales-summary";
+
+// A login that isn't a person on the team, so it gets no Tasks button unless it has tasks due.
+const NO_TASKS_BUTTON = "weekly reports";
 
 export default function Home() {
   return (
@@ -20,15 +26,17 @@ export default function Home() {
 async function Dashboard() {
   const { user, profile } = await requireProfile();
   const isOffice = OFFICE_ROLES.includes(profile.role);
+  const seesWholeBoard = TASK_EDIT_ROLES.includes(profile.role);
 
   // Counts only (head: true fetches no rows).
   const supabase = await createClient();
   const howMany = { count: "exact", head: true } as const;
-  const [openFaultList, machines, locations, plans] = await Promise.all([
+  const [openFaultList, machines, plans, openTasks, members] = await Promise.all([
     listFaults({ open: true }),
     supabase.from("machines").select("id", howMany).eq("status", "installed"),
-    supabase.from("locations").select("id", howMany).eq("status", "active"),
     listPlans(),
+    listOpenTasks(),
+    seesWholeBoard ? listMembers() : [],
   ]);
   const openFaults = openFaultList.length;
 
@@ -39,7 +47,30 @@ async function Dashboard() {
   // Open repairs given to this person, waiting longest first.
   const myRepairs = openFaultList.filter((f) => f.assigned_to === user.id).reverse();
   const installed = machines.count ?? 0;
-  const sites = locations.count ?? 0;
+
+  // One Tasks button per person, the person looking first. Fillers only see
+  // their own tasks, so they only get their own button.
+  const dueTasks = openTasks.filter((t) => t.due_on && t.due_on <= today);
+  const taskTile = (id: string | null, name: string) => {
+    const theirs = dueTasks.filter((t) => t.assigned_to === id);
+    const overdue = theirs.filter((t) => t.due_on! < today).length;
+    const dueToday = theirs.length - overdue;
+    const parts = [dueToday ? `${dueToday} ${dueToday === 1 ? "task" : "tasks"} today` : "No tasks today"];
+    if (overdue) parts.push(`${overdue} overdue`);
+    return {
+      href: `/tasks#${id ?? "nobody"}`,
+      title: name,
+      detail: parts.join(" · "),
+      tone: overdue ? "alert" : dueToday ? "brand" : "plain",
+    } as const;
+  };
+  const taskTiles = seesWholeBoard
+    ? members
+        .filter((m) => (m.active && m.full_name.toLowerCase() !== NO_TASKS_BUTTON) || dueTasks.some((t) => t.assigned_to === m.id))
+        .sort((a, b) => Number(b.id === user.id) - Number(a.id === user.id))
+        .map((m) => taskTile(m.id, m.full_name))
+    : [taskTile(user.id, profile.fullName || "My tasks")];
+  if (seesWholeBoard && dueTasks.some((t) => !t.assigned_to)) taskTiles.push(taskTile(null, "Nobody yet"));
 
   const tiles: { href: string; title: string; detail: string; tone: "brand" | "alert" | "plain" }[] = [
     {
@@ -55,14 +86,8 @@ async function Dashboard() {
       tone: overdueJobs ? "alert" : "plain",
     },
     { href: "/machines", title: "Machines", detail: `${installed} installed`, tone: "brand" },
-    { href: "/locations", title: "Locations", detail: `${sites} active sites`, tone: "plain" },
+    ...taskTiles,
   ];
-  if (isOffice) {
-    tiles.push(
-      { href: "/clients", title: "Customers", detail: "Companies and contacts", tone: "plain" },
-      { href: "/commission", title: "Commission", detail: "Payments to customers", tone: "plain" },
-    );
-  }
 
   const toneClass = {
     brand: "bg-brand-strong text-white hover:bg-brand-deep",
