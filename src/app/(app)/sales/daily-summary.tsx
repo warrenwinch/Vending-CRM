@@ -12,7 +12,7 @@ const total = (byDay: Map<string, number>, from: string, to: string) => {
   return Math.round(t * 100) / 100;
 };
 
-function Tile({ title, value, before, beforeLabel }: { title: string; value: number; before: number; beforeLabel: string }) {
+function Tile({ title, value, before, beforeLabel }: { title: string; value: number; before: number | null; beforeLabel: string }) {
   const pct = before ? ((value - before) / before) * 100 : null;
   return (
     <div className="flex flex-col gap-1 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
@@ -24,7 +24,7 @@ function Tile({ title, value, before, beforeLabel }: { title: string; value: num
             {pct >= 0 ? "▲" : "▼"} {Math.abs(pct).toFixed(1)}%{" "}
           </span>
         )}
-        {beforeLabel} {formatAud(before)}
+        {before === null ? beforeLabel : `${beforeLabel} ${formatAud(before)}`}
       </p>
     </div>
   );
@@ -53,7 +53,20 @@ export async function DailySummary() {
   const lyEnd = `${lyStart.slice(0, 8)}${String(lyDays).padStart(2, "0")}`;
 
   const from = [monthStart, addDays(monday, -7), addDays(latest, -7)].sort()[0];
-  const [recent, lastYear] = await Promise.all([dailyTotals(from, latest), dailyTotals(lyStart, lyEnd)]);
+  // Australian financial year: 1 July to 30 June. Last year runs to the same date.
+  const fyStartYear = m >= 7 ? y : y - 1;
+  const fyStart = `${fyStartYear}-07-01`;
+  const lyFyStart = `${fyStartYear - 1}-07-01`;
+  const lyFyEnd = `${y - 1}-${String(m).padStart(2, "0")}-${String(Math.min(d, lyDays)).padStart(2, "0")}`;
+  const [recent, lastYear, fy, lastFy] = await Promise.all([
+    dailyTotals(from, latest),
+    dailyTotals(lyStart, lyEnd),
+    dailyTotals(fyStart, latest),
+    dailyTotals(lyFyStart, lyFyEnd),
+  ]);
+  const fyToDate = total(fy, fyStart, latest);
+  // Only compare when last year's figures go back to its start, or it would look like a big rise.
+  const lastFyToDate = lastFy.has(lyFyStart) ? total(lastFy, lyFyStart, lyFyEnd) : null;
 
   const yesterday = total(recent, latest, latest);
   const sameDayLastWeek = total(recent, addDays(latest, -7), addDays(latest, -7));
@@ -71,10 +84,16 @@ export async function DailySummary() {
 
   return (
     <div className="flex flex-col gap-3">
-      <div className="grid gap-3 sm:grid-cols-3">
+      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
         <Tile title={`Yesterday (${weekday} ${formatDate(latest)})`} value={yesterday} before={sameDayLastWeek} beforeLabel={`last ${weekday}`} />
         <Tile title="Week to date" value={wtd} before={lastWeekToDate} beforeLabel="same days last week" />
         <Tile title={`${monthName} to date`} value={mtd} before={lyToSameDay} beforeLabel={`${monthName} ${y - 1} to day ${d}`} />
+        <Tile
+          title={`Year to date (from ${formatDate(fyStart)})`}
+          value={fyToDate}
+          before={lastFyToDate}
+          beforeLabel={lastFyToDate === null ? "Last year's history isn't loaded yet" : "same dates last year"}
+        />
       </div>
       <MtdChart
         thisYear={running(recent, monthStart, d)}
