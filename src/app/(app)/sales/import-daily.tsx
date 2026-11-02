@@ -15,7 +15,7 @@ const sum = (n: number[]) => Math.round(n.reduce((a, b) => a + b, 0) * 100) / 10
 
 // Each morning: yesterday's three reports. The day comes from the box
 // below, except Nayax files, which say their own date.
-export function ImportDaily({ yesterday }: { yesterday: string }) {
+export function ImportDaily({ yesterday, leftOut }: { yesterday: string; leftOut: string[] }) {
   const [day, setDay] = useState(yesterday);
   const [files, setFiles] = useState<Picked[]>([]);
   const [result, setResult] = useState<SalesImportResult>({});
@@ -35,9 +35,11 @@ export function ImportDaily({ yesterday }: { yesterday: string }) {
           picked.push({ name: file.name, history: parseDailyHistory(data) });
         } else {
           const p = parseSalesFile(readXlsx(new Uint8Array(await file.arrayBuffer())));
+          // Machines counted in the other system don't go into the day's total.
+          const counted = p.rows.filter((r) => !leftOut.includes(`${p.source}|${r.external_id}`));
           picked.push({
             name: file.name,
-            excel: { source: p.source, units: p.rows.reduce((t, r) => t + r.units, 0), amount: p.total, fileDay: p.day },
+            excel: { source: p.source, units: counted.reduce((t, r) => t + r.units, 0), amount: sum(counted.map((r) => r.amount)), fileDay: p.day },
           });
         }
       } catch (e) {

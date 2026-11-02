@@ -52,6 +52,21 @@ export async function machineMatchKeys() {
   return keys;
 }
 
+const saleKey = (source: string, externalId: string) => `${source}|${externalId}`;
+
+// Sales IDs left out of every total (the machine is counted in another system).
+async function leftOutKeys() {
+  const supabase = await createClient();
+  const { data, error } = await supabase.from("sales_links").select("source, external_id").eq("leave_out", true);
+  if (error) throw new Error(`Could not load sales links: ${error.message}`);
+  return new Set((data as { source: string; external_id: string }[]).map((l) => saleKey(l.source, l.external_id)));
+}
+
+// The same IDs as a list, for the Sales page and the daily import.
+export async function listLeftOut() {
+  return [...(await leftOutKeys())].sort();
+}
+
 export type ImportedMonth = {
   month: string;
   source: SalesSource;
@@ -64,17 +79,19 @@ export type ImportedMonth = {
 // What has been imported, newest month first, one line per system.
 export async function listImportedMonths(): Promise<ImportedMonth[]> {
   const supabase = await createClient();
-  const data = await allRows<{ month: string; source: SalesSource; machine_id: string | null; units: number; amount: number | string }>(
+  const leftOut = await leftOutKeys();
+  const data = await allRows<{ month: string; source: SalesSource; external_id: string; machine_id: string | null; units: number; amount: number | string }>(
     (from, to) =>
       supabase
         .from("machine_sales")
-        .select("month, source, machine_id, units, amount")
+        .select("month, source, external_id, machine_id, units, amount")
         .order("month", { ascending: false })
         .order("id")
         .range(from, to),
   );
   const groups = new Map<string, ImportedMonth>();
   for (const r of data) {
+    if (leftOut.has(saleKey(r.source, r.external_id))) continue;
     const key = `${r.month}|${r.source}`;
     const g = groups.get(key) ?? { month: r.month, source: r.source, machines: 0, matched: 0, units: 0, total: 0 };
     g.machines += 1;
@@ -163,6 +180,7 @@ export async function listIgnored() {
     .from("sales_links")
     .select("source, external_id")
     .is("machine_id", null)
+    .eq("leave_out", false)
     .order("external_id");
   if (error) throw new Error(`Could not load sales links: ${error.message}`);
   return data as { source: SalesSource; external_id: string }[];
@@ -173,11 +191,13 @@ export type MonthTotal = { month: string; total: number; bySource: Partial<Recor
 // Each imported month's total, oldest first (for the trend), up to `months` back.
 export async function monthlyTotals(months = 12): Promise<MonthTotal[]> {
   const supabase = await createClient();
-  const data = await allRows<{ month: string; source: SalesSource; amount: number | string }>((from, to) =>
-    supabase.from("machine_sales").select("month, source, amount").order("id").range(from, to),
+  const leftOut = await leftOutKeys();
+  const data = await allRows<{ month: string; source: SalesSource; external_id: string; amount: number | string }>((from, to) =>
+    supabase.from("machine_sales").select("month, source, external_id, amount").order("id").range(from, to),
   );
   const byMonth = new Map<string, MonthTotal>();
   for (const r of data) {
+    if (leftOut.has(saleKey(r.source, r.external_id))) continue;
     const m = byMonth.get(r.month) ?? { month: r.month, total: 0, bySource: {} };
     const amount = Number(r.amount);
     m.total = Math.round((m.total + amount) * 100) / 100;
@@ -206,11 +226,12 @@ export async function salesForMonth(month: string): Promise<MachineMonthSale[]> 
   const supabase = await createClient();
   const { data, error } = await supabase
     .from("machine_sales")
-    .select("machine_id, external_id, external_name, amount, units, machines(machine_number)")
+    .select("source, machine_id, external_id, external_name, amount, units, machines(machine_number)")
     .eq("month", month)
     .limit(5000);
   if (error) throw new Error(`Could not load sales: ${error.message}`);
   type Row = {
+    source: string;
     machine_id: string | null;
     external_id: string;
     external_name: string | null;
@@ -218,7 +239,8 @@ export async function salesForMonth(month: string): Promise<MachineMonthSale[]> 
     units: number;
     machines: { machine_number: string } | null;
   };
-  const rows = data as unknown as Row[];
+  const leftOut = await leftOutKeys();
+  const rows = (data as unknown as Row[]).filter((r) => !leftOut.has(saleKey(r.source, r.external_id)));
 
   // Where each machine was that month: the latest placement overlapping it.
   // Machines imported without an "installed on" date only have placements

@@ -1,9 +1,9 @@
 import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
-import { listIgnored, listImportedDays, listImportedMonths, listMatched, listUnmatched } from "@/lib/sales";
+import { listIgnored, listImportedDays, listImportedMonths, listLeftOut, listMatched, listUnmatched } from "@/lib/sales";
 import { listMachines } from "@/lib/machines";
-import { addDays, sourceLabel } from "@/lib/sales-import";
+import { addDays, sourceLabel, type SalesSource } from "@/lib/sales-import";
 import { formatAud, formatDate, lastMonthInSydney, todayInSydney } from "@/lib/au";
 import { ImportSales } from "./import-sales";
 import { ImportDaily } from "./import-daily";
@@ -31,11 +31,12 @@ const monthLabel = (month: string) =>
 
 async function Sales() {
   await requireRole(OFFICE_ROLES);
-  const [months, unmatched, matched, ignored, machines, days] = await Promise.all([
+  const [months, unmatched, matched, ignored, leftOut, machines, days] = await Promise.all([
     listImportedMonths(),
     listUnmatched(),
     listMatched(),
     listIgnored(),
+    listLeftOut(),
     listMachines({}),
     listImportedDays(),
   ]);
@@ -54,7 +55,7 @@ async function Sales() {
         <p className="text-sm text-zinc-600">
           For Yesterday, Week to date and the month-to-date chart on Home.
         </p>
-        <ImportDaily yesterday={yesterday} />
+        <ImportDaily yesterday={yesterday} leftOut={leftOut} />
         {days.length > 0 && (
           <p className="text-sm text-zinc-600">
             Latest days imported:{" "}
@@ -102,6 +103,7 @@ async function Sales() {
                         Choose the machine…
                       </option>
                       <option value="none">Don&apos;t track this one</option>
+                      <option value="leave_out">Counted in the other system: leave out of totals</option>
                       {machineOptions.map((m) => (
                         <option key={m.value} value={m.value}>
                           {m.label}
@@ -118,6 +120,28 @@ async function Sales() {
           </>
         )}
         {matched.length > 0 && <MatchedList matched={matched} machines={machineOptions} />}
+        {leftOut.length > 0 && (
+          <details className="text-sm text-zinc-600">
+            <summary className="cursor-pointer font-bold">Left out of totals ({leftOut.length})</summary>
+            <p className="mt-2">These machines are counted in the other system, so their sales here aren&apos;t added in.</p>
+            <ul className="mt-2 flex flex-col gap-1">
+              {leftOut.map((key) => {
+                const [source, ...id] = key.split("|");
+                const externalId = id.join("|");
+                return (
+                  <li key={key} className="flex flex-wrap items-center gap-2">
+                    {externalId} <span className="text-zinc-400">({sourceLabel(source as SalesSource)})</span>
+                    <form action={unignoreSale.bind(null, source as SalesSource, externalId)}>
+                      <button type="submit" className="underline">
+                        Count it again
+                      </button>
+                    </form>
+                  </li>
+                );
+              })}
+            </ul>
+          </details>
+        )}
         {ignored.length > 0 && (
           <details className="text-sm text-zinc-600">
             <summary className="cursor-pointer font-bold">Not tracked ({ignored.length})</summary>

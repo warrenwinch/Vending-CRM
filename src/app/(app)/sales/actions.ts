@@ -84,18 +84,19 @@ export async function linkSale(source: SalesSource, externalId: string, formData
   await requireRole(OFFICE_ROLES);
   const machineId = String(formData.get("machine_id") ?? "");
   if (!isSalesSource(source) || !externalId) return;
-  if (machineId !== "none" && !isUuid(machineId)) return;
+  const leaveOut = machineId === "leave_out";
+  if (machineId !== "none" && !leaveOut && !isUuid(machineId)) return;
   const supabase = await createClient();
   await supabase
     .from("sales_links")
     .upsert(
-      { source, external_id: externalId, machine_id: machineId === "none" ? null : machineId },
+      { source, external_id: externalId, machine_id: machineId === "none" || leaveOut ? null : machineId, leave_out: leaveOut },
       { onConflict: "organization_id,source,external_id" },
     );
   revalidatePath("/sales");
 }
 
-// Takes back a "don't track", so the ID shows up for matching again.
+// Takes back a "don't track" or "leave out", so the ID shows up for matching again.
 export async function unignoreSale(source: SalesSource, externalId: string) {
   await requireRole(OFFICE_ROLES);
   if (!isSalesSource(source) || !externalId) return;

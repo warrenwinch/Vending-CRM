@@ -62,6 +62,7 @@ export function MatchedList({ matched, machines }: { matched: Matched[]; machine
                     >
                       <select name="machine_id" required defaultValue={m.machine_id} aria-label={`Machine for ${m.external_id}`} className="input min-w-0 flex-1">
                         <option value="none">Don&apos;t track this one</option>
+                        <option value="leave_out">Counted in the other system: leave out of totals</option>
                         {machines.map((o) => (
                           <option key={o.value} value={o.value}>
                             {o.label}
