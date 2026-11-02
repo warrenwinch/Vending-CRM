@@ -32,8 +32,10 @@ export function TaskForm({
   );
   const v = state.values ?? initial;
 
+  // After a failed save React resets the form, and drop-downs go back to the
+  // choice they first drew with. The key redraws them with what was picked.
   return (
-    <form action={formAction} className="flex max-w-lg flex-col gap-4">
+    <form key={JSON.stringify(v)} action={formAction} className="flex max-w-lg flex-col gap-4">
       <Field label="Task" name="title" maxLength={200} placeholder="e.g. Order more cups" defaultValue={v.title ?? ""} required />
       <TextAreaField label="Notes (optional)" name="notes" maxLength={2000} defaultValue={v.notes ?? ""} />
       <SelectField
