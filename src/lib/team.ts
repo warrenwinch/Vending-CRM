@@ -23,6 +23,10 @@ export type Invitation = {
   expires_at: string;
 };
 
+// A login that isn't a person on the team, so it isn't offered as someone to
+// give work to on Home or as a driver.
+export const isNotAPerson = (fullName: string) => fullName.toLowerCase() === "weekly reports";
+
 export async function listMembers() {
   const supabase = await createClient();
   const { data, error } = await supabase

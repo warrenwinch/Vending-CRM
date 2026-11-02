@@ -13,11 +13,16 @@ import { linkSale, unignoreSale } from "./actions";
 export default function SalesPage() {
   return (
     <>
-      <div>
-        <h1 className="page-title">Sales</h1>
-        <p className="mt-1 text-zinc-600">
-          Each month, export last month&apos;s sales from Seed (Vending and Markets) and Nayax, and import them here.
-        </p>
+      <div className="flex flex-wrap items-start justify-between gap-4">
+        <div className="min-w-0">
+          <h1 className="page-title">Sales</h1>
+          <p className="mt-1 text-zinc-600">
+            Each month, export last month&apos;s sales from Seed (Vending and Markets) and Nayax, and import them here.
+          </p>
+        </div>
+        <Link href="/sales/variances" className="btn-secondary">
+          Stock variances
+        </Link>
       </div>
       <Suspense fallback={<p className="text-sm text-zinc-500">Loading…</p>}>
         <Sales />

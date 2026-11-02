@@ -7,13 +7,10 @@ import { FaultList } from "./faults/fault-list";
 import { dueState, listPlans } from "@/lib/maintenance";
 import { todayInSydney } from "@/lib/au";
 import { listOpenTasks } from "@/lib/tasks";
-import { listMembers } from "@/lib/team";
+import { isNotAPerson, listMembers } from "@/lib/team";
 import { TASK_EDIT_ROLES } from "@/lib/task-types";
 import { PlanList } from "./maintenance/plan-list";
 import { SalesSummary } from "./sales/sales-summary";
-
-// A login that isn't a person on the team, so it gets no Tasks button unless it has tasks due.
-const NO_TASKS_BUTTON = "weekly reports";
 
 export default function Home() {
   return (
@@ -66,7 +63,7 @@ async function Dashboard() {
   };
   const taskTiles = seesWholeBoard
     ? members
-        .filter((m) => (m.active && m.full_name.toLowerCase() !== NO_TASKS_BUTTON) || dueTasks.some((t) => t.assigned_to === m.id))
+        .filter((m) => (m.active && !isNotAPerson(m.full_name)) || dueTasks.some((t) => t.assigned_to === m.id))
         .sort((a, b) => Number(b.id === user.id) - Number(a.id === user.id))
         .map((m) => taskTile(m.id, m.full_name))
     : [taskTile(user.id, profile.fullName || "My tasks")];

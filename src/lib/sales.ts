@@ -6,7 +6,7 @@ import { matchKey, type SalesSource } from "@/lib/sales-import";
 
 // Supabase hands back at most 1,000 rows per request: keep asking until
 // every row is in. `page` must sort by something unique (e.g. id).
-async function allRows<T>(
+export async function allRows<T>(
   page: (from: number, to: number) => PromiseLike<{ data: unknown; error: { message: string } | null }>,
 ): Promise<T[]> {
   const out: T[] = [];
