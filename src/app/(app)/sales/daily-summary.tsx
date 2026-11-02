@@ -125,7 +125,7 @@ export async function DailySummary() {
           note={noMarketsNote}
         />
       </div>
-      <div className="grid gap-3 lg:grid-cols-2">
+      <div className="flex flex-col gap-3">
         <RunningChart
           title={`${monthName} to date, running total`}
           thisYear={running(recent, monthStart, d)}
