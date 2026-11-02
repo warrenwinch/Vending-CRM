@@ -156,6 +156,7 @@ export async function assignFault(faultId: string, _prev: FormState, formData: F
   if (error) return { error: `Could not save: ${error.message}`, values };
   if (!data.length) return { error: "This fault wasn't found.", values };
   revalidatePath(`/faults/${faultId}`);
+  revalidatePath("/tasks");
   return { message: values.assigned_to ? "Assigned." : "Nobody is assigned now.", values };
 }
 

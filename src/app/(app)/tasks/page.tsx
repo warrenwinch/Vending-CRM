@@ -5,7 +5,9 @@ import { todayInSydney } from "@/lib/au";
 import { listDoneTasks, listOpenTasks } from "@/lib/tasks";
 import { listMembers } from "@/lib/team";
 import { isOnBoard, isTaskCategory, TASK_CATEGORIES, TASK_EDIT_ROLES, type Task } from "@/lib/task-types";
-import { TaskCard } from "./task-card";
+import { listFaults } from "@/lib/faults";
+import type { Fault } from "@/lib/fault-types";
+import { FaultCard, TaskCard } from "./task-card";
 import { ScrollToColumn } from "./task-forms";
 
 export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
@@ -19,7 +21,7 @@ export default function TasksPage({ searchParams }: PageProps<"/tasks">) {
   );
 }
 
-type Column = { id: string; name: string; role?: string; tasks: Task[] };
+type Column = { id: string; name: string; role?: string; tasks: Task[]; faults: Fault[] };
 
 async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">) {
   const { user, profile } = await requireProfile();
@@ -29,11 +31,15 @@ async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">
   const category = typeof type === "string" && isTaskCategory(type) ? type : "";
   const today = todayInSydney();
 
-  const [open, done, members] = await Promise.all([
+  const [open, done, members, openFaults] = await Promise.all([
     listOpenTasks(),
     view === "done" ? listDoneTasks() : [],
     canEdit ? listMembers() : [],
+    listFaults({ open: true }),
   ]);
+  // Repairs given to someone go in their column. They have no Admin or Warehouse
+  // type, so they only show when no type is chosen.
+  const assignedFaults = category ? [] : openFaults.filter((f) => f.assigned_to);
   const matches = (t: Task) => !category || t.category === category;
   const onBoard = open.filter((t) => isOnBoard(t, today) && matches(t));
   const comingUp = open.filter((t) => !isOnBoard(t, today) && matches(t));
@@ -44,7 +50,9 @@ async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">
   // One column per person, the person looking first. Someone who has left stays
   // on the board while they still have tasks, so nothing gets lost. Fillers only
   // see their own tasks, so they only get their own column.
-  const people = canEdit ? members.filter((m) => m.active || onBoard.some((t) => t.assigned_to === m.id)) : [];
+  const people = canEdit
+    ? members.filter((m) => m.active || onBoard.some((t) => t.assigned_to === m.id) || assignedFaults.some((f) => f.assigned_to === m.id))
+    : [];
   const columns: Column[] = canEdit
     ? [...people]
         .sort((a, b) => Number(b.id === user.id) - Number(a.id === user.id))
@@ -53,10 +61,11 @@ async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">
           name: m.full_name,
           role: m.active ? roleLabels[m.role] : "No longer active",
           tasks: onBoard.filter((t) => t.assigned_to === m.id),
+          faults: assignedFaults.filter((f) => f.assigned_to === m.id),
         }))
-    : [{ id: user.id, name: profile.fullName || "My tasks", tasks: onBoard }];
+    : [{ id: user.id, name: profile.fullName || "My tasks", tasks: onBoard, faults: assignedFaults.filter((f) => f.assigned_to === user.id) }];
   const nobody = canEdit ? onBoard.filter((t) => !t.assigned_to) : [];
-  if (nobody.length) columns.unshift({ id: "nobody", name: "Nobody yet", tasks: nobody });
+  if (nobody.length) columns.unshift({ id: "nobody", name: "Nobody yet", tasks: nobody, faults: [] });
 
   const href = (v: string) => {
     const qs = new URLSearchParams();
@@ -121,12 +130,15 @@ async function Tasks({ searchParams }: Pick<PageProps<"/tasks">, "searchParams">
                   <h2 className="truncate font-bold">{c.name}</h2>
                   {c.role && <p className="text-xs text-zinc-500">{c.role}</p>}
                 </div>
-                <span className="rounded-full bg-white px-2.5 py-0.5 text-sm font-bold">{c.tasks.length}</span>
+                <span className="rounded-full bg-white px-2.5 py-0.5 text-sm font-bold">{c.tasks.length + c.faults.length}</span>
               </header>
+              {c.faults.map((f) => (
+                <FaultCard key={f.id} fault={f} team={team} />
+              ))}
               {c.tasks.map((t) => (
                 <TaskCard key={t.id} task={t} today={today} team={team} />
               ))}
-              {c.tasks.length === 0 && <p className="px-1 py-3 text-sm text-zinc-500">Nothing to do.</p>}
+              {c.tasks.length + c.faults.length === 0 && <p className="px-1 py-3 text-sm text-zinc-500">Nothing to do.</p>}
               {canEdit && c.id !== "nobody" && (
                 <Link href={`/tasks/new?who=${c.id}`} className="px-1 text-sm font-medium underline">
                   Add a task for {c.name}

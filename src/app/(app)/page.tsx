@@ -53,24 +53,34 @@ async function Dashboard() {
     const theirs = dueTasks.filter((t) => t.assigned_to === id);
     const overdue = theirs.filter((t) => t.due_on! < today).length;
     const dueToday = theirs.length - overdue;
-    const parts = [dueToday ? `${dueToday} ${dueToday === 1 ? "task" : "tasks"} today` : "No tasks today"];
-    if (overdue) parts.push(`${overdue} overdue`);
+    // Repairs given to this person count as work for today until they're fixed.
+    const faults = id ? openFaultList.filter((f) => f.assigned_to === id).length : 0;
+    const parts = [
+      dueToday && `${dueToday} ${dueToday === 1 ? "task" : "tasks"} today`,
+      faults && `${faults} ${faults === 1 ? "fault" : "faults"}`,
+      overdue && `${overdue} overdue`,
+    ].filter(Boolean);
     return {
       href: `/tasks#${id ?? "nobody"}`,
       title: name,
-      detail: parts.join(" · "),
-      tone: overdue ? "alert" : dueToday ? "brand" : "plain",
+      detail: parts.join(" · ") || "No tasks today",
+      tone: overdue ? "alert" : dueToday || faults ? "green" : "plain",
     } as const;
   };
   const taskTiles = seesWholeBoard
     ? members
-        .filter((m) => (m.active && !isNotAPerson(m.full_name)) || dueTasks.some((t) => t.assigned_to === m.id))
+        .filter(
+          (m) =>
+            (m.active && !isNotAPerson(m.full_name)) ||
+            dueTasks.some((t) => t.assigned_to === m.id) ||
+            openFaultList.some((f) => f.assigned_to === m.id),
+        )
         .sort((a, b) => Number(b.id === user.id) - Number(a.id === user.id))
         .map((m) => taskTile(m.id, m.full_name))
     : [taskTile(user.id, profile.fullName || "My tasks")];
   if (seesWholeBoard && dueTasks.some((t) => !t.assigned_to)) taskTiles.push(taskTile(null, "Nobody yet"));
 
-  const tiles: { href: string; title: string; detail: string; tone: "brand" | "alert" | "plain" }[] = [
+  const tiles: { href: string; title: string; detail: string; tone: "brand" | "alert" | "green" | "plain" }[] = [
     {
       href: "/faults",
       title: "Faults",
@@ -90,6 +100,7 @@ async function Dashboard() {
   const toneClass = {
     brand: "bg-brand-strong text-white hover:bg-brand-deep",
     alert: "bg-red-700 text-white hover:bg-red-800",
+    green: "bg-bar text-white hover:bg-leaf-deep",
     plain: "bg-white text-ink ring-2 ring-zinc-200 hover:ring-ink",
   };
 

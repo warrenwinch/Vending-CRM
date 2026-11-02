@@ -1,8 +1,9 @@
 "use client";
 
 import Link from "next/link";
-import { useActionState, useEffect } from "react";
+import { useActionState, useEffect, useState } from "react";
 import { assignTask, createTask, deleteTask, toggleTaskDone, updateTask } from "./actions";
+import { assignFault } from "../faults/actions";
 import { Field, FormMessage, SelectField, SubmitButton, TextAreaField, type FormState } from "@/components/form-ui";
 import { TASK_CATEGORIES, TASK_PRIORITIES, TASK_REPEATS } from "@/lib/task-types";
 
@@ -117,28 +118,51 @@ export function ScrollToColumn() {
 
 // Moves a task to another person's column as soon as a name is picked.
 export function TaskAssignSelect({ taskId, assignedTo, team }: { taskId: string; assignedTo: string | null; team: Option[] }) {
-  const [state, formAction, pending] = useActionState<FormState, FormData>(assignTask.bind(null, taskId), {});
+  return <AssignSelect action={assignTask.bind(null, taskId)} assignedTo={assignedTo} team={team} />;
+}
+
+// The same for a repair; giving it to nobody takes it off the board.
+export function FaultAssignSelect({ faultId, assignedTo, team }: { faultId: string; assignedTo: string | null; team: Option[] }) {
+  return <AssignSelect action={assignFault.bind(null, faultId)} assignedTo={assignedTo} team={team} />;
+}
+
+function AssignSelect({
+  action,
+  assignedTo,
+  team,
+}: {
+  action: (prev: FormState, formData: FormData) => Promise<FormState>;
+  assignedTo: string | null;
+  team: Option[];
+}) {
+  const [state, formAction, pending] = useActionState<FormState, FormData>(action, {});
+  const [open, setOpen] = useState(false);
+
+  // Names listed on the card rather than a drop-down, whose list opens over the
+  // Done button: one tap on a name could also tick the task off.
+  if (!open) {
+    return (
+      <div className="flex flex-col gap-1">
+        <button type="button" onClick={() => setOpen(true)} className="btn-small">
+          Give to…
+        </button>
+        {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
+      </div>
+    );
+  }
   return (
-    <form action={formAction} className="flex flex-col gap-1">
-      <label className="flex items-center gap-2 text-xs font-bold text-zinc-600">
-        Give to
-        <select
-          name="assigned_to"
-          key={assignedTo ?? ""}
-          defaultValue={assignedTo ?? ""}
-          disabled={pending}
-          onChange={(e) => e.currentTarget.form?.requestSubmit()}
-          className="input min-w-0 flex-1"
-        >
-          <option value="">Nobody yet</option>
-          {team.map((o) => (
-            <option key={o.value} value={o.value}>
-              {o.label}
-            </option>
-          ))}
-        </select>
-      </label>
-      {state.error && <span role="alert" className="text-sm text-red-700">{state.error}</span>}
+    <form action={formAction} className="flex flex-col gap-2 rounded-lg bg-zinc-100 p-2">
+      <p className="text-xs font-bold text-zinc-600">Give to</p>
+      {[{ value: "", label: "Nobody yet" }, ...team]
+        .filter((o) => o.value !== (assignedTo ?? ""))
+        .map((o) => (
+          <button key={o.value} type="submit" name="assigned_to" value={o.value} disabled={pending} className="btn-small">
+            {o.label}
+          </button>
+        ))}
+      <button type="button" onClick={() => setOpen(false)} className="text-sm font-medium underline">
+        Cancel
+      </button>
     </form>
   );
 }
