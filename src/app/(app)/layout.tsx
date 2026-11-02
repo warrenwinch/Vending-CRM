@@ -33,6 +33,7 @@ async function Menu() {
     { href: "/machines", label: "Machines" },
     { href: "/faults", label: "Faults" },
     { href: "/maintenance", label: "Maintenance" },
+    { href: "/tasks", label: "Tasks" },
   );
   if (OFFICE_ROLES.includes(profile.role)) {
     items.push({ href: "/sales", label: "Sales" }, { href: "/commission", label: "Commission" });
