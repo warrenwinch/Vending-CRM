@@ -2,11 +2,11 @@ import Link from "next/link";
 import { Suspense } from "react";
 import { requireRole, OFFICE_ROLES } from "@/lib/auth";
 import { formatDate, todayInSydney } from "@/lib/au";
-import { addDays } from "@/lib/sales-import";
 import { isNotAPerson, listMembers } from "@/lib/team";
 import { varianceTotals } from "@/lib/variance-import";
-import { assetMachines, listRunMachines, listVarianceDrivers, listVariances, type RunMachine, type Variance } from "@/lib/variances";
+import { assetMachines, listRunMachines, listVarianceDrivers, listVariances } from "@/lib/variances";
 import { DeleteRunButton, ImportVariances } from "./import-variances";
+import { driverLines as linesForDrivers, PeriodTable, sameName, statsFor, variancePeriods } from "./period-table";
 
 export default function VariancesPage({ searchParams }: PageProps<"/sales/variances">) {
   return (
@@ -25,82 +25,7 @@ export default function VariancesPage({ searchParams }: PageProps<"/sales/varian
   );
 }
 
-type Period = { label: string; from: string; to: string };
-type Stats = { filled: number; short: number; over: number };
-
 const signed = (n: number) => (n > 0 ? `+${n}` : String(n));
-const sameName = (a: string, b: string) => a.toLowerCase() === b.toLowerCase();
-const inPeriod = (date: string, p: Period) => date >= p.from && date <= p.to;
-
-function statsFor(rows: Variance[], machines: RunMachine[], p: Period): Stats {
-  const { short, over } = varianceTotals(rows.filter((r) => inPeriod(r.ticket_date, p)));
-  return { filled: machines.filter((m) => inPeriod(m.ticket_date, p)).length, short, over };
-}
-
-// Three figures for each of the three periods, one line per driver or machine.
-function PeriodTable({
-  first,
-  periods,
-  lines,
-}: {
-  first: string;
-  periods: Period[];
-  lines: { key: string; name: React.ReactNode; stats: Stats[]; highlight?: boolean }[];
-}) {
-  return (
-    <div className="overflow-x-auto rounded-2xl border-2 border-zinc-200 bg-white">
-      <table className="w-full text-sm">
-        <thead className="bg-zinc-50 text-zinc-600">
-          <tr>
-            <th rowSpan={2} className="p-3 text-left align-bottom">
-              {first}
-            </th>
-            {periods.map((p) => (
-              <th key={p.label} colSpan={3} className="border-l border-zinc-200 p-2 text-center whitespace-nowrap">
-                {p.label}
-              </th>
-            ))}
-          </tr>
-          <tr>
-            {periods.map((p) => (
-              <Heads key={p.label} />
-            ))}
-          </tr>
-        </thead>
-        <tbody className="divide-y divide-zinc-200">
-          {lines.map((l) => (
-            <tr key={l.key} className={l.highlight ? "bg-brand-soft" : ""}>
-              <td className="min-w-40 p-3">{l.name}</td>
-              {l.stats.map((s, i) => (
-                <Figures key={i} stats={s} />
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-function Heads() {
-  return (
-    <>
-      <th className="border-l border-zinc-200 p-2 text-right font-medium">Filled</th>
-      <th className="p-2 text-right font-medium">Short</th>
-      <th className="p-2 text-right font-medium">Over</th>
-    </>
-  );
-}
-
-function Figures({ stats }: { stats: Stats }) {
-  return (
-    <>
-      <td className="border-l border-zinc-200 p-2 text-right">{stats.filled}</td>
-      <td className={`p-2 text-right font-bold ${stats.short ? "text-red-700" : ""}`}>{stats.short}</td>
-      <td className="p-2 text-right">{stats.over}</td>
-    </>
-  );
-}
 
 async function Variances({ searchParams }: Pick<PageProps<"/sales/variances">, "searchParams">) {
   await requireRole(OFFICE_ROLES);
@@ -108,17 +33,10 @@ async function Variances({ searchParams }: Pick<PageProps<"/sales/variances">, "
   const driver = typeof driverParam === "string" ? driverParam : "";
   const asset = typeof machineParam === "string" ? machineParam : "";
 
-  // The same periods as Home's sales: complete days, up to yesterday.
   const today = todayInSydney();
-  const yesterday = addDays(today, -1);
-  const monday = addDays(yesterday, -((new Date(`${yesterday}T00:00:00Z`).getUTCDay() + 6) % 7));
-  const monthStart = `${yesterday.slice(0, 8)}01`;
-  const periods: Period[] = [
-    { label: "Yesterday", from: yesterday, to: yesterday },
-    { label: "Week to date", from: monday, to: yesterday },
-    { label: "Month to date", from: monthStart, to: yesterday },
-  ];
-  const from = monday < monthStart ? monday : monthStart;
+  const periods = variancePeriods(today);
+  const yesterday = periods[0].to;
+  const from = periods.map((p) => p.from).sort()[0];
 
   const [allRows, allMachines, usedDrivers, members, machineOf] = await Promise.all([
     listVariances(from, today),
@@ -139,25 +57,7 @@ async function Variances({ searchParams }: Pick<PageProps<"/sales/variances">, "
 
   // A driver or machine is listed if it did anything in these periods.
   const inReport = (d: { ticket_date: string }) => d.ticket_date <= yesterday;
-  const driverNames = [
-    ...new Map([...allRows, ...allMachines].filter(inReport).map((r) => [r.driver_name.toLowerCase(), r.driver_name])).values(),
-  ].sort((a, b) => a.localeCompare(b));
-  const driverLines = driverNames.map((name) => ({
-    key: name,
-    highlight: sameName(name, driver),
-    name: (
-      <Link href={`/sales/variances?${new URLSearchParams({ driver: name })}`} className="font-bold underline">
-        {name}
-      </Link>
-    ),
-    stats: periods.map((p) =>
-      statsFor(
-        allRows.filter((r) => sameName(r.driver_name, name)),
-        allMachines.filter((m) => sameName(m.driver_name, name)),
-        p,
-      ),
-    ),
-  }));
+  const driverLines = linesForDrivers(allRows, allMachines, periods, driver);
 
   const assets = [...new Set([...rows, ...machines].filter(inReport).map((r) => r.external_id))];
   const machineLines = assets
@@ -243,7 +143,7 @@ async function Variances({ searchParams }: Pick<PageProps<"/sales/variances">, "
         <>
           <section className="flex flex-col gap-3">
             <h2 className="section-title">By driver</h2>
-            <PeriodTable first="Driver" periods={periods} lines={driverLines} />
+            <PeriodTable first="Driver" periods={periods} lines={driverLines} total={periods.map((p) => statsFor(allRows, allMachines, p))} />
           </section>
 
           <section className="flex flex-col gap-3">

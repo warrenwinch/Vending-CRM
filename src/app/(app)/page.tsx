@@ -11,6 +11,7 @@ import { isNotAPerson, listMembers } from "@/lib/team";
 import { TASK_EDIT_ROLES } from "@/lib/task-types";
 import { PlanList } from "./maintenance/plan-list";
 import { SalesSummary } from "./sales/sales-summary";
+import { DriverSummary } from "./sales/variances/driver-summary";
 
 export default function Home() {
   return (
@@ -112,6 +113,12 @@ async function Dashboard() {
           </li>
         ))}
       </ul>
+
+      {isOffice && (
+        <Suspense fallback={<p className="text-sm text-zinc-500">Loading stock variances…</p>}>
+          <DriverSummary />
+        </Suspense>
+      )}
 
       {isOffice && (
         <Suspense fallback={<p className="text-sm text-zinc-500">Loading sales…</p>}>
