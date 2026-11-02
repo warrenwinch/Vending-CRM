@@ -3,17 +3,18 @@
 /* Light look only: high contrast for phones used outdoors and in warehouses. */
 @custom-variant dark (&:where(.dark, .dark *));
 
-/* Watwin Vending brand colours (from the launch artwork). */
+/* Watwin Vending brand colours (from the Prime Market competition poster). */
 @theme {
-  --color-brand: #ea631a; /* Watwin orange: stripes and highlights */
-  --color-brand-strong: #c2500f; /* deeper orange: buttons with white text */
-  --color-brand-deep: #9a3f0b; /* hover, and orange text on light backgrounds */
-  --color-brand-soft: #fff1e7;
-  --color-leaf: #92b62a; /* Watwin green: accents */
-  --color-leaf-deep: #3f5710; /* green text */
-  --color-leaf-soft: #eef5dc;
-  --color-ink: #2f2e2c; /* Watwin charcoal: top bar and headings */
-  --color-canvas: #f6f5f3; /* page background, so white cards stand out */
+  --color-brand: #f25000; /* Watwin orange: stripes and highlights */
+  --color-brand-strong: #cc4300; /* a little deeper, so white text on buttons stays readable */
+  --color-brand-deep: #a33500; /* hover, and orange text on light backgrounds */
+  --color-brand-soft: #fff1e8;
+  --color-leaf: #4d7d00; /* Watwin green: accents */
+  --color-leaf-deep: #3a5f00; /* green text */
+  --color-leaf-soft: #e9f1dc;
+  --color-bar: #4d7d00; /* Watwin green: top bars, with white text */
+  --color-ink: #1c1c1a; /* near-black: headings and text */
+  --color-canvas: #fcf9f5; /* warm cream page background, so white cards stand out */
 
   --font-sans: var(--font-barlow), ui-sans-serif, system-ui, sans-serif;
   --font-display: var(--font-barlow-condensed), var(--font-barlow), ui-sans-serif, sans-serif;
@@ -47,7 +48,7 @@ body {
     @apply bg-white text-ink ring-2 ring-zinc-200 ring-inset hover:ring-ink;
   }
   .chip-active {
-    @apply bg-ink text-white;
+    @apply bg-bar text-white;
   }
   .page-title {
     @apply font-display text-3xl font-extrabold tracking-wide text-ink uppercase sm:text-4xl;

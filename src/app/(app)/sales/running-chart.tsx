@@ -5,7 +5,7 @@
 import { useState } from "react";
 import { formatAud } from "@/lib/au";
 
-const THIS_YEAR = "#ea631a";
+const THIS_YEAR = "#f25000";
 const LAST_YEAR = "#3a7cc0";
 const W = 640;
 const H = 220;

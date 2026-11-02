@@ -37,8 +37,8 @@ async function Enquiry({ params, searchParams }: Pick<PageProps<"/enquire/[org]"
   return (
     <>
       {!embed && (
-        <div className="border-b-8 border-brand bg-ink px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 text-center text-white">
-          <p className="text-sm font-bold tracking-widest text-leaf uppercase">{business as string}</p>
+        <div className="border-b-8 border-brand bg-bar px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 text-center text-white">
+          <p className="text-sm font-bold tracking-widest uppercase">{business as string}</p>
           <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">Get a vending machine</h1>
         </div>
       )}

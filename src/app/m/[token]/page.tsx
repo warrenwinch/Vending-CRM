@@ -22,8 +22,8 @@ export default function QrPage({ params }: PageProps<"/m/[token]">) {
 
 function Header({ title, business }: { title: string; business?: string }) {
   return (
-    <div className="border-b-8 border-brand bg-ink px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 text-center text-white">
-      {business && <p className="text-sm font-bold tracking-widest text-leaf uppercase">{business}</p>}
+    <div className="border-b-8 border-brand bg-bar px-4 pt-[calc(1.5rem+env(safe-area-inset-top))] pb-6 text-center text-white">
+      {business && <p className="text-sm font-bold tracking-widest uppercase">{business}</p>}
       <h1 className="font-display text-3xl font-extrabold tracking-wide uppercase">{title}</h1>
     </div>
   );

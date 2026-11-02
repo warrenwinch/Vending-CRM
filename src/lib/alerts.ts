@@ -40,15 +40,15 @@ export async function sendEmail({
     .map(
       ([label, value]) =>
         `<tr><td style="padding:6px 12px 6px 0;color:#6b6b6b;vertical-align:top">${escape(label)}</td>` +
-        `<td style="padding:6px 0;font-weight:600;color:#2f2e2c">${escape(value).replace(/\n/g, "<br>")}</td></tr>`,
+        `<td style="padding:6px 0;font-weight:600;color:#1c1c1a">${escape(value).replace(/\n/g, "<br>")}</td></tr>`,
     )
     .join("");
   const html =
     `<div style="font-family:Arial,sans-serif;max-width:560px">` +
-    `<div style="background:#2f2e2c;border-bottom:6px solid #ea631a;color:#fff;padding:16px 20px;font-size:20px;font-weight:800">${escape(subject)}</div>` +
-    (intro ? `<p style="margin:16px 20px 0;font-size:15px;color:#2f2e2c">${escape(intro)}</p>` : "") +
+    `<div style="background:#4d7d00;border-bottom:6px solid #f25000;color:#fff;padding:16px 20px;font-size:20px;font-weight:800">${escape(subject)}</div>` +
+    (intro ? `<p style="margin:16px 20px 0;font-size:15px;color:#1c1c1a">${escape(intro)}</p>` : "") +
     `<table style="margin:16px 20px;font-size:15px;border-collapse:collapse">${rows}</table>` +
-    `<p style="margin:0 20px 20px"><a href="${escape(button.href)}" style="background:#c2500f;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700">${escape(button.label)}</a></p>` +
+    `<p style="margin:0 20px 20px"><a href="${escape(button.href)}" style="background:#cc4300;color:#fff;padding:12px 18px;border-radius:10px;text-decoration:none;font-weight:700">${escape(button.label)}</a></p>` +
     `</div>`;
   const text =
     `${subject}\n\n${intro ? `${intro}\n\n` : ""}${lines.map(([l, v]) => `${l}: ${v}`).join("\n")}` +

@@ -25,7 +25,7 @@ export const metadata: Metadata = {
 };
 
 export const viewport: Viewport = {
-  themeColor: "#2f2e2c",
+  themeColor: "#4d7d00",
   viewportFit: "cover", // use the whole screen, including around the notch
 };
 
