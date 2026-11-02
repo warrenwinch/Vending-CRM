@@ -4,7 +4,7 @@ import Link from "next/link";
 import { formatAud, formatDate } from "@/lib/au";
 import { dailyTotals, latestDailyDay } from "@/lib/sales";
 import { addDays } from "@/lib/sales-import";
-import { MtdChart } from "./mtd-chart";
+import { RunningChart } from "./running-chart";
 
 const total = (byDay: Map<string, number>, from: string, to: string) => {
   let t = 0;
@@ -75,7 +75,7 @@ export async function DailySummary() {
     dailyTotals(from, latest),
     dailyTotals(lyStart, lyEnd),
     dailyTotals(fyStart, latest),
-    dailyTotals(lyFyStart, lyFyEnd),
+    dailyTotals(lyFyStart, `${fyStartYear}-06-30`),
     dailyTotals(fyStart, latest, "seed_market"),
     dailyTotals(lyFyStart, lyFyEnd, "seed_market"),
   ]);
@@ -105,6 +105,9 @@ export async function DailySummary() {
     let t = 0;
     return Array.from({ length: days }, (_, i) => (t = Math.round((t + (byDay.get(addDays(start, i)) ?? 0)) * 100) / 100));
   };
+  const fyDays = (Date.UTC(fyStartYear + 1, 5, 30) - Date.UTC(fyStartYear, 6, 1)) / 86400000 + 1;
+  const fyDaysSoFar = (Date.UTC(y, m - 1, d) - Date.UTC(fyStartYear, 6, 1)) / 86400000 + 1;
+  const fyLabel = (start: number) => `${start}/${String(start + 1).slice(2)}`;
   const monthName = new Date(`${monthStart}T00:00:00`).toLocaleDateString("en-AU", { month: "long" });
   const weekday = new Date(`${latest}T00:00:00`).toLocaleDateString("en-AU", { weekday: "long" });
 
@@ -122,13 +125,26 @@ export async function DailySummary() {
           note={noMarketsNote}
         />
       </div>
-      <MtdChart
-        thisYear={running(recent, monthStart, d)}
-        lastYear={lastYear.size ? running(lastYear, lyStart, lyDays) : []}
-        daysInMonth={daysInMonth}
-        monthName={monthName}
-        years={[y, y - 1]}
-      />
+      <div className="grid gap-3 lg:grid-cols-2">
+        <RunningChart
+          title={`${monthName} to date, running total`}
+          thisYear={running(recent, monthStart, d)}
+          lastYear={lastYear.size ? running(lastYear, lyStart, lyDays) : []}
+          start={monthStart}
+          days={daysInMonth}
+          span="month"
+          labels={[String(y), String(y - 1)]}
+        />
+        <RunningChart
+          title="Year to date, running total from 1 July"
+          thisYear={running(fy, fyStart, fyDaysSoFar)}
+          lastYear={lastFyToDate === null ? [] : running(lastFy, lyFyStart, fyDays)}
+          start={fyStart}
+          days={fyDays}
+          span="year"
+          labels={[fyLabel(fyStartYear), fyLabel(fyStartYear - 1)]}
+        />
+      </div>
     </div>
   );
 }
