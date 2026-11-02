@@ -12,7 +12,19 @@ const total = (byDay: Map<string, number>, from: string, to: string) => {
   return Math.round(t * 100) / 100;
 };
 
-function Tile({ title, value, before, beforeLabel }: { title: string; value: number; before: number | null; beforeLabel: string }) {
+function Tile({
+  title,
+  value,
+  before,
+  beforeLabel,
+  note,
+}: {
+  title: string;
+  value: number;
+  before: number | null;
+  beforeLabel: string;
+  note?: string;
+}) {
   const pct = before ? ((value - before) / before) * 100 : null;
   return (
     <div className="flex flex-col gap-1 rounded-2xl bg-white p-4 ring-2 ring-zinc-200">
@@ -26,6 +38,7 @@ function Tile({ title, value, before, beforeLabel }: { title: string; value: num
         )}
         {before === null ? beforeLabel : `${beforeLabel} ${formatAud(before)}`}
       </p>
+      {note && <p className="text-sm text-zinc-500">{note}</p>}
     </div>
   );
 }
@@ -58,15 +71,28 @@ export async function DailySummary() {
   const fyStart = `${fyStartYear}-07-01`;
   const lyFyStart = `${fyStartYear - 1}-07-01`;
   const lyFyEnd = `${y - 1}-${String(m).padStart(2, "0")}-${String(Math.min(d, lyDays)).padStart(2, "0")}`;
-  const [recent, lastYear, fy, lastFy] = await Promise.all([
+  const [recent, lastYear, fy, lastFy, fyNoMarkets, lastFyNoMarkets] = await Promise.all([
     dailyTotals(from, latest),
     dailyTotals(lyStart, lyEnd),
     dailyTotals(fyStart, latest),
     dailyTotals(lyFyStart, lyFyEnd),
+    dailyTotals(fyStart, latest, "seed_market"),
+    dailyTotals(lyFyStart, lyFyEnd, "seed_market"),
   ]);
   const fyToDate = total(fy, fyStart, latest);
   // Only compare when last year's figures go back to its start, or it would look like a big rise.
   const lastFyToDate = lastFy.has(lyFyStart) ? total(lastFy, lyFyStart, lyFyEnd) : null;
+
+  // Markets are new, so also show the year without them, like for like.
+  const noMarkets = total(fyNoMarkets, fyStart, latest);
+  const lastNoMarkets = lastFyToDate === null ? 0 : total(lastFyNoMarkets, lyFyStart, lyFyEnd);
+  const noMarketsChange = lastNoMarkets ? ((noMarkets - lastNoMarkets) / lastNoMarkets) * 100 : null;
+  const noMarketsNote =
+    noMarkets === fyToDate
+      ? undefined
+      : `Without Markets: ${formatAud(noMarkets)}${
+          noMarketsChange === null ? "" : ` (${noMarketsChange >= 0 ? "▲" : "▼"} ${Math.abs(noMarketsChange).toFixed(1)}%)`
+        }`;
 
   const yesterday = total(recent, latest, latest);
   const sameDayLastWeek = total(recent, addDays(latest, -7), addDays(latest, -7));
@@ -93,6 +119,7 @@ export async function DailySummary() {
           value={fyToDate}
           before={lastFyToDate}
           beforeLabel={lastFyToDate === null ? "Last year's history isn't loaded yet" : "same dates last year"}
+          note={noMarketsNote}
         />
       </div>
       <MtdChart

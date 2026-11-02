@@ -297,8 +297,8 @@ export async function machineSalesHistory(machineId: string) {
   return [...byMonth.values()];
 }
 
-// Daily totals (all systems added together) from `from` to `to`, by day.
-export async function dailyTotals(from: string, to: string) {
+// Daily totals (all systems added together, less any left out) from `from` to `to`, by day.
+export async function dailyTotals(from: string, to: string, leaveOut?: SalesSource) {
   const supabase = await createClient();
   const rows = await allRows<{ day: string; amount: number | string; units: number }>((f, t) =>
     supabase
@@ -306,6 +306,7 @@ export async function dailyTotals(from: string, to: string) {
       .select("day, amount, units, source")
       .gte("day", from)
       .lte("day", to)
+      .neq("source", leaveOut ?? "")
       .order("day")
       .order("source")
       .range(f, t),
